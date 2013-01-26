@@ -2,7 +2,7 @@ require 'rubygems'
 require 'open-uri'
 require 'savon'
 require 'date'
-#include ActiveModel::MassAssignmentSecurity
+require 'json'
 
 #to-do:
 #work on digest authentication - not supported will use OAuth when it's officially GA
@@ -61,7 +61,6 @@ class CreateWSDL
 		end
 		
 		if createIt then
-		  #detect date diff between file creation and execution request
 		  res = open(@wsdl).read
 		  File.open('ExactTargetWSDL.xml','w+') { |f|
 		  f.write(res)
@@ -76,21 +75,24 @@ class CreateWSDL
 end
 
 class ETClient < CreateWSDL
-	attr_accessor :auth, :ready, :status
+	attr_accessor :auth, :ready, :status, :debug
+	attr_reader :authToken, :authTokenExpiration, :internalAuthToken, :wsdlLoc, :clientId, :clientSecret
 
-	def initialize(loc = nil, getWSDL = nil, usn, pwd)
+	def initialize(loc = nil, getWSDL = nil, debug = nil, iclientId, iclientSecret)
+		@clientId = iclientId
+		@clientSecret = iclientSecret
+		@debug = false
+
+		if debug then
+			@debug = debug
+		end
 
 		#stack and endpoints
 		stack = {
-		  'indy' => {
-			:wsdl => 'https://webservice.exacttarget.com/ETFramework.wsdl',
-			:endpoint => 'https://webservice.exacttarget.com/Service.asmx'
-		  },
-		  'vegas' => {
-			:wsdl => 'https://webservice.s4.exacttarget.com/ETFramework.wsdl',
-			:endpoint => 'https://webservice.s4.exacttarget.com/Service.asmx'
-		  }
-		}
+			'S1' => {:wsdl => 'https://webservice.exacttarget.com/ETFramework.wsdl',:endpoint => 'https://webservice.exacttarget.com/Service.asmx'},
+			'S4' => {:wsdl => 'https://webservice.s4.exacttarget.com/ETFramework.wsdl',:endpoint => 'https://webservice.s4.exacttarget.com/Service.asmx'},
+			'S6' => {:wsdl => 'https://webservice.s6.exacttarget.com/ETFramework.wsdl',:endpoint => 'https://webservice.s6.exacttarget.com/Service.asmx'}
+		}				
 
 		#set default endpoint if none was passed
 		@endpoint = (loc ? stack[loc][:endpoint] : stack['indy'][:endpoint])
@@ -106,22 +108,53 @@ class ETClient < CreateWSDL
 				
 				wsdl.document = File.read('ExactTargetWSDL.xml')
 				wsdl.endpoint = @endpoint
-				wsse.credentials(usn, pwd)
+				
+				wsse.credentials('*', '*')
 			end
 			# Prevents Savon from Raising an exception when a SOAP Fault occurs
 			@auth.config.raise_errors = false
+			self.debug = @debug		
 		rescue 
-		
+			raise 'Unable to store local copy of WSDL file.' 
 		end
+		self.refreshToken
+		
+
+		
 		
 		if ((@auth.wsdl.soap_actions.length > 0) and (@status >= 200 and @status <= 400)) then
 			@ready = true
 		else
 			@ready = false
 		end
+	end
+	
+	def debug=(value)
+		@auth.config.log = value	
+	end
+	
+	def refreshToken()
+		#If we don't already have a token or the token expires within 5 min(300 seconds), get one
+		if @authToken.nil? || Time.new - 300 > @authTokenExpiration 
+			begin	
+			uri = URI.parse("https://auth.exacttargetapis.com/v1/requestToken?legacy=1")
+			http = Net::HTTP.new(uri.host, uri.port)
+			http.use_ssl = true
+			request = Net::HTTP::Post.new(uri.request_uri)
+			request.body = '{"clientId": "' + @clientId + '","clientSecret": "' + @clientSecret + '"}'
+			request.add_field "Content-Type", "application/json"
+			tokenResponse = JSON.parse(http.request(request).body)
+			@authToken = tokenResponse['accessToken']
+			@authTokenExpiration = Time.new + tokenResponse['expiresIn']
+			@internalAuthToken = tokenResponse['legacyToken']
 
+			rescue Exception => e
+				raise 'Unable to validate App Keys(ClientID/ClientSecret) provided: ' + e.message  
+			end
+		end 
 	end
 end
+
 
 class ET_Describe < Constructor
 	#to-do:
@@ -145,6 +178,9 @@ class ET_Describe < Constructor
 						}
 					}
 				}
+				authObj = {'oAuth' => {'oAuthToken' => authStub.internalAuthToken}}			
+				authObj[:attributes!] = { 'oAuth' => { 'xmlns' => 'http://exacttarget.com' } }		
+				soap.header = authObj
 			end
 		ensure
 			super(response)
@@ -168,7 +204,9 @@ class ET_Post < Constructor
 	attr_accessor :results
 
 	def initialize(authStub, objType, props = nil)
+	@results = []
 	begin
+		authStub.refreshToken
 		if props.is_a? Array then 
 			obj = {
 				'Objects' => [],
@@ -191,18 +229,26 @@ class ET_Post < Constructor
 			]
 			
 			soap.body = obj
+			authObj = {'oAuth' => {'oAuthToken' => authStub.internalAuthToken}}			
+			authObj[:attributes!] = { 'oAuth' => { 'xmlns' => 'http://exacttarget.com' } }		
+			soap.header = authObj
+
 			end
 			
 	ensure 
 
 		super(response)				
 			if @status then
-				if @@body[:create_response][:results][:status_code] != "OK"				
+				if @@body[:create_response][:overall_status] != "OK"				
 					@status = false
 				end 
-				@message = @@body[:create_response][:results][:status_code] + ' - ' + @@body[:create_response][:results][:status_message]
-				@results = @@body[:create_response][:results][:new_id]
+				#@results = @@body[:create_response][:results]
+				if !@@body[:create_response][:results].nil? then
+					@results.push(@@body[:create_response][:results])
+				end				
 			end
+			
+
 
 		end
 	end
@@ -212,6 +258,7 @@ class ET_Delete < Constructor
 	attr_accessor :results
 
 	def initialize(authStub, objType, props = nil)
+	@results = []
 	begin
 		obj = {
 			'Objects' => props,
@@ -224,6 +271,10 @@ class ET_Delete < Constructor
 			]
 			
 			soap.body = obj
+			authObj = {'oAuth' => {'oAuthToken' => authStub.internalAuthToken}}			
+			authObj[:attributes!] = { 'oAuth' => { 'xmlns' => 'http://exacttarget.com' } }		
+			soap.header = authObj
+				
 			end
 	ensure 
 		super(response)				
@@ -231,21 +282,37 @@ class ET_Delete < Constructor
 				if @@body[:delete_response][:results][:status_code] != "OK"				
 				@status = false
 				end 
-				@message = @@body[:delete_response][:results][:status_code] + ' - ' + @@body[:delete_response][:results][:status_message]
+				if !@@body[:delete_response][:results].nil? then
+					@results.push(@@body[:delete_response][:results])
+				end		
 			end
 		end
 	end
 end
 
 class ET_Put < Constructor
+
 	attr_accessor :results
 
 	def initialize(authStub, objType, props = nil)
+	@results = []
 	begin
-		obj = {
-			'Objects' => props,
-			:attributes! => { 'Objects' => { 'xsi:type' => ('wsdl:' + objType) } }
-		}
+		authStub.refreshToken
+		if props.is_a? Array then 
+			obj = {
+				'Objects' => [],
+				:attributes! => { 'Objects' => { 'xsi:type' => ('wsdl:' + objType) } }
+			}
+			props.each{ |p|
+				obj['Objects'] << p 
+			 }
+		else
+			obj = {
+				'Objects' => props,
+				:attributes! => { 'Objects' => { 'xsi:type' => ('wsdl:' + objType) } }
+			}
+		end
+		
 		
 		response =  authStub.auth.request 'Update' 	do |soap, wsdl|
 			soap.input = [
@@ -253,19 +320,27 @@ class ET_Put < Constructor
 			]
 			
 			soap.body = obj
+			authObj = {'oAuth' => {'oAuthToken' => authStub.internalAuthToken}}			
+			authObj[:attributes!] = { 'oAuth' => { 'xmlns' => 'http://exacttarget.com' } }		
+			soap.header = authObj
+
 			end
+			
 	ensure 
+
 		super(response)				
 			if @status then
-				if @@body[:update_response][:results][:status_code] != "OK"				
+				if @@body[:update_response][:overall_status] != "OK"				
 					@status = false
-				end 				
-				@message = @@body[:update_response][:results][:status_code] + ' - ' + @@body[:update_response][:results][:status_message]				
+				end 
+				if !@@body[:update_response][:results].nil? then
+					@results.push(@@body[:update_response][:results])
+				end	
 			end
+
 		end
 	end
 end
-
 
 
 
@@ -273,6 +348,7 @@ class ET_Get < Constructor
 	attr_accessor :results
 
 	def initialize(authStub, objType, props = nil, filter = nil)
+		@results = []
 		if !props then
 			resp = Describe.new(authStub, objType)
 
@@ -303,17 +379,22 @@ class ET_Get < Constructor
 			soap.body = {
 				'RetrieveRequest' => obj
 			}
+			authObj = {'oAuth' => {'oAuthToken' => authStub.internalAuthToken}}			
+			authObj[:attributes!] = { 'oAuth' => { 'xmlns' => 'http://exacttarget.com' } }		
+			soap.header = authObj			
 		end	
 
 		super(response)
 
 		if @status then
 			if @@body[:retrieve_response_msg][:overall_status] != "OK" then
-				@message = @@body[:retrieve_response_msg][:overall_status]
-				@status = false					
-			else 
-				@results = @@body[:retrieve_response_msg][:results]
+				@status = false	
+				@results = []								
 			end 
+			
+			if !@@body[:retrieve_response_msg][:results].nil? then
+				@results.push(@@body[:retrieve_response_msg][:results])
+			end
 		end
 	end
 end
