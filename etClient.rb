@@ -13,24 +13,27 @@ require 'json'
 #break SOAP reponse object creation into it's own class
 
 class Constructor
-	attr_accessor :status, :code, :message, :properties
+	attr_accessor :status, :code, :message, :properties, :results
 		
-	def initialize(response)	
-		envelope = response.hash[:envelope]
-		@@body = envelope[:body]
-			
-		if ((!response.soap_fault.present?) or (!response.http_error.present?)) then
-			@code = response.http.code
-			@status = true
-		elsif (response.soap_fault.present?) then
-			@code = response.http.code
-			@message = response.soap_fault.to_s
-			@status = false
-		elsif (response.http_error.present?) then
-			@code = response.http.code
-			@message = response.http_error.to_s
-			@status = false         
-		end
+	def initialize(response = nil)
+		@results = []
+		if !response.nil? then 
+			envelope = response.hash[:envelope]
+			@@body = envelope[:body]
+				
+			if ((!response.soap_fault.present?) or (!response.http_error.present?)) then
+				@code = response.http.code
+				@status = true
+			elsif (response.soap_fault.present?) then
+				@code = response.http.code
+				@message = response.soap_fault.to_s
+				@status = false
+			elsif (response.http_error.present?) then
+				@code = response.http.code
+				@message = response.http_error.to_s
+				@status = false         
+			end
+		end 
 	end
 end
 
@@ -163,7 +166,7 @@ class ET_Describe < Constructor
 	#pass the code and status back in object
 	#pass back only soap body
 
-	attr_accessor :results
+
 
 	def initialize(authStub = nil, objType = nil)
 		begin
@@ -201,7 +204,6 @@ class ET_Describe < Constructor
 end
 
 class ET_Post < Constructor
-	attr_accessor :results
 
 	def initialize(authStub, objType, props = nil)
 	@results = []
@@ -260,7 +262,6 @@ class ET_Post < Constructor
 end
 
 class ET_Delete < Constructor
-	attr_accessor :results
 
 	def initialize(authStub, objType, props = nil)
 	@results = []
@@ -296,7 +297,7 @@ end
 
 class ET_Put < Constructor
 
-	attr_accessor :results
+
 
 	def initialize(authStub, objType, props = nil)
 	@results = []
@@ -351,7 +352,7 @@ end
 
 
 class ET_Get < Constructor
-	attr_accessor :results
+
 
 	def initialize(authStub, objType, props = nil, filter = nil)
 		@results = []
@@ -367,11 +368,13 @@ class ET_Get < Constructor
 				}
 			end
 		end
-
-		obj = {
-			'ObjectType' => objType,
-			'Properties' => props
-		}
+		
+		# If the properties is a hash, then we just want to use the keys
+		if props.is_a? Hash then 
+			obj = {'ObjectType' => objType,'Properties' => props.keys}
+		else 
+			obj = {'ObjectType' => objType,'Properties' => props}
+		end		
 
 		if filter then
 			obj['Filter'] = filter
@@ -409,7 +412,7 @@ class ET_Get < Constructor
 end
 
 class ET_BaseObject
-	attr_accessor :authStub, :props, :filter, :extProps
+	attr_accessor :authStub, :props, :filter
 	attr_reader :obj
 	
 	def initialize
@@ -516,7 +519,7 @@ class ET_Subscriber < ET_CRUDSupport
 end
 
 class ET_DataExtension < ET_BaseObject	
-	attr_accessor :rows, :columns, :keyCreated, :type
+	attr_accessor :rows, :columns, :keyCreated
 	
 	def initialize
 		super
@@ -525,12 +528,12 @@ class ET_DataExtension < ET_BaseObject
 	end	
 	
 	def get(type, props = nil, filter = nil)
-	
+		obj = Constructor.new()
 		if filter and filter.is_a? Hash then
 			@filter = filter
 		end
 		
-		if type == "Columns" then 
+		if type == "Details" then 
 			if props and props.is_a? Array then
 				@props = props
 			end
@@ -538,21 +541,50 @@ class ET_DataExtension < ET_BaseObject
 			if @props and @props.is_a? Hash then
 				@props = @props.keys
 			end
+
+			obj = ET_Get.new(@authStub, @obj, @props, @filter)		
 			
-			
-			obj = ET_Get.new(@authStub, @obj, @props, @filter)
-			
-		elsif Type == "Rows"
-			rowObjName = ""
-			if @props.has_key("Name")  then
-				rowObjName = "DataExtensionObject[" + @props['Name'] + "]"
-			elsif @props.has_key("CustomerKey") 
-				obj = ET_Get.new(@authStub, @obj, @props, {"Property" => "CustomerKey", "SimpleOperator" => "equals", "Value" => @props['CustomerKey'] })
-				if 
-			
+		elsif type == "Rows"
+			if !@props.nil? &&  (@props.has_key?("Name") || @props.has_key?("CustomerKey")) && @rows then 
+				rowObjName = ""
+				if @props.has_key?("Name")  then
+					rowObjName = "DataExtensionObject[" + @props['Name'] + "]"
+					
+				# We need to get the Name based on the CustomerKey if CustomerKey was passed in
+				elsif @props.has_key?("CustomerKey") 
+					obj = ET_Get.new(@authStub, @obj, ["Name"], {"Property" => "CustomerKey", "SimpleOperator" => "equals", "Value" => @props['CustomerKey'] })
+					if obj.status and obj.results.length == 1 then 
+						rowObjName = "DataExtensionObject[" + obj.results[0][:name] + "]"
+					else 
+						obj.status = false
+						obj.message = "No DataExtension found with the provided CustomerKey"	
+						return obj
+					end 
+				end 
 				
+				# If they didn't provide an array of field names in the rows, then get the field names from the first row of the rowset
+				retrieveRows = @rows
+				if (@rows.is_a? Array) && (@rows[0].is_a? Hash) then
+					retrieveRows = @rows[0]
+				end 
+				
+				obj = ET_Get.new(@authStub, rowObjName, retrieveRows, @filter)
+			elsif !@rows
+				obj.status = false
+				obj.message = "rows on ET_DataExtension must be defined for Get with Type='Rows' "					
+			else 
+				obj.status = false
+				obj.message = "props on ET_DataExtension must be defined with values for Name or CustomerKey when using Get with Type='Rows'"
 			end 
-			obj = ET_Get.new(@authStub, @obj, @props, @filter)
+			
+		elsif type == "Columns"
+			retrieveColumns = @rows
+			# If they didn't provide an array of field names in the columns, then get the properties from the first row set
+			if (@columns.is_a? Array) && (@columns[0].is_a? Hash) then
+				retrieveColumns = @columns[0]
+			end 
+			
+			obj = ET_Get.new(@authStub, "DataExtensionField", retrieveColumns, @filter)
 		else 
 			obj.status = false
 			obj.message = "Invalid type specified for DataExtension Get"
@@ -736,11 +768,7 @@ class ET_TriggeredSend < ET_CRUDSupport
 		@obj = 'TriggeredSendDefinition'
 	end	
 	
-	def send 
-		if props and props.is_a? Hash then
-			@props = props
-		end
-		
+	def send 	
 		@tscall = {"TriggeredSendDefinition" => @props, "Subscribers" => @subscribers}
 			
 		obj = ET_Post.new(@authStub, "TriggeredSend", @tscall)
@@ -785,31 +813,4 @@ end
 
 
 
-class TriggeredSend
-	attr_accessor :authStub, :props, :filter
-	attr_reader :obj
-	
-	def initialize
-		@obj = 'TriggeredSendDefinition'
-	end
-
-	def get(props = nil, filter = nil)
-		if props and props.is_a? Array then
-			@props = props
-		end
-
-		if filter and filter.is_a? Hash then
-			@filter = filter
-		end
-
-		obj = Get.new(@authStub, @obj, props, filter)
-	end
-
-	def send()
-	end
-	
-	def info()
-		obj = Describe.new(@authStub, @obj)
-	end
-end
 
