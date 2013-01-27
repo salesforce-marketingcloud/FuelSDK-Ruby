@@ -222,12 +222,13 @@ class ET_Post < Constructor
 			}
 		end
 		
+
 		
 		response =  authStub.auth.request 'Create' 	do |soap, wsdl|
 			soap.input = [
 			 ( 'wsdl:' + 'CreateRequest')
 			]
-			
+		
 			soap.body = obj
 			authObj = {'oAuth' => {'oAuthToken' => authStub.internalAuthToken}}			
 			authObj[:attributes!] = { 'oAuth' => { 'xmlns' => 'http://exacttarget.com' } }		
@@ -244,7 +245,11 @@ class ET_Post < Constructor
 				end 
 				#@results = @@body[:create_response][:results]
 				if !@@body[:create_response][:results].nil? then
-					@results.push(@@body[:create_response][:results])
+					if !@@body[:create_response][:results].is_a? Hash then
+						@results = @results + @@body[:create_response][:results]
+					else 
+						@results.push(@@body[:create_response][:results])
+					end
 				end				
 			end
 			
@@ -279,12 +284,11 @@ class ET_Delete < Constructor
 	ensure 
 		super(response)				
 			if @status then
-				if @@body[:delete_response][:results][:status_code] != "OK"				
-				@status = false
-				end 
-				if !@@body[:delete_response][:results].nil? then
+				if !@@body[:delete_response][:results].is_a? Hash then
+					@results = @results + @@body[:delete_response][:results]
+				else 
 					@results.push(@@body[:delete_response][:results])
-				end		
+				end				
 			end
 		end
 	end
@@ -333,9 +337,11 @@ class ET_Put < Constructor
 				if @@body[:update_response][:overall_status] != "OK"				
 					@status = false
 				end 
-				if !@@body[:update_response][:results].nil? then
+				if !@@body[:update_response][:results].is_a? Hash then
+					@results = @results + @@body[:update_response][:results]
+				else 
 					@results.push(@@body[:update_response][:results])
-				end	
+				end						
 			end
 
 		end
@@ -350,7 +356,7 @@ class ET_Get < Constructor
 	def initialize(authStub, objType, props = nil, filter = nil)
 		@results = []
 		if !props then
-			resp = Describe.new(authStub, objType)
+			resp = ET_Describe.new(authStub, objType)
 
 			if resp then
 				props = []
@@ -371,7 +377,6 @@ class ET_Get < Constructor
 			obj['Filter'] = filter
 			obj[:attributes!] = { 'Filter' => { 'xsi:type' => 'wsdl:SimpleFilterPart' } }
 		end
-		p obj.inspect
 		response =  authStub.auth.request "Retrieve"  do |soap, wsdl|
 			soap.input = [
 				('wsdl:' + 'RetrieveRequestMsg')
@@ -389,12 +394,16 @@ class ET_Get < Constructor
 		if @status then
 			if @@body[:retrieve_response_msg][:overall_status] != "OK" then
 				@status = false	
+				@message = @@body[:retrieve_response_msg][:overall_status]
 				@results = []								
-			end 
-			
-			if !@@body[:retrieve_response_msg][:results].nil? then
+			end 		
+
+			if (!@@body[:retrieve_response_msg][:results].is_a? Hash) && (!@@body[:retrieve_response_msg][:results].nil?) then
+				@results = @results + @@body[:retrieve_response_msg][:results]
+			elsif  (!@@body[:retrieve_response_msg][:results].nil?)
 				@results.push(@@body[:retrieve_response_msg][:results])
-			end
+			end				
+			
 		end
 	end
 end
@@ -429,7 +438,7 @@ class ET_CRUDSupport < ET_BaseObject
 		if filter and filter.is_a? Hash then
 			@filter = filter
 		end
-		
+
 		obj = ET_Get.new(@authStub, @obj, @props, @filter)
 	end		
 
@@ -470,19 +479,34 @@ class ET_CRUDSupport < ET_BaseObject
 end
 
 
-class ET_List < ET_CRUDSupport
+
+class ET_GetSupport < ET_BaseObject
+	
 	def initialize
 		super
-		@obj = 'List'
+	end
+	
+	def get(props = nil, filter = nil)
+		if props and props.is_a? Array then
+			@props = props
+		end
+		
+		if @props and @props.is_a? Hash then
+			@props = @props.keys
+		end
+
+		if filter and filter.is_a? Hash then
+			@filter = filter
+		end
+		
+		obj = ET_Get.new(@authStub, @obj, @props, @filter)
+	end			
+	
+	def info()
+		obj = ET_Describe.new(@authStub, @obj)
 	end	
 end
 
-class ET_Email < ET_CRUDSupport	
-	def initialize
-		super
-		@obj = 'Email'
-	end	
-end
 
 class ET_Subscriber < ET_CRUDSupport	
 	def initialize
@@ -490,6 +514,276 @@ class ET_Subscriber < ET_CRUDSupport
 		@obj = 'Subscriber'
 	end	
 end
+
+class ET_DataExtension < ET_BaseObject	
+	attr_accessor :rows, :columns, :keyCreated, :type
+	
+	def initialize
+		super
+		@obj = 'DataExtension'
+		@keyCreated = nil
+	end	
+	
+	def get(type, props = nil, filter = nil)
+	
+		if filter and filter.is_a? Hash then
+			@filter = filter
+		end
+		
+		if type == "Columns" then 
+			if props and props.is_a? Array then
+				@props = props
+			end
+			
+			if @props and @props.is_a? Hash then
+				@props = @props.keys
+			end
+			
+			
+			obj = ET_Get.new(@authStub, @obj, @props, @filter)
+			
+		elsif Type == "Rows"
+			rowObjName = ""
+			if @props.has_key("Name")  then
+				rowObjName = "DataExtensionObject[" + @props['Name'] + "]"
+			elsif @props.has_key("CustomerKey") 
+				obj = ET_Get.new(@authStub, @obj, @props, {"Property" => "CustomerKey", "SimpleOperator" => "equals", "Value" => @props['CustomerKey'] })
+				if 
+			
+				
+			end 
+			obj = ET_Get.new(@authStub, @obj, @props, @filter)
+		else 
+			obj.status = false
+			obj.message = "Invalid type specified for DataExtension Get"
+		end 
+		
+		
+		obj
+	end			
+	
+	def post()
+				
+		createDE = false
+		if @columns && @props['CustomerKey'] != @keyCreated then 
+			createDE = true
+		end 
+			
+		if createDE then
+			#Create the data extension			
+			@props['Fields'] = {}
+			@props['Fields']['Field'] = []
+			@columns.each { |key|
+				@props['Fields']['Field'].push(key)
+			}
+			obj = ET_Post.new(@authStub, @obj, @props)	
+			@keyCreated	 = @props['CustomerKey']
+		end	
+		
+		if @rows then
+			@props.delete("Fields")
+			rowProps = []
+			@rows.each {|value|
+				currentProp = {}
+				currentFields = []
+				value.each { |key,value|
+					currentFields.push({"Name" => key, "Value" => value})
+				}
+				currentProp = @props
+				currentProp['Properties'] = {}
+				currentProp['Properties']['Property'] = currentFields	
+				rowProps.push(currentProp.dup)					
+			}		
+			
+			rowsobj = ET_Post.new(@authStub, "DataExtensionObject", rowProps)
+						
+			
+			#If we created the DE and the Rows merge the results
+			if createDE then
+				# If either request failed then consider the status to be failed
+				if !rowsobj.status || !obj.status then
+					obj.status = false
+				end 
+				obj.results = obj.results + rowsobj.results
+			else 
+			#Since we only create rows, just use the results from that
+				obj = rowsobj
+			end 			
+		end
+		
+		obj	
+	end		
+	
+	def put()				
+		createDE = false
+		if @columns && @props['CustomerKey'] != @keyCreated then 
+			createDE = true
+		end 
+			
+		if createDE then
+			@props['Fields'] = {}
+			@props['Fields']['Field'] = []
+			@columns.each { |key|
+				@props['Fields']['Field'].push(key)
+			}
+			obj = ET_Post.new(@authStub, @obj, @props)	
+			@keyCreated	 = @props['CustomerKey']
+		end	
+		
+		if @rows then
+			@props.delete("Fields")
+			rowProps = []
+			@rows.each {|value|
+				currentProp = {}
+				currentFields = []
+				value.each { |key,value|
+					currentFields.push({"Name" => key, "Value" => value})
+				}
+				currentProp = @props
+				currentProp['Properties'] = {}
+				currentProp['Properties']['Property'] = currentFields	
+				rowProps.push(currentProp.dup)					
+			}		
+			
+			rowsobj = ET_Put.new(@authStub, "DataExtensionObject", rowProps)
+						
+			
+			#If we created the DE and the Rows merge the results
+			if createDE then
+				# If either request failed then consider the status to be failed
+				if !rowsobj.status || !obj.status then
+					obj.status = false
+				end 
+				obj.results = obj.results + rowsobj.results
+			else 
+			#Since we only create rows, just use the results from that
+				obj = rowsobj
+			end 			
+		end
+		
+		obj	
+	end		
+
+	def delete()
+				
+		createDE = false
+		if @columns && @props['CustomerKey'] != @keyCreated then 
+			createDE = true
+		end 
+			
+		if createDE then
+			#Create the data extension
+			
+			@props['Fields'] = {}
+			@props['Fields']['Field'] = []
+			@columns.each { |key|
+				@props['Fields']['Field'].push(key)
+			}
+			obj = ET_Post.new(@authStub, @obj, @props)	
+			@keyCreated	 = @props['CustomerKey']
+		end	
+		
+		if @rows then
+			@props.delete("Fields")
+			rowProps = []
+			@rows.each {|value|
+				currentProp = {}
+				currentFields = []
+				value.each { |key,value|
+					currentFields.push({"Name" => key, "Value" => value})
+				}
+				currentProp = @props
+				currentProp['Keys'] = {}
+				currentProp['Keys']['Key'] = currentFields	
+				rowProps.push(currentProp.dup)					
+			}		
+			
+			rowsobj = ET_Delete.new(@authStub, "DataExtensionObject", rowProps)
+						
+			
+			#If we created the DE and the Rows merge the results
+			if createDE then
+				# If either request failed then consider the status to be failed
+				if !rowsobj.status || !obj.status then
+					obj.status = false
+				end 
+				obj.results = obj.results + rowsobj.results
+			else 
+			#Since we only create rows, just use the results from that
+				obj = rowsobj
+			end 			
+		end
+		
+		obj	
+	end	
+
+end
+
+##TODO: Add DataExtensionRow
+
+class ET_List < ET_CRUDSupport
+	def initialize
+		super
+		@obj = 'List'
+	end	
+end
+
+
+class ET_TriggeredSend < ET_CRUDSupport	
+	attr_accessor :subscribers
+	def initialize
+		super
+		@obj = 'TriggeredSendDefinition'
+	end	
+	
+	def send 
+		if props and props.is_a? Hash then
+			@props = props
+		end
+		
+		@tscall = {"TriggeredSendDefinition" => @props, "Subscribers" => @subscribers}
+			
+		obj = ET_Post.new(@authStub, "TriggeredSend", @tscall)
+	end
+end
+
+class ET_SentEvent < ET_GetSupport
+	def initialize
+		super
+		@obj = 'SentEvent'
+	end	
+end
+
+class ET_OpenEvent < ET_GetSupport
+	def initialize
+		super
+		@obj = 'OpenEvent'
+	end	
+end
+
+class ET_BounceEvent < ET_GetSupport
+	def initialize
+		super
+		@obj = 'BounceEvent'
+	end	
+end
+
+class ET_UnsubEvent < ET_GetSupport
+	def initialize
+		super
+		@obj = 'UnsubEvent'
+	end	
+end
+
+class ET_ClickEvent < ET_GetSupport
+	def initialize
+		super
+		@obj = 'ClickEvent'
+	end	
+end
+
+
+
 
 class TriggeredSend
 	attr_accessor :authStub, :props, :filter
