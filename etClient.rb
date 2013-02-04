@@ -39,20 +39,18 @@ end
 
 class CreateWSDL
   
-  def initialize
-    
+  def initialize(path)
     #Get the header info for the correct wsdl
 	response = HTTPI.head(@wsdl)
-	
 	if response and (response.code >= 200 and response.code <= 400) then
 		header = response.headers
 		#see when the WSDL was last modified
 		modifiedTime = Date.parse(header['last-modified'])
-    
+		p = path + '/ExactTargetWSDL.xml'
 		#is a local WSDL there
-		if (File.file?('ExactTargetWSDL.xml') and File.readable?('ExactTargetWSDL.xml') and !File.zero?('ExactTargetWSDL.xml')) then
-			createdTime = File.new('ExactTargetWSDL.xml').mtime.to_date
-
+		if (File.file?(p) and File.readable?(p) and !File.zero?(p)) then
+			createdTime = File.new(p).mtime.to_date
+			
 			#is the locally created WSDL older than the production WSDL
 			if createdTime < modifiedTime then
 				createIt = true
@@ -64,10 +62,10 @@ class CreateWSDL
 		end
 		
 		if createIt then
-		  res = open(@wsdl).read
-		  File.open('ExactTargetWSDL.xml','w+') { |f|
-		  f.write(res)
-		  }
+			res = open(@wsdl).read
+			File.open(p, 'w+') { |f|
+				f.write(res)
+			}
 		end
 		@status = response.code
 	else
@@ -89,6 +87,10 @@ class ETClient < CreateWSDL
 		if debug then
 			@debug = debug
 		end
+		
+		if !getWSDL then
+			getWSDL = true
+		end
 
 		#stack and endpoints
 		stack = {
@@ -98,32 +100,30 @@ class ETClient < CreateWSDL
 		}				
 
 		#set default endpoint if none was passed
-		@endpoint = (loc ? stack[loc][:endpoint] : stack['indy'][:endpoint])
-		@wsdl = (loc ? stack[loc][:wsdl] : stack['indy'][:wsdl])
+		@endpoint = (loc ? stack[loc][:endpoint] : stack['S1'][:endpoint])
+		@wsdl = (loc ? stack[loc][:wsdl] : stack['S1'][:wsdl])
 		
 		begin
+			#path of current folder
+			path = File.dirname(__FILE__)
 			@auth = Savon::Client.new do |wsdl, http, wsse|
-				
+
 				#make a new WSDL
 				if getWSDL then
-					super()
+					super(path)
 				end
-				
-				wsdl.document = File.read('ExactTargetWSDL.xml')
+				myWSDL = File.read(path + '/ExactTargetWSDL.xml')
+				wsdl.document = myWSDL
 				wsdl.endpoint = @endpoint
-				
 				wsse.credentials('*', '*')
 			end
 			# Prevents Savon from Raising an exception when a SOAP Fault occurs
 			@auth.config.raise_errors = false
 			self.debug = @debug		
-		rescue 
-			raise 'Unable to store local copy of WSDL file.' 
+		rescue
+			raise 
 		end
 		self.refreshToken
-		
-
-		
 		
 		if ((@auth.wsdl.soap_actions.length > 0) and (@status >= 200 and @status <= 400)) then
 			@ready = true
@@ -809,8 +809,3 @@ class ET_ClickEvent < ET_GetSupport
 		@obj = 'ClickEvent'
 	end	
 end
-
-
-
-
-
