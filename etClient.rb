@@ -13,7 +13,7 @@ require 'json'
 #break SOAP reponse object creation into it's own class
 
 class Constructor
-	attr_accessor :status, :code, :message, :properties, :results
+	attr_accessor :status, :code, :message, :properties, :results, :request_id, :moreData
 		
 	def initialize(response = nil)
 		@results = []
@@ -26,11 +26,10 @@ class Constructor
 				@status = true
 			elsif (response.soap_fault?) then
 				@code = response.http.code
-				@message = response.soap_fault.to_s
+				@message = @@body[:fault][:faultstring]
 				@status = false
 			elsif (response.http_error?) then
 				@code = response.http.code
-				@message = response.http_error.to_s
 				@status = false         
 			end
 		end 
@@ -298,7 +297,42 @@ class ET_Put < Constructor
 	end
 end
 
+class ET_Continue < Constructor
+	def initialize(authStub, request_id)
+		@results = []
+		authStub.refreshToken
+	
 
+		obj = {'ContinueRequest' => request_id}
+		
+		response = authStub.auth.call(:retrieve, :message => {
+				'RetrieveRequest' => obj
+				})					
+
+		super(response)
+
+		if @status then
+			if @@body[:retrieve_response_msg][:overall_status] != "OK" && @@body[:retrieve_response_msg][:overall_status] != "MoreDataAvailable" then
+				@status = false	
+				@message = @@body[:retrieve_response_msg][:overall_status]							
+			end 	
+				
+			@moreData = false				
+			if @@body[:retrieve_response_msg][:overall_status] == "MoreDataAvailable" then
+				@moreData = true				 						
+			end 	
+
+			if (!@@body[:retrieve_response_msg][:results].is_a? Hash) && (!@@body[:retrieve_response_msg][:results].nil?) then
+				@results = @results + @@body[:retrieve_response_msg][:results]
+			elsif  (!@@body[:retrieve_response_msg][:results].nil?)
+				@results.push(@@body[:retrieve_response_msg][:results])
+			end				
+			
+			# Store the Last Request ID for use with continue
+			@request_id = @@body[:retrieve_response_msg][:request_id]			
+		end
+	end
+end
 
 class ET_Get < Constructor
 
@@ -338,11 +372,15 @@ class ET_Get < Constructor
 		super(response)
 
 		if @status then
-			if @@body[:retrieve_response_msg][:overall_status] != "OK" then
+			if @@body[:retrieve_response_msg][:overall_status] != "OK" && @@body[:retrieve_response_msg][:overall_status] != "MoreDataAvailable" then
 				@status = false	
-				@message = @@body[:retrieve_response_msg][:overall_status]
-				@results = []								
-			end 		
+				@message = @@body[:retrieve_response_msg][:overall_status]							
+			end 	
+				
+			@moreData = false				
+			if @@body[:retrieve_response_msg][:overall_status] == "MoreDataAvailable" then
+				@moreData = true				 						
+			end 	
 
 			if (!@@body[:retrieve_response_msg][:results].is_a? Hash) && (!@@body[:retrieve_response_msg][:results].nil?) then
 				@results = @results + @@body[:retrieve_response_msg][:results]
@@ -350,19 +388,22 @@ class ET_Get < Constructor
 				@results.push(@@body[:retrieve_response_msg][:results])
 			end				
 			
+			# Store the Last Request ID for use with continue
+			@request_id = @@body[:retrieve_response_msg][:request_id]			
 		end
 	end
 end
 
 class ET_BaseObject
 	attr_accessor :authStub, :props, :filter
-	attr_reader :obj
+	attr_reader :obj, :lastRequestID
 	
 	def initialize
 		@authStub = nil
 		@props = nil
 		@filter = nil
 		@extend = nil
+		@moreData = false
 	end
 end
 
@@ -386,6 +427,14 @@ class ET_CRUDSupport < ET_BaseObject
 		end
 
 		obj = ET_Get.new(@authStub, @obj, @props, @filter)
+		
+		@lastRequestID = obj.request_id
+		
+		return obj
+	end	
+	
+	def continue()
+		obj = ET_Continue.new(@authStub, @lastRequestID)
 	end		
 
 	
