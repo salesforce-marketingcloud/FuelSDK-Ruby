@@ -19,16 +19,16 @@ class Constructor
 		@results = []
 		if !response.nil? then 
 			envelope = response.hash[:envelope]
-			@@body = envelope[:body]
+			@@body = envelope[:body]							
 				
-			if ((!response.soap_fault.present?) or (!response.http_error.present?)) then
+			if ((!response.soap_fault?) or (!response.http_error?)) then
 				@code = response.http.code
 				@status = true
-			elsif (response.soap_fault.present?) then
+			elsif (response.soap_fault?) then
 				@code = response.http.code
 				@message = response.soap_fault.to_s
 				@status = false
-			elsif (response.http_error.present?) then
+			elsif (response.http_error?) then
 				@code = response.http.code
 				@message = response.http_error.to_s
 				@status = false         
@@ -77,7 +77,7 @@ end
 
 class ETClient < CreateWSDL
 	attr_accessor :auth, :ready, :status, :debug
-	attr_reader :authToken, :authTokenExpiration, :internalAuthToken, :wsdlLoc, :clientId, :clientSecret
+	attr_reader :authToken, :authTokenExpiration, :internalAuthToken, :wsdlLoc, :clientId, :clientSecret, :soapHeader, :authObj, :path
 
 	def initialize(loc = nil, getWSDL = nil, debug = nil, iclientId, iclientSecret)
 		@clientId = iclientId
@@ -105,27 +105,21 @@ class ETClient < CreateWSDL
 		
 		begin
 			#path of current folder
-			path = File.dirname(__FILE__)
-			@auth = Savon::Client.new do |wsdl, http, wsse|
-
-				#make a new WSDL
-				if getWSDL then
-					super(path)
-				end
-				myWSDL = File.read(path + '/ExactTargetWSDL.xml')
-				wsdl.document = myWSDL
-				wsdl.endpoint = @endpoint
-				wsse.credentials('*', '*')
+			@path = File.dirname(__FILE__)
+					
+			#make a new WSDL
+			if getWSDL then
+				super(@path)
 			end
-			# Prevents Savon from Raising an exception when a SOAP Fault occurs
-			@auth.config.raise_errors = false
+						
+			self.refreshToken							
 			self.debug = @debug		
 		rescue
 			raise 
 		end
-		self.refreshToken
 		
-		if ((@auth.wsdl.soap_actions.length > 0) and (@status >= 200 and @status <= 400)) then
+		
+		if ((@auth.operations.length > 0) and (@status >= 200 and @status <= 400)) then
 			@ready = true
 		else
 			@ready = false
@@ -133,12 +127,12 @@ class ETClient < CreateWSDL
 	end
 	
 	def debug=(value)
-		@auth.config.log = value	
+		@debug = value
 	end
 	
-	def refreshToken()
+	def refreshToken(force = nil)
 		#If we don't already have a token or the token expires within 5 min(300 seconds), get one
-		if @authToken.nil? || Time.new - 300 > @authTokenExpiration 
+		if (@authToken.nil? || Time.new - 300 > @authTokenExpiration) || force then 
 			begin	
 			uri = URI.parse("https://auth.exacttargetapis.com/v1/requestToken?legacy=1")
 			http = Net::HTTP.new(uri.host, uri.port)
@@ -150,6 +144,19 @@ class ETClient < CreateWSDL
 			@authToken = tokenResponse['accessToken']
 			@authTokenExpiration = Time.new + tokenResponse['expiresIn']
 			@internalAuthToken = tokenResponse['legacyToken']
+			@authObj = {'oAuth' => {'oAuthToken' => @internalAuthToken}}			
+			@authObj[:attributes!] = { 'oAuth' => { 'xmlns' => 'http://exacttarget.com' } }	
+			
+			#path of current folder
+			
+			myWSDL = File.read(@path + '/ExactTargetWSDL.xml')
+			@auth = Savon.client(soap_header: @authObj, 
+				wsdl: myWSDL, 
+				endpoint: @endpoint, 
+				wsse_auth: ["*", "*"],
+				raise_errors: false, 
+				log: @debug
+				) 
 
 			rescue Exception => e
 				raise 'Unable to validate App Keys(ClientID/ClientSecret) provided: ' + e.message  
@@ -160,31 +167,15 @@ end
 
 
 class ET_Describe < Constructor
-	#to-do:
-	#add error handling
-	#trap for soap faults and http errors
-	#pass the code and status back in object
-	#pass back only soap body
-
-
 
 	def initialize(authStub = nil, objType = nil)
 		begin
-			response =  authStub.auth.request :n2, "Describe"  do |soap, wsdl|
-				soap.input = [
-					("n2:" + "DefinitionRequestMsg")
-				]
-				soap.body = {
-					'DescribeRequests' => {
-						'ObjectDefinitionRequest' => {
-							'ObjectType' => objType
+			response = authStub.auth.call(:describe, :message => {
+						'DescribeRequests' => 
+							{'ObjectDefinitionRequest' => 
+								{'ObjectType' => objType}
 						}
-					}
-				}
-				authObj = {'oAuth' => {'oAuthToken' => authStub.internalAuthToken}}			
-				authObj[:attributes!] = { 'oAuth' => { 'xmlns' => 'http://exacttarget.com' } }		
-				soap.header = authObj
-			end
+					})				
 		ensure
 			super(response)
 			
@@ -207,36 +198,16 @@ class ET_Post < Constructor
 
 	def initialize(authStub, objType, props = nil)
 	@results = []
+	
+	
 	begin
 		authStub.refreshToken
-		if props.is_a? Array then 
-			obj = {
-				'Objects' => [],
-				:attributes! => { 'Objects' => { 'xsi:type' => ('wsdl:' + objType) } }
-			}
-			props.each{ |p|
-				obj['Objects'] << p 
-			 }
-		else
-			obj = {
-				'Objects' => props,
-				:attributes! => { 'Objects' => { 'xsi:type' => ('wsdl:' + objType) } }
-			}
-		end
-		
+		obj = {
+			'Objects' => props,
+			:attributes! => { 'Objects' => { 'xsi:type' => ('tns:' + objType) } }			
+		}
 
-		
-		response =  authStub.auth.request 'Create' 	do |soap, wsdl|
-			soap.input = [
-			 ( 'wsdl:' + 'CreateRequest')
-			]
-		
-			soap.body = obj
-			authObj = {'oAuth' => {'oAuthToken' => authStub.internalAuthToken}}			
-			authObj[:attributes!] = { 'oAuth' => { 'xmlns' => 'http://exacttarget.com' } }		
-			soap.header = authObj
-
-			end
+		response = authStub.auth.call(:create, :message => obj)			
 			
 	ensure 
 
@@ -266,22 +237,13 @@ class ET_Delete < Constructor
 	def initialize(authStub, objType, props = nil)
 	@results = []
 	begin
+		authStub.refreshToken
 		obj = {
 			'Objects' => props,
-			:attributes! => { 'Objects' => { 'xsi:type' => ('wsdl:' + objType) } }
+			:attributes! => { 'Objects' => { 'xsi:type' => ('tns:' + objType) } }
 		}
 		
-		response =  authStub.auth.request 'Delete' 	do |soap, wsdl|
-			soap.input = [
-			 ( 'wsdl:' + 'DeleteRequest')
-			]
-			
-			soap.body = obj
-			authObj = {'oAuth' => {'oAuthToken' => authStub.internalAuthToken}}			
-			authObj[:attributes!] = { 'oAuth' => { 'xmlns' => 'http://exacttarget.com' } }		
-			soap.header = authObj
-				
-			end
+		response = authStub.auth.call(:delete, :message => obj)		
 	ensure 
 		super(response)				
 			if @status then
@@ -297,8 +259,6 @@ end
 
 class ET_Put < Constructor
 
-
-
 	def initialize(authStub, objType, props = nil)
 	@results = []
 	begin
@@ -306,7 +266,7 @@ class ET_Put < Constructor
 		if props.is_a? Array then 
 			obj = {
 				'Objects' => [],
-				:attributes! => { 'Objects' => { 'xsi:type' => ('wsdl:' + objType) } }
+				:attributes! => { 'Objects' => { 'xsi:type' => ('tns:' + objType) } }
 			}
 			props.each{ |p|
 				obj['Objects'] << p 
@@ -314,22 +274,11 @@ class ET_Put < Constructor
 		else
 			obj = {
 				'Objects' => props,
-				:attributes! => { 'Objects' => { 'xsi:type' => ('wsdl:' + objType) } }
+				:attributes! => { 'Objects' => { 'xsi:type' => ('tns:' + objType) } }
 			}
 		end
 		
-		
-		response =  authStub.auth.request 'Update' 	do |soap, wsdl|
-			soap.input = [
-			 ( 'wsdl:' + 'UpdateRequest')
-			]
-			
-			soap.body = obj
-			authObj = {'oAuth' => {'oAuthToken' => authStub.internalAuthToken}}			
-			authObj[:attributes!] = { 'oAuth' => { 'xmlns' => 'http://exacttarget.com' } }		
-			soap.header = authObj
-
-			end
+		response = authStub.auth.call(:update, :message => obj)	
 			
 	ensure 
 
@@ -356,6 +305,7 @@ class ET_Get < Constructor
 
 	def initialize(authStub, objType, props = nil, filter = nil)
 		@results = []
+		authStub.refreshToken
 		if !props then
 			resp = ET_Describe.new(authStub, objType)
 
@@ -378,19 +328,12 @@ class ET_Get < Constructor
 
 		if filter then
 			obj['Filter'] = filter
-			obj[:attributes!] = { 'Filter' => { 'xsi:type' => 'wsdl:SimpleFilterPart' } }
+			obj[:attributes!] = { 'Filter' => { 'xsi:type' => 'tns:SimpleFilterPart' } }
 		end
-		response =  authStub.auth.request "Retrieve"  do |soap, wsdl|
-			soap.input = [
-				('wsdl:' + 'RetrieveRequestMsg')
-			]
-			soap.body = {
+		
+		response = authStub.auth.call(:retrieve, :message => {
 				'RetrieveRequest' => obj
-			}
-			authObj = {'oAuth' => {'oAuthToken' => authStub.internalAuthToken}}			
-			authObj[:attributes!] = { 'oAuth' => { 'xmlns' => 'http://exacttarget.com' } }		
-			soap.header = authObj			
-		end	
+				})					
 
 		super(response)
 
