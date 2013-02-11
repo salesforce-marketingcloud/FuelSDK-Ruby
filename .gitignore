@@ -18,3 +18,4 @@ _yardoc
 doc/
 sample.rb
 ExactTargetWSDL.xml
+config.yaml
