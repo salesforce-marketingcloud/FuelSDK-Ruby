@@ -3,14 +3,11 @@ require 'open-uri'
 require 'savon'
 require 'date'
 require 'json'
+require 'yaml'
 
 #to-do:
 #work on digest authentication - not supported will use OAuth when it's officially GA
 #add support for stack detection
-#support for downloading of and creation of a local WSDL when the local copy is over X days old
-
-#done:
-#break SOAP reponse object creation into it's own class
 
 class Constructor
 	attr_accessor :status, :code, :message, :properties, :results, :request_id, :moreData
@@ -76,12 +73,25 @@ end
 
 class ETClient < CreateWSDL
 	attr_accessor :auth, :ready, :status, :debug
-	attr_reader :authToken, :authTokenExpiration, :internalAuthToken, :wsdlLoc, :clientId, :clientSecret, :soapHeader, :authObj, :path
+	attr_reader :authToken, :authTokenExpiration, :internalAuthToken, :wsdlLoc, :clientId, :clientSecret, :soapHeader, :authObj, :path, :appsignature, :stackID, :refreshKey 
 
-	def initialize(loc = nil, getWSDL = nil, debug = nil, iclientId, iclientSecret)
-		@clientId = iclientId
-		@clientSecret = iclientSecret
+	def initialize(loc = nil, getWSDL = nil, debug = nil, iclientId = nil, iclientSecret = nil)	
+		config = YAML.load_file("config.yaml")		
+		@stackID = loc		
+		if iclientId then
+			@clientId = iclientId			
+		else
+			@clientId = config["clientid"]
+		end 
+		
+		if iclientSecret then
+			@clientSecret = iclientSecret			
+		else
+			@clientSecret = config["clientsecret"]
+		end 
+		
 		@debug = false
+		@appsignature = config["appsignature"]		
 
 		if debug then
 			@debug = debug
@@ -90,29 +100,38 @@ class ETClient < CreateWSDL
 		if !getWSDL then
 			getWSDL = true
 		end
-
-		#stack and endpoints
-		stack = {
-			'S1' => {:wsdl => 'https://webservice.exacttarget.com/ETFramework.wsdl',:endpoint => 'https://webservice.exacttarget.com/Service.asmx'},
-			'S4' => {:wsdl => 'https://webservice.s4.exacttarget.com/ETFramework.wsdl',:endpoint => 'https://webservice.s4.exacttarget.com/Service.asmx'},
-			'S6' => {:wsdl => 'https://webservice.s6.exacttarget.com/ETFramework.wsdl',:endpoint => 'https://webservice.s6.exacttarget.com/Service.asmx'}
-		}				
-
-		#set default endpoint if none was passed
-		@endpoint = (loc ? stack[loc][:endpoint] : stack['S1'][:endpoint])
-		@wsdl = (loc ? stack[loc][:wsdl] : stack['S1'][:wsdl])
 		
 		begin
+		
+			# PARSE JWT HERE
+
+			if defined? params then
+				p 'Print Params'
+				p params
+			end 
+		
 			#path of current folder
 			@path = File.dirname(__FILE__)
-					
+			
+			stack = {
+				'S1' => {:wsdl => 'https://webservice.exacttarget.com/ETFramework.wsdl',:endpoint => 'https://webservice.exacttarget.com/Service.asmx'},
+				'S4' => {:wsdl => 'https://webservice.s4.exacttarget.com/ETFramework.wsdl',:endpoint => 'https://webservice.s4.exacttarget.com/Service.asmx'},
+				'S6' => {:wsdl => 'https://webservice.s6.exacttarget.com/ETFramework.wsdl',:endpoint => 'https://webservice.s6.exacttarget.com/Service.asmx'}
+			}				
+
+			#set default endpoint if none was passed
+			@endpoint = (loc ? stack[@stackID][:endpoint] : stack['S1'][:endpoint])
+			@wsdl = (loc ? stack[@stackID][:wsdl] : stack['S1'][:wsdl])	
+										
 			#make a new WSDL
 			if getWSDL then
 				super(@path)
 			end
+			
+			self.refreshToken									
 						
-			self.refreshToken							
-			self.debug = @debug		
+			self.debug = @debug					
+			
 		rescue
 			raise 
 		end
@@ -131,22 +150,30 @@ class ETClient < CreateWSDL
 	
 	def refreshToken(force = nil)
 		#If we don't already have a token or the token expires within 5 min(300 seconds), get one
-		if (@authToken.nil? || Time.new - 300 > @authTokenExpiration) || force then 
-			begin	
+		if ((@authToken.nil? || Time.new - 300 > @authTokenExpiration) || force) then 
+			begin
 			uri = URI.parse("https://auth.exacttargetapis.com/v1/requestToken?legacy=1")
 			http = Net::HTTP.new(uri.host, uri.port)
 			http.use_ssl = true
 			request = Net::HTTP::Post.new(uri.request_uri)
-			request.body = '{"clientId": "' + @clientId + '","clientSecret": "' + @clientSecret + '"}'
+			jsonPayload = {'clientId' => @clientId, 'clientSecret' => @clientSecret}
+			
+			#Pass in the refreshKey if we have it 
+			if @refreshKey then
+				jsonPayload['refreshToken'] = @refreshKey
+			end 			
+			request.body = jsonPayload.to_json			
 			request.add_field "Content-Type", "application/json"
 			tokenResponse = JSON.parse(http.request(request).body)
 			@authToken = tokenResponse['accessToken']
 			@authTokenExpiration = Time.new + tokenResponse['expiresIn']
 			@internalAuthToken = tokenResponse['legacyToken']
-			@authObj = {'oAuth' => {'oAuthToken' => @internalAuthToken}}			
-			@authObj[:attributes!] = { 'oAuth' => { 'xmlns' => 'http://exacttarget.com' } }	
+			if tokenResponse.has_key?("refreshToken") then
+				@refreshKey = tokenResponse['refreshToken']
+			end
 			
-			#path of current folder
+			@authObj = {'oAuth' => {'oAuthToken' => @internalAuthToken}}			
+			@authObj[:attributes!] = { 'oAuth' => { 'xmlns' => 'http://exacttarget.com' }}						
 			
 			myWSDL = File.read(@path + '/ExactTargetWSDL.xml')
 			@auth = Savon.client(soap_header: @authObj, 
@@ -154,8 +181,7 @@ class ETClient < CreateWSDL
 				endpoint: @endpoint, 
 				wsse_auth: ["*", "*"],
 				raise_errors: false, 
-				log: @debug
-				) 
+				log: @debug) 
 
 			rescue Exception => e
 				raise 'Unable to validate App Keys(ClientID/ClientSecret) provided: ' + e.message  
@@ -166,9 +192,9 @@ end
 
 
 class ET_Describe < Constructor
-
 	def initialize(authStub = nil, objType = nil)
 		begin
+			authStub.refreshToken
 			response = authStub.auth.call(:describe, :message => {
 						'DescribeRequests' => 
 							{'ObjectDefinitionRequest' => 
@@ -194,11 +220,9 @@ class ET_Describe < Constructor
 end
 
 class ET_Post < Constructor
-
 	def initialize(authStub, objType, props = nil)
 	@results = []
-	
-	
+		
 	begin
 		authStub.refreshToken
 		obj = {
@@ -209,7 +233,6 @@ class ET_Post < Constructor
 		response = authStub.auth.call(:create, :message => obj)			
 			
 	ensure 
-
 		super(response)				
 			if @status then
 				if @@body[:create_response][:overall_status] != "OK"				
@@ -223,10 +246,7 @@ class ET_Post < Constructor
 						@results.push(@@body[:create_response][:results])
 					end
 				end				
-			end
-			
-
-
+			end			
 		end
 	end
 end
@@ -246,6 +266,9 @@ class ET_Delete < Constructor
 	ensure 
 		super(response)				
 			if @status then
+				if @@body[:delete_response][:overall_status] != "OK"				
+					@status = false
+				end 			
 				if !@@body[:delete_response][:results].is_a? Hash then
 					@results = @results + @@body[:delete_response][:results]
 				else 
@@ -257,7 +280,6 @@ class ET_Delete < Constructor
 end
 
 class ET_Put < Constructor
-
 	def initialize(authStub, objType, props = nil)
 	@results = []
 	begin
@@ -280,7 +302,6 @@ class ET_Put < Constructor
 		response = authStub.auth.call(:update, :message => obj)	
 			
 	ensure 
-
 		super(response)				
 			if @status then
 				if @@body[:update_response][:overall_status] != "OK"				
@@ -292,7 +313,6 @@ class ET_Put < Constructor
 					@results.push(@@body[:update_response][:results])
 				end						
 			end
-
 		end
 	end
 end
@@ -300,14 +320,9 @@ end
 class ET_Continue < Constructor
 	def initialize(authStub, request_id)
 		@results = []
-		authStub.refreshToken
-	
-
-		obj = {'ContinueRequest' => request_id}
-		
-		response = authStub.auth.call(:retrieve, :message => {
-				'RetrieveRequest' => obj
-				})					
+		authStub.refreshToken	
+		obj = {'ContinueRequest' => request_id}		
+		response = authStub.auth.call(:retrieve, :message => {'RetrieveRequest' => obj})					
 
 		super(response)
 
@@ -335,14 +350,11 @@ class ET_Continue < Constructor
 end
 
 class ET_Get < Constructor
-
-
 	def initialize(authStub, objType, props = nil, filter = nil)
-		@results = []
+		@results = []			
 		authStub.refreshToken
 		if !props then
 			resp = ET_Describe.new(authStub, objType)
-
 			if resp then
 				props = []
 				resp.results.map { |p|
@@ -436,7 +448,6 @@ class ET_CRUDSupport < ET_BaseObject
 	def continue()
 		obj = ET_Continue.new(@authStub, @lastRequestID)
 	end		
-
 	
 	def post()			
 		if props and props.is_a? Hash then
@@ -580,14 +591,15 @@ class ET_DataExtension < ET_BaseObject
 		else 
 			obj.status = false
 			obj.message = "Invalid type specified for DataExtension Get"
-		end 
-		
-		
+		end 			
 		obj
+	end	
+	
+	def continue()
+		obj = ET_Continue.new(@authStub, @lastRequestID)
 	end			
 	
 	def post()
-				
 		createDE = false
 		if @columns && @props['CustomerKey'] != @keyCreated then 
 			createDE = true
@@ -683,8 +695,7 @@ class ET_DataExtension < ET_BaseObject
 			#Since we only create rows, just use the results from that
 				obj = rowsobj
 			end 			
-		end
-		
+		end		
 		obj	
 	end		
 
@@ -695,9 +706,7 @@ class ET_DataExtension < ET_BaseObject
 			createDE = true
 		end 
 			
-		if createDE then
-			#Create the data extension
-			
+		if createDE then		
 			@props['Fields'] = {}
 			@props['Fields']['Field'] = []
 			@columns.each { |key|
@@ -743,8 +752,6 @@ class ET_DataExtension < ET_BaseObject
 
 end
 
-##TODO: Add DataExtensionRow
-
 class ET_List < ET_CRUDSupport
 	def initialize
 		super
@@ -762,7 +769,6 @@ class ET_TriggeredSend < ET_CRUDSupport
 	
 	def send 	
 		@tscall = {"TriggeredSendDefinition" => @props, "Subscribers" => @subscribers}
-			
 		obj = ET_Post.new(@authStub, "TriggeredSend", @tscall)
 	end
 end
