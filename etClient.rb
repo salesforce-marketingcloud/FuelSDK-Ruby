@@ -4,6 +4,7 @@ require 'savon'
 require 'date'
 require 'json'
 require 'yaml'
+require 'jwt'
 
 #to-do:
 #work on digest authentication - not supported will use OAuth when it's officially GA
@@ -75,23 +76,14 @@ class ETClient < CreateWSDL
 	attr_accessor :auth, :ready, :status, :debug
 	attr_reader :authToken, :authTokenExpiration, :internalAuthToken, :wsdlLoc, :clientId, :clientSecret, :soapHeader, :authObj, :path, :appsignature, :stackID, :refreshKey 
 
-	def initialize(loc = nil, getWSDL = nil, debug = nil, iclientId = nil, iclientSecret = nil)	
+	def initialize(loc = nil, getWSDL = nil, debug = nil, params = nil)	
 		config = YAML.load_file("config.yaml")		
 		@stackID = loc		
-		if iclientId then
-			@clientId = iclientId			
-		else
-			@clientId = config["clientid"]
-		end 
-		
-		if iclientSecret then
-			@clientSecret = iclientSecret			
-		else
-			@clientSecret = config["clientsecret"]
-		end 
-		
-		@debug = false
+		@clientId = config["clientid"]
+		@clientSecret = config["clientsecret"]			
 		@appsignature = config["appsignature"]		
+		@wsdl = config["defaultwsdl"]
+		@debug = false
 
 		if debug then
 			@debug = debug
@@ -102,26 +94,26 @@ class ETClient < CreateWSDL
 		end
 		
 		begin
-		
-			# PARSE JWT HERE
-
-			if defined? params then
-				p 'Print Params'
-				p params
-			end 
-		
 			#path of current folder
 			@path = File.dirname(__FILE__)
 			
-			stack = {
-				'S1' => {:wsdl => 'https://webservice.exacttarget.com/ETFramework.wsdl',:endpoint => 'https://webservice.exacttarget.com/Service.asmx'},
-				'S4' => {:wsdl => 'https://webservice.s4.exacttarget.com/ETFramework.wsdl',:endpoint => 'https://webservice.s4.exacttarget.com/Service.asmx'},
-				'S6' => {:wsdl => 'https://webservice.s6.exacttarget.com/ETFramework.wsdl',:endpoint => 'https://webservice.s6.exacttarget.com/Service.asmx'}
-			}				
-
-			#set default endpoint if none was passed
-			@endpoint = (loc ? stack[@stackID][:endpoint] : stack['S1'][:endpoint])
-			@wsdl = (loc ? stack[@stackID][:wsdl] : stack['S1'][:wsdl])	
+			if params && params.has_key?("jwt") then
+				p 'Lets use the JWT'
+				jwt = JWT.decode(params["jwt"], nil, false);
+				p jwt
+				@authToken = jwt['request']['user']['oauthToken']
+				@authTokenExpiration = Time.new + jwt['request']['user']['expiresIn']
+				@internalAuthToken = jwt['request']['user']['internalOauthToken']
+				@refreshKey = jwt['request']['user']['refreshToken']
+				p "authToken: #{@authToken} authTokenExpiration: #{@authTokenExpiration} internalAuthToken: #{@internalAuthToken} refreshKey: #{@refreshKey} "
+				
+				@authObj = {'oAuth' => {'oAuthToken' => @internalAuthToken}}			
+				@authObj[:attributes!] = { 'oAuth' => { 'xmlns' => 'http://exacttarget.com' }}						
+				
+				myWSDL = File.read(@path + '/ExactTargetWSDL.xml')
+				@auth = Savon.client(soap_header: @authObj, wsdl: myWSDL, endpoint: @endpoint, wsse_auth: ["*", "*"],raise_errors: false, log: @debug) 				
+				
+			end 														
 										
 			#make a new WSDL
 			if getWSDL then
@@ -129,13 +121,13 @@ class ETClient < CreateWSDL
 			end
 			
 			self.refreshToken									
+			self.determineStack			
 						
 			self.debug = @debug					
 			
 		rescue
 			raise 
-		end
-		
+		end		
 		
 		if ((@auth.operations.length > 0) and (@status >= 200 and @status <= 400)) then
 			@ready = true
@@ -147,6 +139,7 @@ class ETClient < CreateWSDL
 	def debug=(value)
 		@debug = value
 	end
+	
 	
 	def refreshToken(force = nil)
 		#If we don't already have a token or the token expires within 5 min(300 seconds), get one
@@ -161,7 +154,8 @@ class ETClient < CreateWSDL
 			#Pass in the refreshKey if we have it 
 			if @refreshKey then
 				jsonPayload['refreshToken'] = @refreshKey
-			end 			
+			end 
+			
 			request.body = jsonPayload.to_json			
 			request.add_field "Content-Type", "application/json"
 			tokenResponse = JSON.parse(http.request(request).body)
@@ -188,6 +182,23 @@ class ETClient < CreateWSDL
 			end
 		end 
 	end
+	
+	def determineStack()		
+		begin
+			uri = URI.parse("https://www.exacttargetapis.com/platform/v1/endpoints/soap?access_token=" + @authToken)
+			http = Net::HTTP.new(uri.host, uri.port)
+
+			http.use_ssl = true
+			
+			request = Net::HTTP::Get.new(uri.request_uri)		
+					
+			contextResponse = JSON.parse(http.request(request).body)
+			@endpoint = contextResponse['url']
+
+		rescue Exception => e
+			raise 'Unable to determine stack using /platform/v1/tokenContext: ' + e.message  
+		end
+	end	
 end
 
 
