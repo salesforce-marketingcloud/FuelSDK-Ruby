@@ -93,9 +93,14 @@ class ETClient < CreateWSDL
 			getWSDL = true
 		end
 		
-		begin
+		begin		
 			#path of current folder
 			@path = File.dirname(__FILE__)
+			
+			#make a new WSDL
+			if getWSDL then
+				super(@path)
+			end				
 			
 			if params && params.has_key?("jwt") then
 				p 'Lets use the JWT'
@@ -107,22 +112,20 @@ class ETClient < CreateWSDL
 				@refreshKey = jwt['request']['user']['refreshToken']
 				p "authToken: #{@authToken} authTokenExpiration: #{@authTokenExpiration} internalAuthToken: #{@internalAuthToken} refreshKey: #{@refreshKey} "
 				
+				self.determineStack
+				
 				@authObj = {'oAuth' => {'oAuthToken' => @internalAuthToken}}			
 				@authObj[:attributes!] = { 'oAuth' => { 'xmlns' => 'http://exacttarget.com' }}						
 				
 				myWSDL = File.read(@path + '/ExactTargetWSDL.xml')
 				@auth = Savon.client(soap_header: @authObj, wsdl: myWSDL, endpoint: @endpoint, wsse_auth: ["*", "*"],raise_errors: false, log: @debug) 				
-				
+			else 
+				p 'NO JWT'
+				self.refreshToken	
 			end 														
 										
-			#make a new WSDL
-			if getWSDL then
-				super(@path)
-			end
-			
-			self.refreshToken									
-			self.determineStack			
-						
+										
+												
 			self.debug = @debug					
 			
 		rescue
@@ -166,6 +169,8 @@ class ETClient < CreateWSDL
 				@refreshKey = tokenResponse['refreshToken']
 			end
 			
+			self.determineStack
+			
 			@authObj = {'oAuth' => {'oAuthToken' => @internalAuthToken}}			
 			@authObj[:attributes!] = { 'oAuth' => { 'xmlns' => 'http://exacttarget.com' }}						
 			
@@ -194,6 +199,8 @@ class ETClient < CreateWSDL
 					
 			contextResponse = JSON.parse(http.request(request).body)
 			@endpoint = contextResponse['url']
+			
+			p @endpoint
 
 		rescue Exception => e
 			raise 'Unable to determine stack using /platform/v1/tokenContext: ' + e.message  
