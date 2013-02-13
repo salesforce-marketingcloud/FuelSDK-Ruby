@@ -76,9 +76,8 @@ class ETClient < CreateWSDL
 	attr_accessor :auth, :ready, :status, :debug
 	attr_reader :authToken, :authTokenExpiration, :internalAuthToken, :wsdlLoc, :clientId, :clientSecret, :soapHeader, :authObj, :path, :appsignature, :stackID, :refreshKey 
 
-	def initialize(loc = nil, getWSDL = nil, debug = nil, params = nil)	
-		config = YAML.load_file("config.yaml")		
-		@stackID = loc		
+	def initialize(getWSDL = nil, debug = nil, params = nil)	
+		config = YAML.load_file("config.yaml")			
 		@clientId = config["clientid"]
 		@clientSecret = config["clientsecret"]			
 		@appsignature = config["appsignature"]		
