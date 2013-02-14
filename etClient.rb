@@ -101,16 +101,13 @@ class ETClient < CreateWSDL
 				super(@path)
 			end				
 			
-			if params && params.has_key?("jwt") then
-				p 'Lets use the JWT'
+			if params && params.has_key?("jwt") then			
 				jwt = JWT.decode(params["jwt"], nil, false);
-				p jwt
 				@authToken = jwt['request']['user']['oauthToken']
 				@authTokenExpiration = Time.new + jwt['request']['user']['expiresIn']
 				@internalAuthToken = jwt['request']['user']['internalOauthToken']
 				@refreshKey = jwt['request']['user']['refreshToken']
-				p "authToken: #{@authToken} authTokenExpiration: #{@authTokenExpiration} internalAuthToken: #{@internalAuthToken} refreshKey: #{@refreshKey} "
-				
+
 				self.determineStack
 				
 				@authObj = {'oAuth' => {'oAuthToken' => @internalAuthToken}}			
@@ -118,12 +115,9 @@ class ETClient < CreateWSDL
 				
 				myWSDL = File.read(@path + '/ExactTargetWSDL.xml')
 				@auth = Savon.client(soap_header: @authObj, wsdl: myWSDL, endpoint: @endpoint, wsse_auth: ["*", "*"],raise_errors: false, log: @debug) 				
-			else 
-				p 'NO JWT'
+			else 				
 				self.refreshToken	
-			end 														
-										
-										
+			end 																				
 												
 			self.debug = @debug					
 			
@@ -160,7 +154,7 @@ class ETClient < CreateWSDL
 			
 			request.body = jsonPayload.to_json			
 			request.add_field "Content-Type", "application/json"
-			tokenResponse = JSON.parse(http.request(request).body)
+			tokenResponse = JSON.parse(http.request(request).body)	
 			@authToken = tokenResponse['accessToken']
 			@authTokenExpiration = Time.new + tokenResponse['expiresIn']
 			@internalAuthToken = tokenResponse['legacyToken']
@@ -198,8 +192,6 @@ class ETClient < CreateWSDL
 					
 			contextResponse = JSON.parse(http.request(request).body)
 			@endpoint = contextResponse['url']
-			
-			p @endpoint
 
 		rescue Exception => e
 			raise 'Unable to determine stack using /platform/v1/tokenContext: ' + e.message  
@@ -296,7 +288,7 @@ class ET_Delete < Constructor
 	end
 end
 
-class ET_Put < Constructor
+class ET_Patch < Constructor
 	def initialize(authStub, objType, props = nil)
 	@results = []
 	begin
@@ -480,12 +472,12 @@ class ET_CRUDSupport < ET_BaseObject
 		obj = ET_Post.new(@authStub, @obj, @props)
 	end		
 	
-	def put()
+	def patch()
 		if props and props.is_a? Hash then
 			@props = props
 		end
 		
-		obj = ET_Put.new(@authStub, @obj, @props)
+		obj = ET_Patch.new(@authStub, @obj, @props)
 	end
 
 	def delete()
@@ -538,6 +530,168 @@ class ET_Subscriber < ET_CRUDSupport
 	end	
 end
 
+
+class ET_DataExtension < ET_CRUDSupport
+	attr_accessor :columns
+	
+	def initialize
+		super
+		@obj = 'DataExtension'
+	end	
+	
+	def post 
+		@props['Fields'] = {}
+		@props['Fields']['Field'] = []
+		@columns.each { |key|
+			@props['Fields']['Field'].push(key)
+		}
+		obj = super		
+		@props.delete("Fields") 		
+		return obj			
+	end 
+
+	def patch 
+		@props['Fields'] = {}
+		@props['Fields']['Field'] = []
+		@columns.each { |key|
+			@props['Fields']['Field'].push(key)
+		}
+		obj = super		
+		@props.delete("Fields") 		
+		return obj			
+	end 	
+	
+	class Column < ET_GetSupport	
+		def initialize
+			super
+			@obj = 'DataExtensionField'
+		end	
+	end
+	
+	class Row < ET_CRUDSupport
+		attr_accessor :dataExtension
+		attr_reader :DEName, :DECustomerKey
+				
+		def initialize()								
+			super
+			@obj = "DataExtensionObject"
+		end	
+		
+		def get
+			self.getName
+			if props and props.is_a? Array then
+				@props = props
+			end
+			
+			if @props and @props.is_a? Hash then
+				@props = @props.keys
+			end
+
+			if filter and filter.is_a? Hash then
+				@filter = filter
+			end
+			
+			obj = ET_Get.new(@authStub, "DataExtensionObject[#{@DEName}]", @props, @filter)			
+		end
+		
+		def post 
+			self.getCustomerKey								
+			currentFields = []
+			currentProp = {}
+			
+			@props.each { |key,value|
+				currentFields.push({"Name" => key, "Value" => value})
+			}
+			currentProp['CustomerKey'] = @DECustomerKey
+			currentProp['Properties'] = {}
+			currentProp['Properties']['Property'] = currentFields						
+			
+			
+			obj = ET_Post.new(@authStub, @obj, currentProp)	
+		end 
+		
+		def patch 
+			self.getCustomerKey								
+			currentFields = []
+			currentProp = {}
+			
+			@props.each { |key,value|
+				currentFields.push({"Name" => key, "Value" => value})
+			}
+			currentProp['CustomerKey'] = @DECustomerKey
+			currentProp['Properties'] = {}
+			currentProp['Properties']['Property'] = currentFields									
+			
+			obj = ET_Patch.new(@authStub, @obj, currentProp)	
+		end 
+		def delete 
+			self.getCustomerKey								
+			currentFields = []
+			currentProp = {}
+			
+			@props.each { |key,value|
+				currentFields.push({"Name" => key, "Value" => value})
+			}
+			currentProp['CustomerKey'] = @DECustomerKey
+			currentProp['Keys'] = {}
+			currentProp['Keys']['Key'] = currentFields									
+			
+			obj = ET_Delete.new(@authStub, @obj, currentProp)	
+		end 		
+		
+		protected
+		def getCustomerKey
+			if !@dataExtension.nil? then 
+				if (@dataExtension.props.has_key?("CustomerKey")) && @DECustomerKey.nil? then 
+					@DECustomerKey = @dataExtension.props['CustomerKey']
+				elsif !@dataExtension.props.has_key?("Name") then 	
+					raise 'Unable to process DataExtension::Row request due to CustomerKey or Name not being defined on dataExtension'							
+				else 
+					@DEName = @dataExtension.props['Name']		
+					de = ET_DataExtension.new
+					de.authStub = @authStub
+					de.props = ["Name","CustomerKey"]
+					de.filter = {'Property' => 'CustomerKey','SimpleOperator' => 'equals','Value' => @DEName}
+					getResponse = de.get
+					if getResponse.status && (getResponse.results.length == 1) then 
+						@DECustomerKey = getResponse.results[0][:customer_key]
+					else 
+						raise 'Unable to process DataExtension::Row request due to unable to find DataExtension based on Name'
+					end 	
+				end
+			else 
+				raise 'Unable to process DataExtension::Row request due dataExtension property not defined'
+			end 
+		end
+				
+		def getName
+			if !@dataExtension.nil? then 															
+				if (@dataExtension.props.has_key?("Name")) && @DEName.nil? then 
+					@DEName = @dataExtension.props['Name']		
+				elsif !@dataExtension.props.has_key?("CustomerKey") then 	
+					raise 'Unable to process DataExtension::Row request due to CustomerKey or Name not being defined on dataExtension'
+				else 
+					@DECustomerKey = @dataExtension.props['CustomerKey']		
+					de = ET_DataExtension.new
+					de.authStub = @authStub
+					de.props = ["Name","CustomerKey"]
+					de.filter = {'Property' => 'CustomerKey','SimpleOperator' => 'equals','Value' => @DECustomerKey}
+					getResponse = de.get
+					if getResponse.status && (getResponse.results.length == 1) then 
+						@DEName = getResponse.results[0][:name]
+					else 
+						raise 'Unable to process DataExtension::Row request due to unable to find DataExtension based on CustomerKey'
+					end 	
+				end
+			else 
+				raise 'Unable to process DataExtension::Row request due dataExtension property not defined'
+			end 
+		end						
+		
+	end
+end
+
+=begin 
 class ET_DataExtension < ET_BaseObject	
 	attr_accessor :rows, :columns, :keyCreated
 	
@@ -667,7 +821,7 @@ class ET_DataExtension < ET_BaseObject
 		obj	
 	end		
 	
-	def put()				
+	def patch()				
 		createDE = false
 		if @columns && @props['CustomerKey'] != @keyCreated then 
 			createDE = true
@@ -768,6 +922,7 @@ class ET_DataExtension < ET_BaseObject
 	end	
 
 end
+=end
 
 class ET_List < ET_CRUDSupport
 	def initialize
