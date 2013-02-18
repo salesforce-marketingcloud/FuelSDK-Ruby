@@ -11,7 +11,7 @@ require 'jwt'
 #add support for stack detection
 
 class Constructor
-	attr_accessor :status, :code, :message, :properties, :results, :request_id, :moreData
+	attr_accessor :status, :code, :message, :properties, :results, :request_id, :moreResults
 		
 	def initialize(response = nil)
 		@results = []
@@ -341,9 +341,9 @@ class ET_Continue < Constructor
 				@message = @@body[:retrieve_response_msg][:overall_status]							
 			end 	
 				
-			@moreData = false				
+			@moreResults = false				
 			if @@body[:retrieve_response_msg][:overall_status] == "MoreDataAvailable" then
-				@moreData = true				 						
+				@moreResults = true				 						
 			end 	
 
 			if (!@@body[:retrieve_response_msg][:results].is_a? Hash) && (!@@body[:retrieve_response_msg][:results].nil?) then
@@ -398,9 +398,9 @@ class ET_Get < Constructor
 				@message = @@body[:retrieve_response_msg][:overall_status]							
 			end 	
 				
-			@moreData = false				
+			@moreResults = false				
 			if @@body[:retrieve_response_msg][:overall_status] == "MoreDataAvailable" then
-				@moreData = true				 						
+				@moreResults = true				 						
 			end 	
 
 			if (!@@body[:retrieve_response_msg][:results].is_a? Hash) && (!@@body[:retrieve_response_msg][:results].nil?) then
@@ -423,12 +423,11 @@ class ET_BaseObject
 		@authStub = nil
 		@props = nil
 		@filter = nil
-		@extend = nil
-		@moreData = false
+		@lastRequestID = nil
 	end
 end
 
-class ET_CRUDSupport < ET_BaseObject
+class ET_GetSupport < ET_BaseObject
 	
 	def initialize
 		super
@@ -452,12 +451,23 @@ class ET_CRUDSupport < ET_BaseObject
 		@lastRequestID = obj.request_id
 		
 		return obj
-	end	
-	
-	def continue()
-		obj = ET_Continue.new(@authStub, @lastRequestID)
 	end		
 	
+	def info()
+		obj = ET_Describe.new(@authStub, @obj)
+	end	
+	
+	def getMoreResults()
+		obj = ET_Continue.new(@authStub, @lastRequestID)
+	end		
+end
+
+class ET_CRUDSupport < ET_GetSupport
+	
+	def initialize
+		super
+	end
+		
 	def post()			
 		if props and props.is_a? Hash then
 			@props = props
@@ -487,41 +497,7 @@ class ET_CRUDSupport < ET_BaseObject
 		
 		obj = ET_Delete.new(@authStub, @obj, @props)
 	end	
-	
-	def info()
-		obj = ET_Describe.new(@authStub, @obj)
-	end	
 end
-
-
-
-class ET_GetSupport < ET_BaseObject
-	
-	def initialize
-		super
-	end
-	
-	def get(props = nil, filter = nil)
-		if props and props.is_a? Array then
-			@props = props
-		end
-		
-		if @props and @props.is_a? Hash then
-			@props = @props.keys
-		end
-
-		if filter and filter.is_a? Hash then
-			@filter = filter
-		end
-		
-		obj = ET_Get.new(@authStub, @obj, @props, @filter)
-	end			
-	
-	def info()
-		obj = ET_Describe.new(@authStub, @obj)
-	end	
-end
-
 
 class ET_Subscriber < ET_CRUDSupport	
 	def initialize
@@ -569,8 +545,7 @@ class ET_DataExtension < ET_CRUDSupport
 	end
 	
 	class Row < ET_CRUDSupport
-		attr_accessor :dataExtension
-		attr_reader :DEName, :DECustomerKey
+		attr_accessor :dataExtensionName, :dataExtensionCustomerKey		
 				
 		def initialize()								
 			super
@@ -578,7 +553,7 @@ class ET_DataExtension < ET_CRUDSupport
 		end	
 		
 		def get
-			self.getName
+			getName
 			if props and props.is_a? Array then
 				@props = props
 			end
@@ -591,338 +566,95 @@ class ET_DataExtension < ET_CRUDSupport
 				@filter = filter
 			end
 			
-			obj = ET_Get.new(@authStub, "DataExtensionObject[#{@DEName}]", @props, @filter)			
+			obj = ET_Get.new(@authStub, "DataExtensionObject[#{@dataExtensionName}]", @props, @filter)						
+			@lastRequestID = obj.request_id	
+			return obj
 		end
 		
-		def post 
-			self.getCustomerKey								
+		def post			
+			getCustomerKey								
 			currentFields = []
 			currentProp = {}
 			
 			@props.each { |key,value|
 				currentFields.push({"Name" => key, "Value" => value})
 			}
-			currentProp['CustomerKey'] = @DECustomerKey
+			currentProp['CustomerKey'] = @dataExtensionCustomerKey
 			currentProp['Properties'] = {}
-			currentProp['Properties']['Property'] = currentFields						
-			
+			currentProp['Properties']['Property'] = currentFields									
 			
 			obj = ET_Post.new(@authStub, @obj, currentProp)	
 		end 
 		
 		def patch 
-			self.getCustomerKey								
+			getCustomerKey								
 			currentFields = []
 			currentProp = {}
 			
 			@props.each { |key,value|
 				currentFields.push({"Name" => key, "Value" => value})
 			}
-			currentProp['CustomerKey'] = @DECustomerKey
+			currentProp['CustomerKey'] = @dataExtensionCustomerKey
 			currentProp['Properties'] = {}
 			currentProp['Properties']['Property'] = currentFields									
 			
 			obj = ET_Patch.new(@authStub, @obj, currentProp)	
 		end 
 		def delete 
-			self.getCustomerKey								
+			getCustomerKey								
 			currentFields = []
 			currentProp = {}
 			
 			@props.each { |key,value|
 				currentFields.push({"Name" => key, "Value" => value})
 			}
-			currentProp['CustomerKey'] = @DECustomerKey
+			currentProp['CustomerKey'] = @dataExtensionCustomerKey
 			currentProp['Keys'] = {}
 			currentProp['Keys']['Key'] = currentFields									
 			
 			obj = ET_Delete.new(@authStub, @obj, currentProp)	
 		end 		
 		
-		protected
-		def getCustomerKey
-			if !@dataExtension.nil? then 
-				if (@dataExtension.props.has_key?("CustomerKey")) && @DECustomerKey.nil? then 
-					@DECustomerKey = @dataExtension.props['CustomerKey']
-				elsif !@dataExtension.props.has_key?("Name") then 	
-					raise 'Unable to process DataExtension::Row request due to CustomerKey or Name not being defined on dataExtension'							
-				else 
-					@DEName = @dataExtension.props['Name']		
+		private
+		def getCustomerKey			
+			if @dataExtensionCustomerKey.nil? then
+				if @dataExtensionCustomerKey.nil? && @dataExtensionName.nil? then 	
+					raise 'Unable to process DataExtension::Row request due to dataExtensionCustomerKey and dataExtensionName not being defined on ET_DatExtension::row'	
+				else 	
 					de = ET_DataExtension.new
 					de.authStub = @authStub
 					de.props = ["Name","CustomerKey"]
-					de.filter = {'Property' => 'CustomerKey','SimpleOperator' => 'equals','Value' => @DEName}
+					de.filter = {'Property' => 'CustomerKey','SimpleOperator' => 'equals','Value' => @dataExtensionName}
 					getResponse = de.get
 					if getResponse.status && (getResponse.results.length == 1) then 
-						@DECustomerKey = getResponse.results[0][:customer_key]
+						@dataExtensionCustomerKey = getResponse.results[0][:customer_key]
 					else 
 						raise 'Unable to process DataExtension::Row request due to unable to find DataExtension based on Name'
 					end 	
 				end
-			else 
-				raise 'Unable to process DataExtension::Row request due dataExtension property not defined'
 			end 
 		end
 				
 		def getName
-			if !@dataExtension.nil? then 															
-				if (@dataExtension.props.has_key?("Name")) && @DEName.nil? then 
-					@DEName = @dataExtension.props['Name']		
-				elsif !@dataExtension.props.has_key?("CustomerKey") then 	
-					raise 'Unable to process DataExtension::Row request due to CustomerKey or Name not being defined on dataExtension'
+			if @dataExtensionName.nil? then
+				if @dataExtensionCustomerKey.nil? && @dataExtensionName.nil? then 	
+					raise 'Unable to process DataExtension::Row request due to dataExtensionCustomerKey and dataExtensionName not being defined on ET_DatExtension::row'	
 				else 
-					@DECustomerKey = @dataExtension.props['CustomerKey']		
 					de = ET_DataExtension.new
 					de.authStub = @authStub
 					de.props = ["Name","CustomerKey"]
-					de.filter = {'Property' => 'CustomerKey','SimpleOperator' => 'equals','Value' => @DECustomerKey}
+					de.filter = {'Property' => 'CustomerKey','SimpleOperator' => 'equals','Value' => @dataExtensionCustomerKey}
 					getResponse = de.get
 					if getResponse.status && (getResponse.results.length == 1) then 
-						@DEName = getResponse.results[0][:name]
+						@dataExtensionName = getResponse.results[0][:name]
 					else 
 						raise 'Unable to process DataExtension::Row request due to unable to find DataExtension based on CustomerKey'
 					end 	
 				end
-			else 
-				raise 'Unable to process DataExtension::Row request due dataExtension property not defined'
 			end 
-		end						
-		
+		end								
 	end
 end
-
-=begin 
-class ET_DataExtension < ET_BaseObject	
-	attr_accessor :rows, :columns, :keyCreated
-	
-	def initialize
-		super
-		@obj = 'DataExtension'
-		@keyCreated = nil
-	end	
-	
-	def get(type, props = nil, filter = nil)
-		obj = Constructor.new()
-		if filter and filter.is_a? Hash then
-			@filter = filter
-		end
-		
-		if type == "Details" then 
-			if props and props.is_a? Array then
-				@props = props
-			end
-			
-			if @props and @props.is_a? Hash then
-				@props = @props.keys
-			end
-
-			obj = ET_Get.new(@authStub, @obj, @props, @filter)		
-			
-		elsif type == "Rows"
-			if !@props.nil? &&  (@props.has_key?("Name") || @props.has_key?("CustomerKey")) && @rows then 
-				rowObjName = ""
-				if @props.has_key?("Name")  then
-					rowObjName = "DataExtensionObject[" + @props['Name'] + "]"
-					
-				# We need to get the Name based on the CustomerKey if CustomerKey was passed in
-				elsif @props.has_key?("CustomerKey") 
-					obj = ET_Get.new(@authStub, @obj, ["Name"], {"Property" => "CustomerKey", "SimpleOperator" => "equals", "Value" => @props['CustomerKey'] })
-					if obj.status and obj.results.length == 1 then 
-						rowObjName = "DataExtensionObject[" + obj.results[0][:name] + "]"
-					else 
-						obj.status = false
-						obj.message = "No DataExtension found with the provided CustomerKey"	
-						return obj
-					end 
-				end 
-				
-				# If they didn't provide an array of field names in the rows, then get the field names from the first row of the rowset
-				retrieveRows = @rows
-				if (@rows.is_a? Array) && (@rows[0].is_a? Hash) then
-					retrieveRows = @rows[0]
-				end 
-				
-				obj = ET_Get.new(@authStub, rowObjName, retrieveRows, @filter)
-			elsif !@rows
-				obj.status = false
-				obj.message = "rows on ET_DataExtension must be defined for Get with Type='Rows' "					
-			else 
-				obj.status = false
-				obj.message = "props on ET_DataExtension must be defined with values for Name or CustomerKey when using Get with Type='Rows'"
-			end 
-			
-		elsif type == "Columns"
-			retrieveColumns = @rows
-			# If they didn't provide an array of field names in the columns, then get the properties from the first row set
-			if (@columns.is_a? Array) && (@columns[0].is_a? Hash) then
-				retrieveColumns = @columns[0]
-			end 
-			
-			obj = ET_Get.new(@authStub, "DataExtensionField", retrieveColumns, @filter)
-		else 
-			obj.status = false
-			obj.message = "Invalid type specified for DataExtension Get"
-		end 			
-		obj
-	end	
-	
-	def continue()
-		obj = ET_Continue.new(@authStub, @lastRequestID)
-	end			
-	
-	def post()
-		createDE = false
-		if @columns && @props['CustomerKey'] != @keyCreated then 
-			createDE = true
-		end 
-			
-		if createDE then
-			#Create the data extension			
-			@props['Fields'] = {}
-			@props['Fields']['Field'] = []
-			@columns.each { |key|
-				@props['Fields']['Field'].push(key)
-			}
-			obj = ET_Post.new(@authStub, @obj, @props)	
-			@keyCreated	 = @props['CustomerKey']
-		end	
-		
-		if @rows then
-			@props.delete("Fields")
-			rowProps = []
-			@rows.each {|value|
-				currentProp = {}
-				currentFields = []
-				value.each { |key,value|
-					currentFields.push({"Name" => key, "Value" => value})
-				}
-				currentProp = @props
-				currentProp['Properties'] = {}
-				currentProp['Properties']['Property'] = currentFields	
-				rowProps.push(currentProp.dup)					
-			}		
-			
-			rowsobj = ET_Post.new(@authStub, "DataExtensionObject", rowProps)
-						
-			
-			#If we created the DE and the Rows merge the results
-			if createDE then
-				# If either request failed then consider the status to be failed
-				if !rowsobj.status || !obj.status then
-					obj.status = false
-				end 
-				obj.results = obj.results + rowsobj.results
-			else 
-			#Since we only create rows, just use the results from that
-				obj = rowsobj
-			end 			
-		end
-		
-		obj	
-	end		
-	
-	def patch()				
-		createDE = false
-		if @columns && @props['CustomerKey'] != @keyCreated then 
-			createDE = true
-		end 
-			
-		if createDE then
-			@props['Fields'] = {}
-			@props['Fields']['Field'] = []
-			@columns.each { |key|
-				@props['Fields']['Field'].push(key)
-			}
-			obj = ET_Post.new(@authStub, @obj, @props)	
-			@keyCreated	 = @props['CustomerKey']
-		end	
-		
-		if @rows then
-			@props.delete("Fields")
-			rowProps = []
-			@rows.each {|value|
-				currentProp = {}
-				currentFields = []
-				value.each { |key,value|
-					currentFields.push({"Name" => key, "Value" => value})
-				}
-				currentProp = @props
-				currentProp['Properties'] = {}
-				currentProp['Properties']['Property'] = currentFields	
-				rowProps.push(currentProp.dup)					
-			}		
-			
-			rowsobj = ET_Put.new(@authStub, "DataExtensionObject", rowProps)
-						
-			
-			#If we created the DE and the Rows merge the results
-			if createDE then
-				# If either request failed then consider the status to be failed
-				if !rowsobj.status || !obj.status then
-					obj.status = false
-				end 
-				obj.results = obj.results + rowsobj.results
-			else 
-			#Since we only create rows, just use the results from that
-				obj = rowsobj
-			end 			
-		end		
-		obj	
-	end		
-
-	def delete()
-				
-		createDE = false
-		if @columns && @props['CustomerKey'] != @keyCreated then 
-			createDE = true
-		end 
-			
-		if createDE then		
-			@props['Fields'] = {}
-			@props['Fields']['Field'] = []
-			@columns.each { |key|
-				@props['Fields']['Field'].push(key)
-			}
-			obj = ET_Post.new(@authStub, @obj, @props)	
-			@keyCreated	 = @props['CustomerKey']
-		end	
-		
-		if @rows then
-			@props.delete("Fields")
-			rowProps = []
-			@rows.each {|value|
-				currentProp = {}
-				currentFields = []
-				value.each { |key,value|
-					currentFields.push({"Name" => key, "Value" => value})
-				}
-				currentProp = @props
-				currentProp['Keys'] = {}
-				currentProp['Keys']['Key'] = currentFields	
-				rowProps.push(currentProp.dup)					
-			}		
-			
-			rowsobj = ET_Delete.new(@authStub, "DataExtensionObject", rowProps)
-						
-			
-			#If we created the DE and the Rows merge the results
-			if createDE then
-				# If either request failed then consider the status to be failed
-				if !rowsobj.status || !obj.status then
-					obj.status = false
-				end 
-				obj.results = obj.results + rowsobj.results
-			else 
-			#Since we only create rows, just use the results from that
-				obj = rowsobj
-			end 			
-		end
-		
-		obj	
-	end	
-
-end
-=end
 
 class ET_List < ET_CRUDSupport
 	def initialize
