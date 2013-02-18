@@ -11,7 +11,7 @@ require 'jwt'
 #add support for stack detection
 
 class Constructor
-	attr_accessor :status, :code, :message, :properties, :results, :request_id, :moreResults
+	attr_accessor :status, :code, :message, :results, :request_id, :moreResults
 		
 	def initialize(response = nil)
 		@results = []
@@ -542,6 +542,39 @@ class ET_DataExtension < ET_CRUDSupport
 			super
 			@obj = 'DataExtensionField'
 		end	
+		
+		def get
+		
+			if props and props.is_a? Array then
+				@props = props
+			end
+			
+			if @props and @props.is_a? Hash then
+				@props = @props.keys
+			end
+
+			if filter and filter.is_a? Hash then
+				@filter = filter
+			end
+			
+			fixCustomerKey = false 
+			if filter and filter.is_a? Hash then
+				@filter = filter
+				if @filter.has_key?("Property") && @filter["Property"] == "CustomerKey" then
+					@filter["Property"]  = "DataExtension.CustomerKey"
+					fixCustomerKey = true 
+				end 
+			end
+			
+			obj = ET_Get.new(@authStub, @obj, @props, @filter)						
+			@lastRequestID = obj.request_id	
+			
+			if fixCustomerKey then
+				@filter["Property"] = "CustomerKey"
+			end 
+			
+			return obj			
+		end 
 	end
 	
 	class Row < ET_CRUDSupport
@@ -567,7 +600,8 @@ class ET_DataExtension < ET_CRUDSupport
 			end
 			
 			obj = ET_Get.new(@authStub, "DataExtensionObject[#{@dataExtensionName}]", @props, @filter)						
-			@lastRequestID = obj.request_id	
+			@lastRequestID = obj.request_id				
+			
 			return obj
 		end
 		
