@@ -416,7 +416,7 @@ class ET_Get < Constructor
 end
 
 class ET_BaseObject
-	attr_accessor :authStub, :props, :filter
+	attr_accessor :authStub, :props
 	attr_reader :obj, :lastRequestID
 	
 	def initialize
@@ -428,6 +428,7 @@ class ET_BaseObject
 end
 
 class ET_GetSupport < ET_BaseObject
+	attr_accessor :filter
 	
 	def initialize
 		super
@@ -578,7 +579,7 @@ class ET_DataExtension < ET_CRUDSupport
 	end
 	
 	class Row < ET_CRUDSupport
-		attr_accessor :dataExtensionName, :dataExtensionCustomerKey		
+		attr_accessor :Name, :CustomerKey		
 				
 		def initialize()								
 			super
@@ -599,7 +600,7 @@ class ET_DataExtension < ET_CRUDSupport
 				@filter = filter
 			end
 			
-			obj = ET_Get.new(@authStub, "DataExtensionObject[#{@dataExtensionName}]", @props, @filter)						
+			obj = ET_Get.new(@authStub, "DataExtensionObject[#{@Name}]", @props, @filter)						
 			@lastRequestID = obj.request_id				
 			
 			return obj
@@ -613,7 +614,7 @@ class ET_DataExtension < ET_CRUDSupport
 			@props.each { |key,value|
 				currentFields.push({"Name" => key, "Value" => value})
 			}
-			currentProp['CustomerKey'] = @dataExtensionCustomerKey
+			currentProp['CustomerKey'] = @CustomerKey
 			currentProp['Properties'] = {}
 			currentProp['Properties']['Property'] = currentFields									
 			
@@ -628,7 +629,7 @@ class ET_DataExtension < ET_CRUDSupport
 			@props.each { |key,value|
 				currentFields.push({"Name" => key, "Value" => value})
 			}
-			currentProp['CustomerKey'] = @dataExtensionCustomerKey
+			currentProp['CustomerKey'] = @CustomerKey
 			currentProp['Properties'] = {}
 			currentProp['Properties']['Property'] = currentFields									
 			
@@ -642,7 +643,7 @@ class ET_DataExtension < ET_CRUDSupport
 			@props.each { |key,value|
 				currentFields.push({"Name" => key, "Value" => value})
 			}
-			currentProp['CustomerKey'] = @dataExtensionCustomerKey
+			currentProp['CustomerKey'] = @CustomerKey
 			currentProp['Keys'] = {}
 			currentProp['Keys']['Key'] = currentFields									
 			
@@ -651,17 +652,17 @@ class ET_DataExtension < ET_CRUDSupport
 		
 		private
 		def getCustomerKey			
-			if @dataExtensionCustomerKey.nil? then
-				if @dataExtensionCustomerKey.nil? && @dataExtensionName.nil? then 	
-					raise 'Unable to process DataExtension::Row request due to dataExtensionCustomerKey and dataExtensionName not being defined on ET_DatExtension::row'	
+			if @CustomerKey.nil? then
+				if @CustomerKey.nil? && @Name.nil? then 	
+					raise 'Unable to process DataExtension::Row request due to CustomerKey and Name not being defined on ET_DatExtension::row'	
 				else 	
 					de = ET_DataExtension.new
 					de.authStub = @authStub
 					de.props = ["Name","CustomerKey"]
-					de.filter = {'Property' => 'CustomerKey','SimpleOperator' => 'equals','Value' => @dataExtensionName}
+					de.filter = {'Property' => 'CustomerKey','SimpleOperator' => 'equals','Value' => @Name}
 					getResponse = de.get
 					if getResponse.status && (getResponse.results.length == 1) then 
-						@dataExtensionCustomerKey = getResponse.results[0][:customer_key]
+						@CustomerKey = getResponse.results[0][:customer_key]
 					else 
 						raise 'Unable to process DataExtension::Row request due to unable to find DataExtension based on Name'
 					end 	
@@ -670,17 +671,17 @@ class ET_DataExtension < ET_CRUDSupport
 		end
 				
 		def getName
-			if @dataExtensionName.nil? then
-				if @dataExtensionCustomerKey.nil? && @dataExtensionName.nil? then 	
-					raise 'Unable to process DataExtension::Row request due to dataExtensionCustomerKey and dataExtensionName not being defined on ET_DatExtension::row'	
+			if @Name.nil? then
+				if @CustomerKey.nil? && @Name.nil? then 	
+					raise 'Unable to process DataExtension::Row request due to CustomerKey and Name not being defined on ET_DatExtension::row'	
 				else 
 					de = ET_DataExtension.new
 					de.authStub = @authStub
 					de.props = ["Name","CustomerKey"]
-					de.filter = {'Property' => 'CustomerKey','SimpleOperator' => 'equals','Value' => @dataExtensionCustomerKey}
+					de.filter = {'Property' => 'CustomerKey','SimpleOperator' => 'equals','Value' => @CustomerKey}
 					getResponse = de.get
 					if getResponse.status && (getResponse.results.length == 1) then 
-						@dataExtensionName = getResponse.results[0][:name]
+						@Name = getResponse.results[0][:name]
 					else 
 						raise 'Unable to process DataExtension::Row request due to unable to find DataExtension based on CustomerKey'
 					end 	
@@ -699,7 +700,7 @@ end
 
 
 class ET_TriggeredSend < ET_CRUDSupport	
-	attr_accessor :subscribers
+	attr_accessor :Subscribers
 	def initialize
 		super
 		@obj = 'TriggeredSendDefinition'
