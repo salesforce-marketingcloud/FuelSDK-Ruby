@@ -19,4 +19,4 @@ doc/
 sample.rb
 ExactTargetWSDL.xml
 config.yaml
-/objsamples
+/objsamples/config.yaml
