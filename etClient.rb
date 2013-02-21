@@ -700,7 +700,7 @@ end
 
 
 class ET_TriggeredSend < ET_CRUDSupport	
-	attr_accessor :Subscribers
+	attr_accessor :subscribers
 	def initialize
 		super
 		@obj = 'TriggeredSendDefinition'
