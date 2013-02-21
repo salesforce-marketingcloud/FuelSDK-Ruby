@@ -13,9 +13,9 @@ require 'jwt'
 class Constructor
 	attr_accessor :status, :code, :message, :results, :request_id, :moreResults
 		
-	def initialize(response = nil)
+	def initialize(response = nil, rest = false)
 		@results = []
-		if !response.nil? then 
+		if !response.nil? && !rest then 
 			envelope = response.hash[:envelope]
 			@@body = envelope[:body]							
 				
@@ -30,6 +30,14 @@ class Constructor
 				@code = response.http.code
 				@status = false         
 			end
+		elsif 			
+			@code = response.code
+			@status = true
+			if @code != "200" then
+				@status = false 
+			end  			
+			@results = JSON.parse(response.body)
+			
 		end 
 	end
 end
@@ -73,8 +81,8 @@ class CreateWSDL
 end
 
 class ETClient < CreateWSDL
-	attr_accessor :auth, :ready, :status, :debug
-	attr_reader :authToken, :authTokenExpiration, :internalAuthToken, :wsdlLoc, :clientId, :clientSecret, :soapHeader, :authObj, :path, :appsignature, :stackID, :refreshKey 
+	attr_accessor :auth, :ready, :status, :debug, :authToken
+	attr_reader :authTokenExpiration, :internalAuthToken, :wsdlLoc, :clientId, :clientSecret, :soapHeader, :authObj, :path, :appsignature, :stackID, :refreshKey 
 
 	def initialize(getWSDL = nil, debug = nil, params = nil)	
 		config = YAML.load_file("config.yaml")			
@@ -154,13 +162,19 @@ class ETClient < CreateWSDL
 			
 			request.body = jsonPayload.to_json			
 			request.add_field "Content-Type", "application/json"
-			tokenResponse = JSON.parse(http.request(request).body)	
+			tokenResponse = JSON.parse(http.request(request).body)				
+			
+			if !tokenResponse.has_key?('accessToken') then 
+				raise 'Unable to validate App Keys(ClientID/ClientSecret) provided: ' + http.request(request).body 
+			end 
+			
 			@authToken = tokenResponse['accessToken']
 			@authTokenExpiration = Time.new + tokenResponse['expiresIn']
 			@internalAuthToken = tokenResponse['legacyToken']
 			if tokenResponse.has_key?("refreshToken") then
 				@refreshKey = tokenResponse['refreshToken']
 			end
+					
 			
 			self.determineStack
 			
@@ -174,6 +188,7 @@ class ETClient < CreateWSDL
 				wsse_auth: ["*", "*"],
 				raise_errors: false, 
 				log: @debug) 
+				
 
 			rescue Exception => e
 				raise 'Unable to validate App Keys(ClientID/ClientSecret) provided: ' + e.message  
@@ -417,7 +432,7 @@ end
 
 class ET_BaseObject
 	attr_accessor :authStub, :props
-	attr_reader :obj, :lastRequestID
+	attr_reader :obj, :lastRequestID, :endpoint
 	
 	def initialize
 		@authStub = nil
@@ -499,6 +514,131 @@ class ET_CRUDSupport < ET_GetSupport
 		obj = ET_Delete.new(@authStub, @obj, @props)
 	end	
 end
+
+class ET_GetSupportRest < ET_BaseObject
+	attr_accessor :filter
+	attr_reader :urlProps, :urlPropsRequired
+	
+	def initialize
+		super
+	end
+	
+	def get(props = nil, filter = nil)
+		if filter and filter.is_a? Hash then
+			@filter = filter								
+		end
+		
+		if props and props.is_a? Hash then
+			@props = props
+		end
+		
+		completeURL = @endpoint		
+		additionalQS = {}
+		
+		if @props and @props.is_a? Hash then		
+			@props.each do |k,v|
+				if @urlProps.include?(k) then
+					completeURL.sub!("{#{k}}", v)
+				else 
+					additionalQS[k] = v
+				end 
+			end							
+		end		
+		
+		@urlPropsRequired.each do |value| 
+			if !@props || !@props.has_key?(value) then
+				raise "Unable to process request due to missing required prop: #{value}"
+			end 
+		end 
+		
+		@urlProps.each do |value| 			
+			completeURL.sub!("/{#{value}}", "")
+		end 		
+
+		obj = ET_GetRest.new(@authStub, completeURL,additionalQS)		
+		
+		return obj
+	end					
+end
+
+class ET_CRUDSupportRest < ET_GetSupportRest
+	def initialize
+		super
+	end
+	
+	def post()
+		
+		completeURL = @endpoint	
+		# Clean Optional Parameters from Endpoint URL first 
+		@urlProps.each do |value| 			
+			completeURL.sub!("/{#{value}}", "")
+		end 											
+		
+		obj = ET_PostRest.new(@authStub, completeURL, @props)		
+	end		
+
+end 
+
+
+class ET_GetRest < Constructor
+	def initialize(authStub, endpoint, qs = nil)
+		
+		if qs then 
+			qs['access_token'] = authStub.authToken
+		else 
+			qs = {"access_token" => authStub.authToken}
+		end 		
+		
+		uri = URI.parse(endpoint)
+		uri.query = URI.encode_www_form(qs)
+		http = Net::HTTP.new(uri.host, uri.port)
+		http.use_ssl = true
+		request = Net::HTTP::Get.new(uri.request_uri)		
+		requestResponse = http.request(request)
+					
+		super(requestResponse, true)			
+	
+	end
+end
+
+class ET_PostRest < Constructor
+	def initialize(authStub, endpoint, payload)
+		
+		qs = {"access_token" => authStub.authToken}
+				
+		uri = URI.parse(endpoint)
+		uri.query = URI.encode_www_form(qs)
+		http = Net::HTTP.new(uri.host, uri.port)
+		http.use_ssl = true
+		request = Net::HTTP::Post.new(uri.request_uri)
+		request.body = 	payload.to_json
+		request.add_field "Content-Type", "application/json"		
+		requestResponse = http.request(request)
+					
+		super(requestResponse, true)			
+	
+	end
+end
+
+class ET_Campaign < ET_CRUDSupportRest
+	def initialize
+		super
+		@endpoint = 'https://www.exacttargetapis.com/hub/v1/campaigns/{id}'
+		@urlProps = ["id"]
+		@urlPropsRequired = []		
+	end	
+	
+	class Asset < ET_CRUDSupportRest
+		def initialize
+			super
+			@endpoint = 'https://www.exacttargetapis.com/hub/v1/campaigns/{id}/assets/{assetId}'
+			@urlProps = ["id", "assetId"]
+			@urlPropsRequired = ["id"]		
+		end	
+	end
+end
+
+
 
 class ET_Subscriber < ET_CRUDSupport	
 	def initialize
@@ -710,6 +850,13 @@ class ET_TriggeredSend < ET_CRUDSupport
 		@tscall = {"TriggeredSendDefinition" => @props, "Subscribers" => @subscribers}
 		obj = ET_Post.new(@authStub, "TriggeredSend", @tscall)
 	end
+end
+
+class ET_ContentArea < ET_CRUDSupport	
+	def initialize
+		super
+		@obj = 'ContentArea'
+	end	
 end
 
 class ET_SentEvent < ET_GetSupport
