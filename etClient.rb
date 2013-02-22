@@ -35,8 +35,14 @@ class Constructor
 			@status = true
 			if @code != "200" then
 				@status = false 
-			end  			
-			@results = JSON.parse(response.body)
+			end  
+						
+			begin
+			  @results = JSON.parse(response.body)
+			rescue 
+			  @message = response.body
+			end
+			
 			
 		end 
 	end
@@ -531,13 +537,14 @@ class ET_GetSupportRest < ET_BaseObject
 		if props and props.is_a? Hash then
 			@props = props
 		end
-		
+			
 		completeURL = @endpoint		
 		additionalQS = {}
 		
 		if @props and @props.is_a? Hash then		
 			@props.each do |k,v|
 				if @urlProps.include?(k) then
+					p "Log: #{completeURL} #{k} #{v}"
 					completeURL.sub!("{#{k}}", v)
 				else 
 					additionalQS[k] = v
@@ -566,16 +573,70 @@ class ET_CRUDSupportRest < ET_GetSupportRest
 		super
 	end
 	
-	def post()
-		
+	def post()		
 		completeURL = @endpoint	
+		
+		if @props and @props.is_a? Hash then		
+			@props.each do |k,v|
+				if @urlProps.include?(k) then
+					completeURL.sub!("{#{k}}", v)
+				end 
+			end							
+		end	
+		
+		@urlPropsRequired.each do |value| 
+			if !@props || !@props.has_key?(value) then
+				raise "Unable to process request due to missing required prop: #{value}"
+			end 
+		end 	
+		
 		# Clean Optional Parameters from Endpoint URL first 
 		@urlProps.each do |value| 			
 			completeURL.sub!("/{#{value}}", "")
-		end 											
-		
+		end 		
+
 		obj = ET_PostRest.new(@authStub, completeURL, @props)		
 	end		
+	
+	def patch()		
+		completeURL = @endpoint		
+		# All URL Props are required when doing Patch	
+		@urlProps.each do |value| 
+			if !@props || !@props.has_key?(value) then
+				raise "Unable to process request due to missing required prop: #{value}"
+			end 
+		end 
+		
+		if @props and @props.is_a? Hash then		
+			@props.each do |k,v|
+				if @urlProps.include?(k) then
+					completeURL.sub!("{#{k}}", v)
+				end 
+			end							
+		end											
+		
+		obj = ET_PatchRest.new(@authStub, completeURL, @props)		
+	end	
+	
+	def delete()		
+		completeURL = @endpoint		
+		# All URL Props are required when doing Patch	
+		@urlProps.each do |value| 
+			if !@props || !@props.has_key?(value) then
+				raise "Unable to process request due to missing required prop: #{value}"
+			end 
+		end 
+		
+		if @props and @props.is_a? Hash then		
+			@props.each do |k,v|
+				if @urlProps.include?(k) then
+					completeURL.sub!("{#{k}}", v)
+				end 
+			end							
+		end											
+		
+		obj = ET_DeleteRest.new(@authStub, completeURL)		
+	end	
 
 end 
 
@@ -604,8 +665,7 @@ end
 class ET_PostRest < Constructor
 	def initialize(authStub, endpoint, payload)
 		
-		qs = {"access_token" => authStub.authToken}
-				
+		qs = {"access_token" => authStub.authToken}			
 		uri = URI.parse(endpoint)
 		uri.query = URI.encode_www_form(qs)
 		http = Net::HTTP.new(uri.host, uri.port)
@@ -614,7 +674,43 @@ class ET_PostRest < Constructor
 		request.body = 	payload.to_json
 		request.add_field "Content-Type", "application/json"		
 		requestResponse = http.request(request)
+		
+		p requestResponse.body
 					
+		super(requestResponse, true)			
+	
+	end
+end
+
+class ET_PatchRest < Constructor
+	def initialize(authStub, endpoint, payload)
+		
+		qs = {"access_token" => authStub.authToken}
+			
+		uri = URI.parse(endpoint)
+		uri.query = URI.encode_www_form(qs)
+		http = Net::HTTP.new(uri.host, uri.port)
+		http.use_ssl = true
+		request = Net::HTTP::Patch.new(uri.request_uri)
+		request.body = 	payload.to_json
+		request.add_field "Content-Type", "application/json"		
+		requestResponse = http.request(request)
+		super(requestResponse, true)			
+	
+	end
+end
+
+class ET_DeleteRest < Constructor
+	def initialize(authStub, endpoint)
+		
+		qs = {"access_token" => authStub.authToken}
+			
+		uri = URI.parse(endpoint)
+		uri.query = URI.encode_www_form(qs)
+		http = Net::HTTP.new(uri.host, uri.port)
+		http.use_ssl = true
+		request = Net::HTTP::Delete.new(uri.request_uri)		
+		requestResponse = http.request(request)
 		super(requestResponse, true)			
 	
 	end
