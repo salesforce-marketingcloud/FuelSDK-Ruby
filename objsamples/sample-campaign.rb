@@ -4,6 +4,10 @@ require '../etClient.rb'
 begin 
 	stubObj = ETClient.new(false, false)
 	
+	# In order for this sample to run, it needs to have an asset that it can associate the campaign to
+	ExampleAssetType = "LIST"
+	ExampleAssetItemID = "1953114"
+	
 	# Create a new Campaign
 	p '>>> Create a new Campaign'
 	postCamp = ET_Campaign.new
@@ -56,9 +60,6 @@ begin
 		p 'Results: ' + getResponse.results.to_json
 		p '-----------------------------'
 
-		ExampleAssetType = "LIST"
-		ExampleAssetItemID = "1953114"
-
 		# Create a new Campaign Asset
 		p '>>> Create a new Campaign Asset'
 		postCampAsset = ET_Campaign::Asset.new
@@ -73,8 +74,8 @@ begin
 
 		IDOfpostCampaignAsset = postResponse.results[0]['id']
 
-		# Get all Campaign Asset for a campaign
-		p '>>> Get all Campaign Asset for a Campaign'
+		# Retrieve all Campaign Asset for a campaign
+		p '>>> Retrieve all Campaign Asset for a Campaign'
 		getCampAsset = ET_Campaign::Asset.new
 		getCampAsset.authStub = stubObj
 		getCampAsset.props = {"id" => IDOfpostCampaign}
@@ -85,8 +86,8 @@ begin
 		p 'Results: ' + getResponse.results.inspect
 		p '-----------------------------'
 
-		# Get a single a new Campaign Asset
-		p '>>> Get a single a new Campaign Asset'
+		# Retrieve a single new Campaign Asset
+		p '>>> Retrieve a single new Campaign Asset'
 		getCampAsset = ET_Campaign::Asset.new
 		getCampAsset.authStub = stubObj
 		getCampAsset.props = {"id" => IDOfpostCampaign, "assetId" => IDOfpostCampaignAsset}

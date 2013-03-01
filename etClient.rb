@@ -128,7 +128,7 @@ class ETClient < CreateWSDL
 				@authObj[:attributes!] = { 'oAuth' => { 'xmlns' => 'http://exacttarget.com' }}						
 				
 				myWSDL = File.read(@path + '/ExactTargetWSDL.xml')
-				@auth = Savon.client(soap_header: @authObj, wsdl: myWSDL, endpoint: @endpoint, wsse_auth: ["*", "*"],raise_errors: false, log: @debug) 				
+				@auth = Savon.client(soap_header: @authObj, wsdl: myWSDL, endpoint: @endpoint, wsse_auth: ["*", "*"],raise_errors: false, log: @debug, open_timeout: 180, read_timeout: 180) 				
 			else 				
 				self.refreshToken	
 			end 																				
@@ -931,6 +931,13 @@ class ET_List < ET_CRUDSupport
 	def initialize
 		super
 		@obj = 'List'
+	end	
+end
+
+class ET_Email < ET_CRUDSupport
+	def initialize
+		super
+		@obj = 'Email'
 	end	
 end
 

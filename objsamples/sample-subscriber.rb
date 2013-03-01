@@ -65,7 +65,7 @@ begin
 	p '>>> Delete Subscriber'
 	deleteSub = ET_Subscriber.new()
 	deleteSub.authStub = stubObj	
-	deleteSub.props = ["EmailAddress" => SubscriberTestEmail]	
+	deleteSub.props = {"EmailAddress" => SubscriberTestEmail}
 	deleteResponse = deleteSub.delete
 	p 'Delete Status: ' + deleteResponse.status.to_s
 	p 'Code: ' + deleteResponse.code.to_s
