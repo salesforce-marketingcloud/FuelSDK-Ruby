@@ -149,8 +149,7 @@ class ETClient < CreateWSDL
 	def debug=(value)
 		@debug = value
 	end
-	
-	
+		
 	def refreshToken(force = nil)
 		#If we don't already have a token or the token expires within 5 min(300 seconds), get one
 		if ((@authToken.nil? || Time.new - 300 > @authTokenExpiration) || force) then 
@@ -202,6 +201,46 @@ class ETClient < CreateWSDL
 		end 
 	end
 	
+	def AddSubscriberToList(emailAddress, listIDs, subscriberKey = nil)		
+		newSub = ET_Subscriber.new 
+		newSub.authStub = self
+		lists = []
+		
+		listIDs.each{ |p|
+			lists.push({"ID"=> p})			
+		}
+		
+		newSub.props = {"EmailAddress" => emailAddress, "Lists" => lists}
+		if !subscriberKey.nil? then
+			newSub.props['SubscriberKey']  = subscriberKey;
+		end
+		
+		# Try to add the subscriber
+		postResponse = newSub.post
+		
+		if postResponse.status == false then 
+			# If the subscriber already exists in the account then we need to do an update.
+			# Update Subscriber On List 
+			if postResponse.results[0][:error_code] == "12014" then 	
+				patchResponse = newSub.patch
+				return patchResponse
+			end
+		end 
+		return postResponse
+	end 
+	
+	def CreateDataExtensions(dataExtensionDefinitions)		
+		newDEs = ET_DataExtension.new 
+		newDEs.authStub = self
+				
+		newDEs.props = dataExtensionDefinitions						
+		postResponse = newDEs.post		
+		
+		return postResponse
+	end 
+	
+	
+	protected 
 	def determineStack()		
 		begin
 			uri = URI.parse("https://www.exacttargetapis.com/platform/v1/endpoints/soap?access_token=" + @authToken)
@@ -219,7 +258,6 @@ class ETClient < CreateWSDL
 		end
 	end	
 end
-
 
 class ET_Describe < Constructor
 	def initialize(authStub = nil, objType = nil)
@@ -255,10 +293,20 @@ class ET_Post < Constructor
 		
 	begin
 		authStub.refreshToken
-		obj = {
-			'Objects' => props,
-			:attributes! => { 'Objects' => { 'xsi:type' => ('tns:' + objType) } }			
-		}
+		if props.is_a? Array then 
+			obj = {
+				'Objects' => [],
+				:attributes! => { 'Objects' => { 'xsi:type' => ('tns:' + objType) } }
+			}
+			props.each{ |p|
+				obj['Objects'] << p 
+			}
+		else
+			obj = {
+				'Objects' => props,
+				:attributes! => { 'Objects' => { 'xsi:type' => ('tns:' + objType) } }
+			}
+		end
 
 		response = authStub.auth.call(:create, :message => obj)			
 			
@@ -287,10 +335,20 @@ class ET_Delete < Constructor
 	@results = []
 	begin
 		authStub.refreshToken
-		obj = {
-			'Objects' => props,
-			:attributes! => { 'Objects' => { 'xsi:type' => ('tns:' + objType) } }
-		}
+		if props.is_a? Array then 
+			obj = {
+				'Objects' => [],
+				:attributes! => { 'Objects' => { 'xsi:type' => ('tns:' + objType) } }
+			}
+			props.each{ |p|
+				obj['Objects'] << p 
+			}
+		else
+			obj = {
+				'Objects' => props,
+				:attributes! => { 'Objects' => { 'xsi:type' => ('tns:' + objType) } }
+			}
+		end
 		
 		response = authStub.auth.call(:delete, :message => obj)		
 	ensure 
@@ -734,15 +792,12 @@ class ET_Campaign < ET_CRUDSupportRest
 	end
 end
 
-
-
 class ET_Subscriber < ET_CRUDSupport	
 	def initialize
 		super
 		@obj = 'Subscriber'
 	end	
 end
-
 
 class ET_DataExtension < ET_CRUDSupport
 	attr_accessor :columns
@@ -753,13 +808,33 @@ class ET_DataExtension < ET_CRUDSupport
 	end	
 	
 	def post 
-		@props['Fields'] = {}
-		@props['Fields']['Field'] = []
-		@columns.each { |key|
+		originalProps = @props
+
+		if @props.is_a? Array then
+			multiDE = []
+			@props.each { |currentDE|
+				
+				currentDE['columns'].each { |key|
+					currentDE['Fields'] = {}
+					currentDE['Fields']['Field'] = []				
+					currentDE['Fields']['Field'].push(key)					
+				}
+				currentDE.delete('columns')				
+				multiDE.push(currentDE.dup)
+			}
+		
+			@props = multiDE
+		else
+			@props['Fields'] = {}
+			@props['Fields']['Field'] = []
+			
+			@columns.each { |key|		
 			@props['Fields']['Field'].push(key)
-		}
+			}
+		end		
+		
 		obj = super		
-		@props.delete("Fields") 		
+		@props = originalProps	
 		return obj			
 	end 
 
@@ -843,16 +918,30 @@ class ET_DataExtension < ET_CRUDSupport
 		end
 		
 		def post			
-			getCustomerKey								
-			currentFields = []
-			currentProp = {}
+			getCustomerKey		
+
+
+			if props.is_a? Array then 
+				obj = {
+					'Objects' => [],
+					:attributes! => { 'Objects' => { 'xsi:type' => ('tns:' + objType) } }
+				}
+				props.each{ |p|
+					obj['Objects'] << p 
+				}
+			else
+				currentFields = []
+				currentProp = {}
+				
+				@props.each { |key,value|
+					currentFields.push({"Name" => key, "Value" => value})
+				}
+				currentProp['CustomerKey'] = @CustomerKey
+				currentProp['Properties'] = {}
+				currentProp['Properties']['Property'] = currentFields	
+			end
 			
-			@props.each { |key,value|
-				currentFields.push({"Name" => key, "Value" => value})
-			}
-			currentProp['CustomerKey'] = @CustomerKey
-			currentProp['Properties'] = {}
-			currentProp['Properties']['Property'] = currentFields									
+								
 			
 			obj = ET_Post.new(@authStub, @obj, currentProp)	
 		end 
@@ -947,7 +1036,6 @@ class ET_Email < ET_CRUDSupport
 		@obj = 'Email'
 	end	
 end
-
 
 class ET_TriggeredSend < ET_CRUDSupport	
 	attr_accessor :subscribers
