@@ -467,7 +467,7 @@ class ET_GetSupport < ET_BaseObject
 		if filter and filter.is_a? Hash then
 			@filter = filter
 		end
-
+		p "Testing #{@obj}"
 		obj = ET_Get.new(@authStub, @obj, @props, @filter)
 		
 		@lastRequestID = obj.request_id
@@ -932,6 +932,13 @@ class ET_List < ET_CRUDSupport
 		super
 		@obj = 'List'
 	end	
+	
+	class Subscriber < ET_GetSupport
+		def initialize
+			super
+			@obj = 'ListSubscriber'
+		end		
+	end
 end
 
 class ET_Email < ET_CRUDSupport
