@@ -6,10 +6,6 @@ require 'json'
 require 'yaml'
 require 'jwt'
 
-#to-do:
-#work on digest authentication - not supported will use OAuth when it's officially GA
-#add support for stack detection
-
 class Constructor
 	attr_accessor :status, :code, :message, :results, :request_id, :moreResults
 		
@@ -38,7 +34,7 @@ class Constructor
 			end  
 						
 			begin
-			  @results = JSON.parse(response.body)
+			  @results = JSON.parse(response.body)			  
 			rescue 
 			  @message = response.body
 			end
@@ -51,18 +47,18 @@ end
 class CreateWSDL
   
   def initialize(path)
-    #Get the header info for the correct wsdl
+    # Get the header info for the correct wsdl
 	response = HTTPI.head(@wsdl)
 	if response and (response.code >= 200 and response.code <= 400) then
 		header = response.headers
-		#see when the WSDL was last modified
+		# Check when the WSDL was last modified
 		modifiedTime = Date.parse(header['last-modified'])
 		p = path + '/ExactTargetWSDL.xml'
-		#is a local WSDL there
+		# Check if a local file already exists
 		if (File.file?(p) and File.readable?(p) and !File.zero?(p)) then
 			createdTime = File.new(p).mtime.to_date
 			
-			#is the locally created WSDL older than the production WSDL
+			# Check if the locally created WSDL older than the production WSDL
 			if createdTime < modifiedTime then
 				createIt = true
 			else
@@ -107,7 +103,6 @@ class ETClient < CreateWSDL
 		end
 		
 		begin		
-			#path of current folder
 			@path = File.dirname(__FILE__)
 			
 			#make a new WSDL
@@ -152,7 +147,7 @@ class ETClient < CreateWSDL
 		
 	def refreshToken(force = nil)
 		#If we don't already have a token or the token expires within 5 min(300 seconds), get one
-		if ((@authToken.nil? || Time.new - 300 > @authTokenExpiration) || force) then 
+		if ((@authToken.nil? || Time.new + 300 > @authTokenExpiration) || force) then 
 			begin
 			uri = URI.parse("https://auth.exacttargetapis.com/v1/requestToken?legacy=1")
 			http = Net::HTTP.new(uri.host, uri.port)
@@ -178,10 +173,11 @@ class ETClient < CreateWSDL
 			@internalAuthToken = tokenResponse['legacyToken']
 			if tokenResponse.has_key?("refreshToken") then
 				@refreshKey = tokenResponse['refreshToken']
-			end
-					
+			end					
 			
-			self.determineStack
+			if @endpoint.nil? then 
+				self.determineStack
+			end 
 			
 			@authObj = {'oAuth' => {'oAuthToken' => @internalAuthToken}}			
 			@authObj[:attributes!] = { 'oAuth' => { 'xmlns' => 'http://exacttarget.com' }}						
@@ -503,6 +499,7 @@ class ET_BaseObject
 		@props = nil
 		@filter = nil
 		@lastRequestID = nil
+		@endpoint = nil
 	end
 end
 
@@ -525,7 +522,6 @@ class ET_GetSupport < ET_BaseObject
 		if filter and filter.is_a? Hash then
 			@filter = filter
 		end
-		p "Testing #{@obj}"
 		obj = ET_Get.new(@authStub, @obj, @props, @filter)
 		
 		@lastRequestID = obj.request_id
@@ -581,17 +577,13 @@ end
 
 class ET_GetSupportRest < ET_BaseObject
 	attr_accessor :filter
-	attr_reader :urlProps, :urlPropsRequired
+	attr_reader :urlProps, :urlPropsRequired, :lastPageNumber
 	
 	def initialize
 		super
 	end
 	
-	def get(props = nil, filter = nil)
-		if filter and filter.is_a? Hash then
-			@filter = filter								
-		end
-		
+	def get(props = nil)		
 		if props and props.is_a? Hash then
 			@props = props
 		end
@@ -602,7 +594,6 @@ class ET_GetSupportRest < ET_BaseObject
 		if @props and @props.is_a? Hash then		
 			@props.each do |k,v|
 				if @urlProps.include?(k) then
-					p "Log: #{completeURL} #{k} #{v}"
 					completeURL.sub!("{#{k}}", v)
 				else 
 					additionalQS[k] = v
@@ -620,10 +611,54 @@ class ET_GetSupportRest < ET_BaseObject
 			completeURL.sub!("/{#{value}}", "")
 		end 		
 
-		obj = ET_GetRest.new(@authStub, completeURL,additionalQS)		
+		obj = ET_GetRest.new(@authStub, completeURL,additionalQS)	
+		
+		if obj.results.has_key?('page') then 
+			@lastPageNumber = obj.results['page']
+			pageSize = obj.results['pageSize']
+			if obj.results.has_key?('count') then 
+				count = obj.results['count']
+			elsif obj.results.has_key?('totalCount') then 
+				count = obj.results['totalCount']
+			end 
+					
+			if !count.nil? && count > (@lastPageNumber * pageSize)  then 
+				obj.moreResults = true	
+			end 								
+		end 			
+		return obj
+	end	
+	
+	def getMoreResults()
+		if props and props.is_a? Hash then
+			@props = props
+		end
+		
+		originalPageValue = "1"
+		removePageFromProps = false			
+		
+		if !@props.nil? && @props.has_key?('$page') then 
+			originalPageValue = @props['page']
+		else
+			removePageFromProps = true			
+		end 
+		
+		if @props.nil?
+			@props = {}
+		end 
+		
+		@props['$page'] = @lastPageNumber + 1
+		
+		obj = self.get
+		
+		if removePageFromProps then
+			@props.delete('$page')
+		else 
+			@props['$page'] = originalPageValue
+		end		
 		
 		return obj
-	end					
+	end			
 end
 
 class ET_CRUDSupportRest < ET_GetSupportRest
@@ -701,6 +736,7 @@ end
 
 class ET_GetRest < Constructor
 	def initialize(authStub, endpoint, qs = nil)
+		authStub.refreshToken	
 		
 		if qs then 
 			qs['access_token'] = authStub.authToken
@@ -714,14 +750,42 @@ class ET_GetRest < Constructor
 		http.use_ssl = true
 		request = Net::HTTP::Get.new(uri.request_uri)		
 		requestResponse = http.request(request)
+		
+		@moreResults = false
 					
-		super(requestResponse, true)			
-	
+		obj = super(requestResponse, true)						
+		return obj
 	end
 end
 
+
+class ET_ContinueRest < Constructor
+	def initialize(authStub, endpoint, qs = nil)
+		authStub.refreshToken	
+		
+		if qs then 
+			qs['access_token'] = authStub.authToken
+		else 
+			qs = {"access_token" => authStub.authToken}
+		end 		
+		
+		uri = URI.parse(endpoint)
+		uri.query = URI.encode_www_form(qs)
+		http = Net::HTTP.new(uri.host, uri.port)
+		http.use_ssl = true
+		request = Net::HTTP::Get.new(uri.request_uri)		
+		requestResponse = http.request(request)
+		
+		@moreResults = false
+					
+		super(requestResponse, true)			
+	end
+end
+
+
 class ET_PostRest < Constructor
 	def initialize(authStub, endpoint, payload)
+		authStub.refreshToken
 		
 		qs = {"access_token" => authStub.authToken}			
 		uri = URI.parse(endpoint)
@@ -731,9 +795,7 @@ class ET_PostRest < Constructor
 		request = Net::HTTP::Post.new(uri.request_uri)
 		request.body = 	payload.to_json
 		request.add_field "Content-Type", "application/json"		
-		requestResponse = http.request(request)
-		
-		p requestResponse.body
+		requestResponse = http.request(request)		
 					
 		super(requestResponse, true)			
 	
@@ -742,9 +804,9 @@ end
 
 class ET_PatchRest < Constructor
 	def initialize(authStub, endpoint, payload)
+		authStub.refreshToken
 		
 		qs = {"access_token" => authStub.authToken}
-			
 		uri = URI.parse(endpoint)
 		uri.query = URI.encode_www_form(qs)
 		http = Net::HTTP.new(uri.host, uri.port)
@@ -760,6 +822,7 @@ end
 
 class ET_DeleteRest < Constructor
 	def initialize(authStub, endpoint)
+		authStub.refreshToken
 		
 		qs = {"access_token" => authStub.authToken}
 			
@@ -918,17 +981,25 @@ class ET_DataExtension < ET_CRUDSupport
 		end
 		
 		def post			
-			getCustomerKey		
-
-
-			if props.is_a? Array then 
-				obj = {
-					'Objects' => [],
-					:attributes! => { 'Objects' => { 'xsi:type' => ('tns:' + objType) } }
+			getCustomerKey
+			originalProps = @props
+			## FIX THIS 
+			if @props.is_a? Array then
+=begin				
+				multiRow = []
+				@props.each { |currentDE|
+					
+					currentDE['columns'].each { |key|
+						currentDE['Fields'] = {}
+						currentDE['Fields']['Field'] = []				
+						currentDE['Fields']['Field'].push(key)					
+					}
+					currentDE.delete('columns')				
+					multiRow.push(currentDE.dup)
 				}
-				props.each{ |p|
-					obj['Objects'] << p 
-				}
+				
+				@props = multiRow
+=end				
 			else
 				currentFields = []
 				currentProp = {}
@@ -939,11 +1010,11 @@ class ET_DataExtension < ET_CRUDSupport
 				currentProp['CustomerKey'] = @CustomerKey
 				currentProp['Properties'] = {}
 				currentProp['Properties']['Property'] = currentFields	
-			end
-			
-								
+			end		
 			
 			obj = ET_Post.new(@authStub, @obj, currentProp)	
+			@props = originalProps
+			return obj			
 		end 
 		
 		def patch 

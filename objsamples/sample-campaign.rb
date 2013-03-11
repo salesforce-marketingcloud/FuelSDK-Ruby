@@ -8,6 +8,30 @@ begin
 	ExampleAssetType = "LIST"
 	ExampleAssetItemID = "1953114"
 	
+	# Retrieve all Campaigns
+	p '>>> Retrieve all Campaigns'
+	getCamp = ET_Campaign.new
+	getCamp.authStub = stubObj
+	getResponse = getCamp.get
+	p 'Retrieve Status: ' + getResponse.status.to_s
+	p 'Code: ' + getResponse.code.to_s
+	p 'Message: ' + getResponse.message.to_s
+	p 'MoreResults: ' + getResponse.moreResults.to_s
+	#p 'Results: ' + getResponse.results.to_json
+	p 'Results(Items) Length: ' + getResponse.results['items'].length.to_s
+	p '-----------------------------'
+	
+	while getResponse.moreResults do 
+		p '>>> Continue Retrieve all Campaigns with GetMoreResults'
+		getResponse = getCamp.getMoreResults
+		p 'Retrieve Status: ' + getResponse.status.to_s
+		p 'Code: ' + getResponse.code.to_s
+		p 'Message: ' + getResponse.message.to_s
+		p 'MoreResults: ' + getResponse.moreResults.to_s
+		p 'RequestID: ' + getResponse.request_id.to_s
+		p 'Results(Items) Length: ' + getResponse.results['items'].length.to_s
+	end 	
+	
 	# Create a new Campaign
 	p '>>> Create a new Campaign'
 	postCamp = ET_Campaign.new
