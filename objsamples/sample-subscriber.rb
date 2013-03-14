@@ -1,8 +1,8 @@
-require '../etClient.rb'
+require '../ET_Client.rb'
 require 'securerandom'
 
 begin
-	stubObj = ETClient.new(false, false)
+	stubObj = ET_Client.new(false, false)
 	
 	# NOTE: These examples only work in accounts where the SubscriberKey functionality is not enabled
 	#       SubscriberKey will need to be included in the props if that feature is enabled	

@@ -1,7 +1,7 @@
-require '../etClient.rb'
+require '../ET_Client.rb'
 
 begin
-	stubObj = ETClient.new(false, false)
+	stubObj = ET_Client.new(false, false)
 	
 	## Example using CreateDataExtensions() method
 

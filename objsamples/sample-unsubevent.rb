@@ -1,7 +1,7 @@
-require '../etClient.rb'
+require '../ET_Client.rb'
 
 begin
-	stubObj = ETClient.new(false, false)
+	stubObj = ET_Client.new(false, false)
 		
 	## Modify the date below to reduce the number of results returned from the request
 	## Setting this too far in the past could result in a very large response size

@@ -1,8 +1,8 @@
-require '../etClient.rb'
+require '../ET_Client.rb'
 
 
 begin 
-	stubObj = ETClient.new(false, false)
+	stubObj = ET_Client.new(false, false)
 
 
 	# Get all of the DataExtensions in an Account

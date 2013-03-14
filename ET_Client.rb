@@ -6,7 +6,7 @@ require 'json'
 require 'yaml'
 require 'jwt'
 
-class Constructor
+class ET_Constructor
 	attr_accessor :status, :code, :message, :results, :request_id, :moreResults
 		
 	def initialize(response = nil, rest = false)
@@ -44,7 +44,7 @@ class Constructor
 	end
 end
 
-class CreateWSDL
+class ET_CreateWSDL
   
   def initialize(path)
     # Get the header info for the correct wsdl
@@ -82,7 +82,7 @@ class CreateWSDL
   end
 end
 
-class ETClient < CreateWSDL
+class ET_Client < ET_CreateWSDL
 	attr_accessor :auth, :ready, :status, :debug, :authToken
 	attr_reader :authTokenExpiration, :internalAuthToken, :wsdlLoc, :clientId, :clientSecret, :soapHeader, :authObj, :path, :appsignature, :stackID, :refreshKey 
 
@@ -255,7 +255,7 @@ class ETClient < CreateWSDL
 	end	
 end
 
-class ET_Describe < Constructor
+class ET_Describe < ET_Constructor
 	def initialize(authStub = nil, objType = nil)
 		begin
 			authStub.refreshToken
@@ -283,7 +283,7 @@ class ET_Describe < Constructor
 	end
 end
 
-class ET_Post < Constructor
+class ET_Post < ET_Constructor
 	def initialize(authStub, objType, props = nil)
 	@results = []
 		
@@ -325,7 +325,7 @@ class ET_Post < Constructor
 	end
 end
 
-class ET_Delete < Constructor
+class ET_Delete < ET_Constructor
 
 	def initialize(authStub, objType, props = nil)
 	@results = []
@@ -363,7 +363,7 @@ class ET_Delete < Constructor
 	end
 end
 
-class ET_Patch < Constructor
+class ET_Patch < ET_Constructor
 	def initialize(authStub, objType, props = nil)
 	@results = []
 	begin
@@ -401,7 +401,7 @@ class ET_Patch < Constructor
 	end
 end
 
-class ET_Continue < Constructor
+class ET_Continue < ET_Constructor
 	def initialize(authStub, request_id)
 		@results = []
 		authStub.refreshToken	
@@ -433,7 +433,7 @@ class ET_Continue < Constructor
 	end
 end
 
-class ET_Get < Constructor
+class ET_Get < ET_Constructor
 	def initialize(authStub, objType, props = nil, filter = nil)
 		@results = []			
 		authStub.refreshToken
@@ -538,7 +538,7 @@ class ET_GetSupport < ET_BaseObject
 	end		
 end
 
-class ET_CRUDSupport < ET_GetSupport
+class ET_CUDSupport < ET_GetSupport
 	
 	def initialize
 		super
@@ -576,7 +576,6 @@ class ET_CRUDSupport < ET_GetSupport
 end
 
 class ET_GetSupportRest < ET_BaseObject
-	attr_accessor :filter
 	attr_reader :urlProps, :urlPropsRequired, :lastPageNumber
 	
 	def initialize
@@ -661,7 +660,7 @@ class ET_GetSupportRest < ET_BaseObject
 	end			
 end
 
-class ET_CRUDSupportRest < ET_GetSupportRest
+class ET_CUDSupportRest < ET_GetSupportRest
 	def initialize
 		super
 	end
@@ -734,7 +733,7 @@ class ET_CRUDSupportRest < ET_GetSupportRest
 end 
 
 
-class ET_GetRest < Constructor
+class ET_GetRest < ET_Constructor
 	def initialize(authStub, endpoint, qs = nil)
 		authStub.refreshToken	
 		
@@ -759,7 +758,7 @@ class ET_GetRest < Constructor
 end
 
 
-class ET_ContinueRest < Constructor
+class ET_ContinueRest < ET_Constructor
 	def initialize(authStub, endpoint, qs = nil)
 		authStub.refreshToken	
 		
@@ -783,7 +782,7 @@ class ET_ContinueRest < Constructor
 end
 
 
-class ET_PostRest < Constructor
+class ET_PostRest < ET_Constructor
 	def initialize(authStub, endpoint, payload)
 		authStub.refreshToken
 		
@@ -802,7 +801,7 @@ class ET_PostRest < Constructor
 	end
 end
 
-class ET_PatchRest < Constructor
+class ET_PatchRest < ET_Constructor
 	def initialize(authStub, endpoint, payload)
 		authStub.refreshToken
 		
@@ -820,7 +819,7 @@ class ET_PatchRest < Constructor
 	end
 end
 
-class ET_DeleteRest < Constructor
+class ET_DeleteRest < ET_Constructor
 	def initialize(authStub, endpoint)
 		authStub.refreshToken
 		
@@ -837,7 +836,7 @@ class ET_DeleteRest < Constructor
 	end
 end
 
-class ET_Campaign < ET_CRUDSupportRest
+class ET_Campaign < ET_CUDSupportRest
 	def initialize
 		super
 		@endpoint = 'https://www.exacttargetapis.com/hub/v1/campaigns/{id}'
@@ -845,7 +844,7 @@ class ET_Campaign < ET_CRUDSupportRest
 		@urlPropsRequired = []		
 	end	
 	
-	class Asset < ET_CRUDSupportRest
+	class Asset < ET_CUDSupportRest
 		def initialize
 			super
 			@endpoint = 'https://www.exacttargetapis.com/hub/v1/campaigns/{id}/assets/{assetId}'
@@ -855,14 +854,14 @@ class ET_Campaign < ET_CRUDSupportRest
 	end
 end
 
-class ET_Subscriber < ET_CRUDSupport	
+class ET_Subscriber < ET_CUDSupport	
 	def initialize
 		super
 		@obj = 'Subscriber'
 	end	
 end
 
-class ET_DataExtension < ET_CRUDSupport
+class ET_DataExtension < ET_CUDSupport
 	attr_accessor :columns
 	
 	def initialize
@@ -952,7 +951,7 @@ class ET_DataExtension < ET_CRUDSupport
 		end 
 	end
 	
-	class Row < ET_CRUDSupport
+	class Row < ET_CUDSupport
 		attr_accessor :Name, :CustomerKey		
 				
 		def initialize()								
@@ -1087,7 +1086,7 @@ class ET_DataExtension < ET_CRUDSupport
 	end
 end
 
-class ET_List < ET_CRUDSupport
+class ET_List < ET_CUDSupport
 	def initialize
 		super
 		@obj = 'List'
@@ -1101,14 +1100,14 @@ class ET_List < ET_CRUDSupport
 	end
 end
 
-class ET_Email < ET_CRUDSupport
+class ET_Email < ET_CUDSupport
 	def initialize
 		super
 		@obj = 'Email'
 	end	
 end
 
-class ET_TriggeredSend < ET_CRUDSupport	
+class ET_TriggeredSend < ET_CUDSupport	
 	attr_accessor :subscribers
 	def initialize
 		super
@@ -1121,7 +1120,7 @@ class ET_TriggeredSend < ET_CRUDSupport
 	end
 end
 
-class ET_ContentArea < ET_CRUDSupport	
+class ET_ContentArea < ET_CUDSupport	
 	def initialize
 		super
 		@obj = 'ContentArea'

@@ -1,8 +1,8 @@
-require '../etClient.rb'
+require '../ET_Client.rb'
 require 'securerandom'
 
 begin
-	stubObj = ETClient.new(false, false)
+	stubObj = ET_Client.new(false, false)
 
 	# Get all TriggeredSendDefinitions
 	p '>>> Get all TriggeredSendDefinitions'

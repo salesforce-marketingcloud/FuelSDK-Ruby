@@ -1,8 +1,8 @@
-require '../etClient.rb'
+require '../ET_Client.rb'
 
 
 begin 
-	stubObj = ETClient.new(false, false)
+	stubObj = ET_Client.new(false, false)
 	
 	# In order for this sample to run, it needs to have an asset that it can associate the campaign to
 	ExampleAssetType = "LIST"
