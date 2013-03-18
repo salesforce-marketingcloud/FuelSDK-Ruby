@@ -1,7 +1,7 @@
 require '../ET_Client.rb'
 
 begin
-	stubObj = ET_Client.new(false, false)
+	myclient = ET_Client.new(false, false)
 	
 	## Example using CreateDataExtensions() method
 
@@ -14,7 +14,7 @@ begin
 	deTwo['columns'] = [{"Name" => "Name", "FieldType" => "Text", "IsPrimaryKey" => "true", "MaxLength" => "100", "IsRequired" => "true"},{"Name" => "OtherField", "FieldType" => "Text"}]
 	
 	# Call CreateDataExtensions passing in both DataExtension Hashes as an Array
-	createDEResponse = stubObj.CreateDataExtensions([deOne, deTwo])
+	createDEResponse = myclient.CreateDataExtensions([deOne, deTwo])
 	p 'CreateDataExtensions Status: ' + createDEResponse.status.to_s
 	p 'Code: ' + createDEResponse.code.to_s
 	p 'Message: ' + createDEResponse.message.to_s	
@@ -25,7 +25,7 @@ begin
 	# Delete deOne
 	p '>>> Delete deOne'
 	de5 = ET_DataExtension.new 
-	de5.authStub = stubObj
+	de5.authStub = myclient
 	de5.props = {"CustomerKey" => "HelperDEOne"}
 	delResponse = de5.delete
 	p 'Delete Status: ' + delResponse.status.to_s
@@ -36,7 +36,7 @@ begin
 	# Delete deTwo
 	p '>>> Delete deTwo'
 	de5 = ET_DataExtension.new 
-	de5.authStub = stubObj
+	de5.authStub = myclient
 	de5.props = {"CustomerKey" => "HelperDETwo"}
 	delResponse = de5.delete
 	p 'Delete Status: ' + delResponse.status.to_s

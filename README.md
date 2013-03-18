@@ -103,7 +103,7 @@ Sample List:
  - [DataExtension](https://github.com/ExactTarget/FuelSDK-Ruby/blob/master/objsamples/sample-dataextension.rb)
  - [Email](https://github.com/ExactTarget/FuelSDK-Ruby/blob/master/objsamples/sample-email.rb)
  - [List](https://github.com/ExactTarget/FuelSDK-Ruby/blob/master/objsamples/sample-list.rb)
- - [List > Subscriber](https://github.com/ExactTarget/FuelSDK-Ruby/blob/master/objsamples/sample-subscriber.rb)
+ - [List > Subscriber](https://github.com/ExactTarget/FuelSDK-Ruby/blob/master/objsamples/sample-list.subscriber.rb)
  - [OpenEvent](https://github.com/ExactTarget/FuelSDK-Ruby/blob/master/objsamples/sample-openevent.rb)
  - [SentEvent](https://github.com/ExactTarget/FuelSDK-Ruby/blob/master/objsamples/sample-sentevent.rb)
  - [Subscriber](https://github.com/ExactTarget/FuelSDK-Ruby/blob/master/objsamples/sample-subscriber.rb)
