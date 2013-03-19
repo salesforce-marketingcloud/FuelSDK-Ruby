@@ -158,7 +158,7 @@ begin
 	p 'Message: ' + delResponse.message.to_s
 	p 'Results: ' + delResponse.results.inspect
 
-
+=begin
 	# Retrieve lots of rows with moreResults
 	p '>>> Retrieve lots of rows with moreResults'
 	row = ET_DataExtension::Row.new()
@@ -184,6 +184,7 @@ begin
 		p 'RequestID: ' + getResponse.request_id.to_s
 		p 'Results Length: ' + getResponse.results.length.to_s
 	end 
+=end
 
 rescue => e
   p "Caught exception: #{e.message}"

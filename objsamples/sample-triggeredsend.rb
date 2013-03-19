@@ -108,13 +108,13 @@ begin
 	deleteTrig = ET_TriggeredSend.new 
 	deleteTrig.authStub = stubObj
 	deleteTrig.props = {'CustomerKey' => TSNameForCreateThenDelete}		
-	deleteResponse = deleteTrig.post
+	deleteResponse = deleteTrig.delete
 	p 'Delete Status: ' + deleteResponse.status.to_s
 	p 'Code: ' + deleteResponse.code.to_s
 	p 'Message: ' + deleteResponse.message.to_s
 	p 'Result Count: ' + deleteResponse.results.length.to_s
 	p 'Results: ' + deleteResponse.results.inspect	
-
+	
 rescue => e
 	p "Caught exception: #{e.message}"
 	p e.backtrace
