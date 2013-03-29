@@ -875,10 +875,9 @@ class ET_DataExtension < ET_CUDSupport
 		if @props.is_a? Array then
 			multiDE = []
 			@props.each { |currentDE|
-				
+				currentDE['Fields'] = {}
+				currentDE['Fields']['Field'] = []	
 				currentDE['columns'].each { |key|
-					currentDE['Fields'] = {}
-					currentDE['Fields']['Field'] = []				
 					currentDE['Fields']['Field'].push(key)					
 				}
 				currentDE.delete('columns')				
