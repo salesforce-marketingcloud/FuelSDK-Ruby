@@ -21,4 +21,5 @@ ExactTargetWSDL.xml
 config.yaml
 /objsamples/config.yaml
 /objsamples/AllTest.bat
+/tempsamples
 .DS_STORE
