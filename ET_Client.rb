@@ -123,7 +123,7 @@ class ET_Client < ET_CreateWSDL
 				@authObj[:attributes!] = { 'oAuth' => { 'xmlns' => 'http://exacttarget.com' }}						
 				
 				myWSDL = File.read(@path + '/ExactTargetWSDL.xml')
-				@auth = Savon.client(soap_header: @authObj, wsdl: myWSDL, endpoint: @endpoint, wsse_auth: ["*", "*"],raise_errors: false, log: @debug, open_timeout: 180, read_timeout: 180) 				
+				@auth = Savon.client(:soap_header => @authObj, :wsdl => myWSDL, :endpoint => @endpoint, :wsse_auth => ["*", "*"], :raise_errors => false, :log => @debug, :open_timeout => 180, :read_timeout => 180)
 			else 				
 				self.refreshToken	
 			end 																				
@@ -183,12 +183,12 @@ class ET_Client < ET_CreateWSDL
 			@authObj[:attributes!] = { 'oAuth' => { 'xmlns' => 'http://exacttarget.com' }}						
 			
 			myWSDL = File.read(@path + '/ExactTargetWSDL.xml')
-			@auth = Savon.client(soap_header: @authObj, 
-				wsdl: myWSDL, 
-				endpoint: @endpoint, 
-				wsse_auth: ["*", "*"],
-				raise_errors: false, 
-				log: @debug) 
+			@auth = Savon.client(:soap_header => @authObj,
+				:wsdl => myWSDL,
+				:endpoint => @endpoint,
+				:wsse_auth => ["*", "*"],
+				:raise_errors => false,
+				:log => @debug)
 				
 
 			rescue Exception => e
