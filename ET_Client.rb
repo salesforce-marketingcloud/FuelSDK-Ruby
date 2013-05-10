@@ -86,31 +86,38 @@ class ET_Client < ET_CreateWSDL
 	attr_accessor :auth, :ready, :status, :debug, :authToken
 	attr_reader :authTokenExpiration, :internalAuthToken, :wsdlLoc, :clientId, :clientSecret, :soapHeader, :authObj, :path, :appsignature, :stackID, :refreshKey 
 
-	def initialize(getWSDL = nil, debug = nil, params = nil)	
-		config = YAML.load_file("config.yaml")			
-		@clientId = config["clientid"]
-		@clientSecret = config["clientsecret"]			
-		@appsignature = config["appsignature"]		
-		@wsdl = config["defaultwsdl"]
+	def initialize(getWSDL_or_wsse_auth = nil, debug = nil, params = nil)
+		if getWSDL_or_wsse_auth.is_a?(Hash)
+			wsse_auth = getWSDL_or_wsse_auth
+			@username = wsse_auth[:username]
+			@password = wsse_auth[:password]
+			@wsdl = wsse_auth[:wsdl]
+			@wsse_authentication = true
+			getWSDL = nil
+		else
+			# maintain backward compatibility
+			config = YAML.load_file("config.yaml")
+			@clientId = config["clientid"]
+			@clientSecret = config["clientsecret"]
+			@appsignature = config["appsignature"]
+			@wsdl = config["defaultwsdl"]
+			@wsse_authentication = false
+			getWSDL = getWSDL_or_wsse_auth
+		end
 		@debug = false
 
 		if debug then
 			@debug = debug
 		end
-		
-		if !getWSDL then
-			getWSDL = true
-		end
-		
-		begin		
+
+		begin
 			@path = File.dirname(__FILE__)
-			
-			#make a new WSDL
-			if getWSDL then
-				super(@path)
-			end				
-			
-			if params && params.has_key?("jwt") then			
+			# make a new WSDL # getWSDL was always true
+			super(@path)
+
+			if @wsse_authentication then
+				@auth = self.authenticateWSSE
+			elsif params && params.has_key?("jwt") then
 				jwt = JWT.decode(params["jwt"], @appsignature, true);
 				@authToken = jwt['request']['user']['oauthToken']
 				@authTokenExpiration = Time.new + jwt['request']['user']['expiresIn']
@@ -144,8 +151,24 @@ class ET_Client < ET_CreateWSDL
 	def debug=(value)
 		@debug = value
 	end
-		
+
+	def authenticateWSSE
+    	begin
+		    myWSDL = File.read(@path + '/ExactTargetWSDL.xml')
+	        @auth = Savon.client(:wsdl => myWSDL,
+								 :endpoint => @endpoint,
+								 :wsse_auth => [@username, @password],
+								 :raise_errors => false,
+								 :log => @debug)
+		rescue Exception => e
+			raise 'Unable to validate WSSE (username/password) provided: ' + e.message
+	    end
+	end
+
 	def refreshToken(force = nil)
+		# Token is no longer necessary when we authenticate with WSSE
+		return if @wsse_authentication
+
 		#If we don't already have a token or the token expires within 5 min(300 seconds), get one
 		if ((@authToken.nil? || Time.new + 300 > @authTokenExpiration) || force) then 
 			begin
