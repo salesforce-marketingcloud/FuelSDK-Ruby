@@ -34,9 +34,9 @@ begin
 		p 'Retrieve Status: ' + getResponse.status.to_s
 		p 'Code: ' + getResponse.code.to_s
 		p 'Message: ' + getResponse.message.to_s
-		p 'MoreResults: ' + getResponse.moreResults.to_s	
+		p 'MoreResults: ' + getResponse.moreResults.to_s
 		p 'Results Length: ' + getResponse.results.length.to_s
-		p 'Results: ' + getResponse.results.to_s			
+		p 'Results: ' + getResponse.results.to_s
 			
 		# Update List 
 		p '>>> Update List'
@@ -90,7 +90,66 @@ begin
 		p 'Results Length: ' + getResponse.results.length.to_s
 		p 'Results: ' + getResponse.results.to_s	
 	end
-
+	
+	
+	# Create List using Put
+	p '>>> Create List using Put'
+	postList = ET_List.new 
+	postList.authStub = stubObj
+	postList.props = {"ListName" => NewListName, "Description" => "This list was created with the RubySDK", "Type" => "Private", "CustomerKey" =>  NewListName}		
+	postList.folderId = '579529';
+	putResponse = postList.put
+	p 'Post Status: ' + putResponse.status.to_s
+	p 'Code: ' + putResponse.code.to_s
+	p 'Message: ' + putResponse.message.to_s
+	p 'Result Count: ' + putResponse.results.length.to_s
+	p 'Results: ' + putResponse.results.inspect	
+	
+	# Make sure the list created correctly before 
+	if putResponse.status then 
+		
+		newListID = putResponse.results[0][:object][:id]
+		
+		# Retrieve newly created List by ID
+		p '>>> Retrieve newly created List'
+		getList = ET_List.new()
+		getList.authStub = stubObj	
+		getList.props = ["ID","PartnerKey","CreatedDate","ModifiedDate","Client.ID","Client.PartnerClientKey","ListName","Description","Category","Type","CustomerKey","ListClassification","AutomatedEmail.ID"]
+		getList.filter = {'Property' => 'ID','SimpleOperator' => 'equals','Value' => newListID}
+		getResponse = getList.get
+		p 'Retrieve Status: ' + getResponse.status.to_s
+		p 'Code: ' + getResponse.code.to_s
+		p 'Message: ' + getResponse.message.to_s
+		p 'MoreResults: ' + getResponse.moreResults.to_s	
+		p 'Results Length: ' + getResponse.results.length.to_s
+		p 'Results: ' + getResponse.results.to_s			
+		
+		# Update List using Put 
+		p '>>> Update List using Put'
+		putSub = ET_List.new 
+		putSub.authStub = stubObj
+		putSub.props = {"ID" => newListID, "Description" => "I updated the description"}		
+		putResponse = putSub.patch
+		p 'Put Status: ' + putResponse.status.to_s
+		p 'Code: ' + putResponse.code.to_s
+		p 'Message: ' + putResponse.message.to_s
+		p 'Result Count: ' + putResponse.results.length.to_s
+		p 'Results: ' + putResponse.results.inspect	
+		
+		# Delete List
+		p '>>> Delete List'
+		deleteSub = ET_List.new()
+		deleteSub.authStub = stubObj	
+		deleteSub.props = {"ID" => newListID}
+		deleteResponse = deleteSub.delete
+		p 'Delete Status: ' + deleteResponse.status.to_s
+		p 'Code: ' + deleteResponse.code.to_s
+		p 'Message: ' + deleteResponse.message.to_s	
+		p 'Results Length: ' + deleteResponse.results.length.to_s
+		p 'Results: ' + deleteResponse.results.to_s
+	end
+		
+		
 rescue => e
 	p "Caught exception: #{e.message}"
 	p e.backtrace

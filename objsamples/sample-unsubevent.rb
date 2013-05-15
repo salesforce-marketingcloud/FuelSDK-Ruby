@@ -33,6 +33,34 @@ begin
 		p 'Results Length: ' + getResponse.results.length.to_s
 	end 
 	
+	
+	p '>>> Retrieve Filtered UnsubEvents with GetSinceLastBatch set to false'
+	getUnsubEvent = ET_UnsubEvent.new()
+	getUnsubEvent.authStub = stubObj	
+	getUnsubEvent.props = ["SendID","SubscriberKey","EventDate","Client.ID","EventType","BatchID","TriggeredSendDefinitionObjectID","PartnerKey"]
+	getUnsubEvent.filter = {'Property' => 'EventDate','SimpleOperator' => 'greaterThan','DateValue' => retrieveDate}
+	getUnsubEvent.getSinceLastBatch = false
+	getResponse = getUnsubEvent.get
+	p 'Retrieve Status: ' + getResponse.status.to_s
+	p 'Code: ' + getResponse.code.to_s
+	p 'Message: ' + getResponse.message.to_s
+	p 'MoreResults: ' + getResponse.moreResults.to_s
+	p 'RequestID: ' + getResponse.request_id.to_s
+	p 'Results Length: ' + getResponse.results.length.to_s
+	
+	
+	while getResponse.moreResults do 
+		p '>>> Continue Retrieve Filtered UnsubEvents with GetSinceLastBatch set to false'
+		getResponse = getUnsubEvent.getMoreResults
+		p 'Retrieve Status: ' + getResponse.status.to_s
+		p 'Code: ' + getResponse.code.to_s
+		p 'Message: ' + getResponse.message.to_s
+		p 'MoreResults: ' + getResponse.moreResults.to_s
+		p 'RequestID: ' + getResponse.request_id.to_s
+		p 'Results Length: ' + getResponse.results.length.to_s
+	end 
+	
+	
 	#  The following request could potentially bring back large amounts of data if run against a production account	
 =begin 
 	p '>>> Retrieve All UnsubEvents with GetMoreResults'

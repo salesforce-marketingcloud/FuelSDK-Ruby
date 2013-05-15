@@ -6,6 +6,14 @@ ExactTarget Fuel SDK for Ruby
 ## Overview ##
 The Fuel SDK for Ruby provides easy access to ExactTarget's Fuel API Family services, including a collection of REST APIs and a SOAP API. These APIs provide access to ExactTarget functionality via common collection types such as array/hash. 
 
+## New Features in Version .9 ##
+- **Streamlined Folder Support**: All objects that support folders within the UI now have a property called folderId in the SDK .
+- **Interaction Support**: Now supports Import and Email::SendDefinition objects .
+- **Profile Attribute Support**: Added the ability to manage profile attributes through the ProfileAttribute object.
+- **Support for single request to Add/Update**:A single request can be made which will create the object if one doesn't already or update one if it does.  This works for Subscriber, DataExtension::Row, and List objects using the Put method.
+- **Tracking Events Batching Support**: By default, all tracking event types will only pull new data since the last time a request was made using the same filter.  If you would like to override this functionality to pull all data, simply set the GetSinceLastBatch property to false.
+- **Automatic Asset Organization for Hub Apps**: Applications that authenticate by providing a JWT will automatically have all created assets placed into a folder based on the HubExchange app's name. 
+
 ## Requirements ##
 Ruby Version 1.9.3
 
@@ -104,6 +112,10 @@ Sample List:
  - [Email](https://github.com/ExactTarget/FuelSDK-Ruby/blob/master/objsamples/sample-email.rb)
  - [List](https://github.com/ExactTarget/FuelSDK-Ruby/blob/master/objsamples/sample-list.rb)
  - [List > Subscriber](https://github.com/ExactTarget/FuelSDK-Ruby/blob/master/objsamples/sample-list.subscriber.rb)
+ - [Folder](https://github.com/ExactTarget/FuelSDK-Ruby/blob/master/objsamples/sample-folder.rb)
+ - [Email > SendDefinition](https://github.com/ExactTarget/FuelSDK-Ruby/blob/master/objsamples/sample-email-senddefinition.rb)
+ - [Import](https://github.com/ExactTarget/FuelSDK-Ruby/blob/master/objsamples/sample-import.rb)
+ - [ProfileAttribute](https://github.com/ExactTarget/FuelSDK-Ruby/blob/master/objsamples/sample-profileattribute.rb)
  - [OpenEvent](https://github.com/ExactTarget/FuelSDK-Ruby/blob/master/objsamples/sample-openevent.rb)
  - [SentEvent](https://github.com/ExactTarget/FuelSDK-Ruby/blob/master/objsamples/sample-sentevent.rb)
  - [Subscriber](https://github.com/ExactTarget/FuelSDK-Ruby/blob/master/objsamples/sample-subscriber.rb)

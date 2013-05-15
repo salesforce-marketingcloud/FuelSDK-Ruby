@@ -25,7 +25,6 @@ begin
 	# production data extension 
 	NameOfDE = "ThisWillBeDeleted-Test"
 
-
 	# Create  Data Extension
 	p '>>> Create Data Extension'
 	de2 = ET_DataExtension.new 
@@ -73,7 +72,7 @@ begin
 	de4 = ET_DataExtension::Row.new 
 	de4.CustomerKey = NameOfDE;
 	de4.authStub = stubObj
-	de4.props = {"Name" => "MAC3", "OtherField" => "Text3"}
+	de4.props = {"Name" => "Test3", "OtherField" => "Text3"}
 	postResponse = de4.post
 	p 'Post Status: ' + postResponse.status.to_s
 	p 'Code: ' + postResponse.code.to_s
@@ -85,12 +84,36 @@ begin
 	de4 = ET_DataExtension::Row.new 
 	de4.authStub = stubObj
 	de4.Name = NameOfDE
-	de4.props = {"Name" => "MAC4", "OtherField" => "Text3"}
+	de4.props = {"Name" => "Test4", "OtherField" => "Text3"}
 	postResponse = de4.post
 	p 'Post Status: ' + postResponse.status.to_s
 	p 'Code: ' + postResponse.code.to_s
 	p 'Message: ' + postResponse.message.to_s
 	p 'Results: ' + postResponse.results.inspect
+	
+	# Add a row in a data extension using Put method
+	p '>>>  Add a row in a data extension using Put method'
+	de5 = ET_DataExtension::Row.new 
+	de5.CustomerKey = NameOfDE;
+	de5.authStub = stubObj
+	de5.props = {"Name" => "Test5", "OtherField" => "Some Text"}
+	putResponse = de5.put
+	p 'Put Status: ' + putResponse.status.to_s
+	p 'Code: ' + putResponse.code.to_s
+	p 'Message: ' + putResponse.message.to_s
+	p 'Results: ' + putResponse.results.inspect
+	
+	# Update a row in a data extension using Put method
+	p '>>>  Update a row in a data extension using Put method'
+	de6 = ET_DataExtension::Row.new 
+	de6.CustomerKey = NameOfDE;
+	de6.authStub = stubObj
+	de6.props = {"Name" => "Test5", "OtherField" => "Some More Text"}
+	putResponse = de6.put
+	p 'Put Status: ' + putResponse.status.to_s
+	p 'Code: ' + putResponse.code.to_s
+	p 'Message: ' + putResponse.message.to_s
+	p 'Results: ' + putResponse.results.inspect
 
 	# Retrieve all rows
 	p '>>> Retrieve all rows'
@@ -112,7 +135,7 @@ begin
 	de4 = ET_DataExtension::Row.new 
 	de4.authStub = stubObj
 	de4.CustomerKey = NameOfDE
-	de4.props = {"Name" => "MAC3", "OtherField" => "UPDATED!"}
+	de4.props = {"Name" => "Test3", "OtherField" => "UPDATED!"}
 	postResponse = de4.patch
 	p 'Patch Status: ' + postResponse.status.to_s
 	p 'Code: ' + postResponse.code.to_s
@@ -140,7 +163,7 @@ begin
 	de4 = ET_DataExtension::Row.new 
 	de4.authStub = stubObj
 	de4.CustomerKey = NameOfDE
-	de4.props = {"Name" => "MAC3"}
+	de4.props = {"Name" => "Test3"}
 	deleteResponse = de4.delete
 	p 'Delete Status: ' + deleteResponse.status.to_s
 	p 'Code: ' + deleteResponse.code.to_s

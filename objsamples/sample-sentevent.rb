@@ -34,6 +34,32 @@ begin
 		p 'Results Length: ' + getResponse.results.length.to_s
 	end 
 	
+	p '>>> Retrieve Filtered SentEvents with GetSinceLastBatch set to false'
+	getSentEvent = ET_SentEvent.new()
+	getSentEvent.authStub = stubObj	
+	getSentEvent.props = ["SendID","SubscriberKey","EventDate","Client.ID","EventType","BatchID","TriggeredSendDefinitionObjectID","ListID","PartnerKey","SubscriberID"]
+	getSentEvent.filter = {'Property' => 'EventDate','SimpleOperator' => 'greaterThan','DateValue' => retrieveDate}
+	getSentEvent.getSinceLastBatch = false
+	getResponse = getSentEvent.get
+	p 'Retrieve Status: ' + getResponse.status.to_s
+	p 'Code: ' + getResponse.code.to_s
+	p 'Message: ' + getResponse.message.to_s
+	p 'MoreResults: ' + getResponse.moreResults.to_s
+	p 'RequestID: ' + getResponse.request_id.to_s
+	p 'Results Length: ' + getResponse.results.length.to_s
+
+	
+	while getResponse.moreResults do 
+		p '>>> Continue Retrieve Filtered SentEvents with GetSinceLastBatch set to false'
+		getResponse = getSentEvent.getMoreResults
+		p 'Retrieve Status: ' + getResponse.status.to_s
+		p 'Code: ' + getResponse.code.to_s
+		p 'Message: ' + getResponse.message.to_s
+		p 'MoreResults: ' + getResponse.moreResults.to_s
+		p 'RequestID: ' + getResponse.request_id.to_s
+		p 'Results Length: ' + getResponse.results.length.to_s
+	end 
+	
 	#  The following request could potentially bring back large amounts of data if run against a production account	
 =begin 
 	p '>>> Retrieve All SentEvents with GetMoreResults'

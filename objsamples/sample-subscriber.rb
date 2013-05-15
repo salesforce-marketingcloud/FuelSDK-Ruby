@@ -8,7 +8,17 @@ begin
 	#       SubscriberKey will need to be included in the props if that feature is enabled	
 	
 	SubscriberTestEmail = "RubySDKExample@bh.exacttarget.com"	
-
+	
+	p '>>> Validate Subscriber'
+	validateSub = ET_Subscriber::Validate.new
+	validateSub.authStub = stubObj
+	validateSub.props = {"EmailAddress" => SubscriberTestEmail, "Validators"=>["Syntax", "MX", "ListDetective", "GlobalUnsub"]}
+	postResponse = validateSub.post
+	p 'Post Status: ' + postResponse.status.to_s
+	p 'Code: ' + postResponse.code.to_s
+	p 'Message: ' + postResponse.message.to_s
+	p 'Results: ' + postResponse.results.inspect
+	
 	# Create Subscriber 
 	p '>>> Create Subscriber'
 	postSub = ET_Subscriber.new 
@@ -86,6 +96,42 @@ begin
 	p 'MoreResults: ' + getResponse.moreResults.to_s	
 	p 'Results Length: ' + getResponse.results.length.to_s
 	p 'Results: ' + getResponse.results.to_s	
+	
+	# Create Subscriber using Put
+	p '>>> Create Subscriber using Put'
+	putSub = ET_Subscriber.new 
+	putSub.authStub = stubObj
+	putSub.props = {"EmailAddress" => SubscriberTestEmail}
+	putResponse = putSub.put
+	p 'Put Status: ' + putResponse.status.to_s
+	p 'Code: ' + putResponse.code.to_s
+	p 'Message: ' + putResponse.message.to_s
+	p 'Result Count: ' + putResponse.results.length.to_s
+	p 'Results: ' + putResponse.results.inspect	
+	
+	# Update Subscriber using Put
+	p '>>> Update Subscriber using Put'
+	putSub = ET_Subscriber.new 
+	putSub.authStub = stubObj
+	putSub.props = {"EmailAddress" => SubscriberTestEmail, "Status" => "Active"}
+	putResponse = putSub.put
+	p 'Put Status: ' + putResponse.status.to_s
+	p 'Code: ' + putResponse.code.to_s
+	p 'Message: ' + putResponse.message.to_s
+	p 'Result Count: ' + putResponse.results.length.to_s
+	p 'Results: ' + putResponse.results.inspect	
+	
+	# Delete Subscriber
+	p '>>> Delete Subscriber'
+	deleteSub = ET_Subscriber.new()
+	deleteSub.authStub = stubObj	
+	deleteSub.props = {"EmailAddress" => SubscriberTestEmail}
+	deleteResponse = deleteSub.delete
+	p 'Delete Status: ' + deleteResponse.status.to_s
+	p 'Code: ' + deleteResponse.code.to_s
+	p 'Message: ' + deleteResponse.message.to_s	
+	p 'Results Length: ' + deleteResponse.results.length.to_s
+	p 'Results: ' + deleteResponse.results.to_s
 		
 
 =begin

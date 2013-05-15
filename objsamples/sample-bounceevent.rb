@@ -20,10 +20,35 @@ begin
 	p 'RequestID: ' + getResponse.request_id.to_s
 	p 'Results Length: ' + getResponse.results.length.to_s
 	# Since this could potentially return a large number of results, we do not want to print the results
-	p 'Results: ' + getResponse.results.to_s
+	# p 'Results: ' + getResponse.results.to_s
 
 	while getResponse.moreResults do 
 		p '>>> Continue Retrieve Filtered BounceEvents with GetMoreResults'
+		getResponse = getBounceEvent.getMoreResults
+		p 'Retrieve Status: ' + getResponse.status.to_s
+		p 'Code: ' + getResponse.code.to_s
+		p 'Message: ' + getResponse.message.to_s
+		p 'MoreResults: ' + getResponse.moreResults.to_s
+		p 'RequestID: ' + getResponse.request_id.to_s
+		p 'Results Length: ' + getResponse.results.length.to_s
+	end 
+	
+	p '>>> Retrieve Filtered BounceEvents with GetSinceLastBatch set to false'
+	getBounceEvent = ET_BounceEvent.new()
+	getBounceEvent.authStub = stubObj	
+	getBounceEvent.props = ["SendID","SubscriberKey","EventDate","Client.ID","EventType","BatchID","TriggeredSendDefinitionObjectID","PartnerKey"]
+	getBounceEvent.filter = {'Property' => 'EventDate','SimpleOperator' => 'greaterThan','DateValue' => retrieveDate}
+	getBounceEvent.getSinceLastBatch = false
+	getResponse = getBounceEvent.get
+	p 'Retrieve Status: ' + getResponse.status.to_s
+	p 'Code: ' + getResponse.code.to_s
+	p 'Message: ' + getResponse.message.to_s
+	p 'MoreResults: ' + getResponse.moreResults.to_s
+	p 'RequestID: ' + getResponse.request_id.to_s
+	p 'Results Length: ' + getResponse.results.length.to_s
+	
+	while getResponse.moreResults do 
+		p '>>> Continue Retrieve Filtered BounceEvents with GetSinceLastBatch set to false'
 		getResponse = getBounceEvent.getMoreResults
 		p 'Retrieve Status: ' + getResponse.status.to_s
 		p 'Code: ' + getResponse.code.to_s

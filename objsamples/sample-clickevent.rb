@@ -10,7 +10,7 @@ begin
 	p '>>> Retrieve Filtered ClickEvents with GetMoreResults'
 	getClickEvent = ET_ClickEvent.new()
 	getClickEvent.authStub = stubObj	
-	getClickEvent.props = ["SendID","SubscriberKey","EventDate","Client.ID","EventType","BatchID","TriggeredSendDefinitionObjectID","PartnerKey"]
+	getClickEvent.props = ["SendID","SubscriberKey","EventDate","Client.ID","EventType","BatchID","TriggeredSendDefinitionObjectID","PartnerKey","URLID","URL"]
 	getClickEvent.filter = {'Property' => 'EventDate','SimpleOperator' => 'greaterThan','DateValue' => retrieveDate}
 	getResponse = getClickEvent.get
 	p 'Retrieve Status: ' + getResponse.status.to_s
@@ -24,6 +24,31 @@ begin
 
 	while getResponse.moreResults do 
 		p '>>> Continue Retrieve Filtered ClickEvents with GetMoreResults'
+		getResponse = getClickEvent.getMoreResults
+		p 'Retrieve Status: ' + getResponse.status.to_s
+		p 'Code: ' + getResponse.code.to_s
+		p 'Message: ' + getResponse.message.to_s
+		p 'MoreResults: ' + getResponse.moreResults.to_s
+		p 'RequestID: ' + getResponse.request_id.to_s
+		p 'Results Length: ' + getResponse.results.length.to_s
+	end 
+	
+	p '>>> Retrieve Filtered ClickEvents with GetSinceLastBatch set to false'
+	getClickEvent = ET_ClickEvent.new()
+	getClickEvent.authStub = stubObj	
+	getClickEvent.props = ["SendID","SubscriberKey","EventDate","Client.ID","EventType","BatchID","TriggeredSendDefinitionObjectID","PartnerKey","URLID","URL"]
+	getClickEvent.filter = {'Property' => 'EventDate','SimpleOperator' => 'greaterThan','DateValue' => retrieveDate}
+	getClickEvent.getSinceLastBatch = false
+	getResponse = getClickEvent.get
+	p 'Retrieve Status: ' + getResponse.status.to_s
+	p 'Code: ' + getResponse.code.to_s
+	p 'Message: ' + getResponse.message.to_s
+	p 'MoreResults: ' + getResponse.moreResults.to_s
+	p 'RequestID: ' + getResponse.request_id.to_s
+	p 'Results Length: ' + getResponse.results.length.to_s
+	
+	while getResponse.moreResults do 
+		p '>>> Continue Retrieve Filtered ClickEvents with GetSinceLastBatch set to false'
 		getResponse = getClickEvent.getMoreResults
 		p 'Retrieve Status: ' + getResponse.status.to_s
 		p 'Code: ' + getResponse.code.to_s
