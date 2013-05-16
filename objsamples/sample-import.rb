@@ -11,7 +11,17 @@ begin
 	p '>>> Create Import to DataExtension'
 	postImport = ET_Import.new 
 	postImport.authStub = stubObj
-	postImport.props = {"Name"=>NewImportName, "CustomerKey"=>NewImportName, "Description"=>"Created with RubySDK", "AllowErrors"=>"true", "DestinationObject"=>{"ObjectID"=>SendableDataExtensionCustomerKey}, "FieldMappingType"=> "InferFromColumnHeadings", "FileSpec"=>"RubyExample.csv", "FileType"=>"CSV", "Notification"=>{"ResponseType"=>"email","ResponseAddress"=>"example@example.com"},"RetrieveFileTransferLocation"=>{"CustomerKey"=>"ExactTarget Enhanced FTP"}, "UpdateType"=>"Overwrite"}
+	postImport.props = {"Name"=>NewImportName}
+	postImport.props["CustomerKey"] = NewImportName
+	postImport.props["Description"] = "Created with RubySDK"
+	postImport.props["AllowErrors"] = "true"
+	postImport.props["DestinationObject"] = {"ObjectID"=>SendableDataExtensionCustomerKey}
+	postImport.props["FieldMappingType"] = "InferFromColumnHeadings"
+	postImport.props["FileSpec"] = "RubyExample.csv"
+	postImport.props["FileType"] = "CSV"
+	postImport.props["Notification"] = {"ResponseType"=>"email","ResponseAddress"=>"example@example.com"}
+	postImport.props["RetrieveFileTransferLocation"] = {"CustomerKey"=>"ExactTarget Enhanced FTP"}
+	postImport.props["UpdateType"] = "Overwrite"
 	postResponse = postImport.post
 	p 'Post Status: ' + postResponse.status.to_s
 	p 'Code: ' + postResponse.code.to_s
@@ -33,7 +43,17 @@ begin
 	p '>>> Create Import to List'
 	postImport = ET_Import.new 
 	postImport.authStub = stubObj
-	postImport.props = {"Name"=>NewImportName, "CustomerKey"=>NewImportName, "Description"=>"Created with RubySDK", "AllowErrors"=>"true", "DestinationObject"=>{"ID"=>ListIDForImport}, "FieldMappingType"=> "InferFromColumnHeadings", "FileSpec"=>"RubyExample.csv", "FileType"=>"CSV", "Notification"=>{"ResponseType"=>"email","ResponseAddress"=>"example@example.com"},"RetrieveFileTransferLocation"=>{"CustomerKey"=>"ExactTarget Enhanced FTP"}, "UpdateType"=>"AddAndUpdate"}
+	postImport.props = {"Name"=>NewImportName}
+	postImport.props["CustomerKey"] = NewImportName
+	postImport.props["Description"] = "Created with RubySDK"
+	postImport.props["AllowErrors"] = "true"
+	postImport.props["DestinationObject"] = {"ID"=>ListIDForImport}
+	postImport.props["FieldMappingType"] = "InferFromColumnHeadings"
+	postImport.props["FileSpec"] = "RubyExample.csv"
+	postImport.props["FileType"] = "CSV"
+	postImport.props["Notification"] = {"ResponseType"=>"email","ResponseAddress"=>"example@example.com"}
+	postImport.props["RetrieveFileTransferLocation"] = {"CustomerKey"=>"ExactTarget Enhanced FTP"}
+	postImport.props["UpdateType"] = "AddAndUpdate"
 	postResponse = postImport.post
 	p 'Post Status: ' + postResponse.status.to_s
 	p 'Code: ' + postResponse.code.to_s

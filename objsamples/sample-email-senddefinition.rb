@@ -5,7 +5,7 @@ begin
 	stubObj = ET_Client.new(false, false)	
 	
 	NewSendDefinitionName = "RubySDKSendDefinition"
-	SendableDataExtensionCustomerKey = "62476204-bfd3-de11-95ca-001e0bbae8cc"
+	SendableDataExtensionCustomerKey = "F6F3871A-D124-499B-BBF5-3EFC0E827A51"
 	EmailIDForSendDefinition = "3113962"
 	ListIDForSendDefinition = "1729515"
 	SendClassificationCustomerKey = "2239"	
@@ -13,7 +13,12 @@ begin
 	p '>>> Create SendDefinition to DataExtension'
 	postSendDefinition = ET_Email::SendDefinition.new 
 	postSendDefinition.authStub = stubObj
-	postSendDefinition.props = {"Name"=>NewSendDefinitionName, "CustomerKey"=>NewSendDefinitionName, "Description"=>"Created with RubySDK", "SendClassification"=>{"CustomerKey"=>SendClassificationCustomerKey},"SendDefinitionList"=>{"CustomObjectID"=> SendableDataExtensionCustomerKey, "DataSourceTypeID"=>"CustomObject"}, "Email" => {"ID"=>EmailIDForSendDefinition}}
+	postSendDefinition.props = {"Name"=>NewSendDefinitionName}
+	postSendDefinition.props["CustomerKey"] = NewSendDefinitionName
+	postSendDefinition.props["Description"]  = "Created with RubySDK"
+	postSendDefinition.props["SendClassification"] = {"CustomerKey"=>SendClassificationCustomerKey}
+	postSendDefinition.props["SendDefinitionList"] = {"CustomerKey"=> SendableDataExtensionCustomerKey, "DataSourceTypeID"=>"CustomObject"}
+	postSendDefinition.props["Email"] = {"ID"=>EmailIDForSendDefinition}
 	postResponse = postSendDefinition.post
 	p 'Post Status: ' + postResponse.status.to_s
 	p 'Code: ' + postResponse.code.to_s
@@ -35,7 +40,12 @@ begin
 	p '>>> Create SendDefinition to List'
 	postSendDefinition = ET_Email::SendDefinition.new 
 	postSendDefinition.authStub = stubObj
-	postSendDefinition.props = {"Name"=>NewSendDefinitionName, "CustomerKey"=>NewSendDefinitionName, "Description"=>"Created with RubySDK", "SendClassification"=>{"CustomerKey"=>SendClassificationCustomerKey},"SendDefinitionList"=>{"List"=> {"ID"=>ListIDForSendDefinition}, "DataSourceTypeID"=>"List"}, "Email" => {"ID"=>EmailIDForSendDefinition}}
+	postSendDefinition.props = {"Name"=>NewSendDefinitionName}
+	postSendDefinition.props["CustomerKey"] = NewSendDefinitionName
+	postSendDefinition.props["Description"] = "Created with RubySDK"
+	postSendDefinition.props["SendClassification"] = {"CustomerKey"=>SendClassificationCustomerKey}
+	postSendDefinition.props["SendDefinitionList"] = {"List"=> {"ID"=>ListIDForSendDefinition}, "DataSourceTypeID"=>"List"}
+	postSendDefinition.props["Email"] = {"ID"=>EmailIDForSendDefinition}
 	postResponse = postSendDefinition.post
 	p 'Post Status: ' + postResponse.status.to_s
 	p 'Code: ' + postResponse.code.to_s

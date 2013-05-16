@@ -6,6 +6,7 @@ require 'json'
 require 'yaml'
 require 'jwt'
 require 'net/http'
+require 'securerandom'
 
 class ET_Constructor
 	attr_accessor :status, :code, :message, :results, :request_id, :moreResults
@@ -233,7 +234,120 @@ class ET_Client < ET_CreateWSDL
 
 		return postResponse
 	end
-
+	
+	def SendEmailToList(emailID, listID, sendClassficationCustomerKey)
+		email = ET_Email::SendDefinition.new 
+		email.props = {"Name"=>SecureRandom.uuid, "CustomerKey"=>SecureRandom.uuid, "Description"=>"Created with RubySDK"} 
+		email.props["SendClassification"] = {"CustomerKey"=>sendClassficationCustomerKey}
+		email.props["SendDefinitionList"] = {"List"=> {"ID"=>listID}, "DataSourceTypeID"=>"List"}
+		email.props["Email"] = {"ID"=>emailID}
+		email.authStub = self
+		result = email.post
+		if result.status then 
+			sendresult = email.send 
+			if sendresult.status then 
+				deleteresult = email.delete
+				return sendresult
+			else 
+				raise "Unable to send using send definition due to: #{result.results[0][:status_message]}"
+			end 
+		else
+			raise "Unable to create send definition due to: #{result.results[0][:status_message]}"
+		end 
+	end 
+	
+	def SendEmailToDataExtension(emailID, sendableDataExtensionCustomerKey, sendClassficationCustomerKey)
+		email = ET_Email::SendDefinition.new 
+		email.props = {"Name"=>SecureRandom.uuid, "CustomerKey"=>SecureRandom.uuid, "Description"=>"Created with RubySDK"} 
+		email.props["SendClassification"] = {"CustomerKey"=> sendClassficationCustomerKey}
+		email.props["SendDefinitionList"] = {"CustomerKey"=> sendableDataExtensionCustomerKey, "DataSourceTypeID"=>"CustomObject"}
+		email.props["Email"] = {"ID"=>emailID}
+		email.authStub = self
+		result = email.post
+		if result.status then 
+			sendresult = email.send 
+			if sendresult.status then 
+				deleteresult = email.delete
+				return sendresult
+			else 
+				raise "Unable to send using send definition due to: #{result.results[0][:status_message]}"
+			end 
+		else
+			raise "Unable to create send definition due to: #{result.results[0][:status_message]}"
+		end 
+	end
+	def SendTriggeredSends(arrayOfTriggeredRecords)
+		sendTS = ET_TriggeredSend.new
+		sendTS.authStub = self
+		
+		sendTS.props = arrayOfTriggeredRecords
+		sendResponse = sendTS.send
+		
+		return sendResponse
+	end 
+	def CreateAndStartListImport(listId,fileName)
+		import = ET_Import.new 
+		import.authStub = self
+		import.props = {"Name"=> "SDK Generated Import #{DateTime.now.to_s}"}
+		import.props["CustomerKey"] = SecureRandom.uuid
+		import.props["Description"] = "SDK Generated Import"
+		import.props["AllowErrors"] = "true"
+		import.props["DestinationObject"] = {"ID"=>listId}
+		import.props["FieldMappingType"] = "InferFromColumnHeadings"
+		import.props["FileSpec"] = fileName
+		import.props["FileType"] = "CSV"
+		import.props["RetrieveFileTransferLocation"] = {"CustomerKey"=>"ExactTarget Enhanced FTP"}
+		import.props["UpdateType"] = "AddAndUpdate"
+		result = import.post
+		
+		if result.status then 
+			return import.start 
+		else
+			raise "Unable to create import definition due to: #{result.results[0][:status_message]}"
+		end 
+		
+	end 
+	
+	def CreateAndStartDataExtensionImport(dataExtensionCustomerKey, fileName, overwrite)
+		import = ET_Import.new 
+		import.authStub = self
+		import.props = {"Name"=> "SDK Generated Import #{DateTime.now.to_s}"}
+		import.props["CustomerKey"] = SecureRandom.uuid
+		import.props["Description"] = "SDK Generated Import"
+		import.props["AllowErrors"] = "true"
+		import.props["DestinationObject"] = {"ObjectID"=>dataExtensionCustomerKey}
+		import.props["FieldMappingType"] = "InferFromColumnHeadings"
+		import.props["FileSpec"] = fileName
+		import.props["FileType"] = "CSV"
+		import.props["RetrieveFileTransferLocation"] = {"CustomerKey"=>"ExactTarget Enhanced FTP"}
+		if overwrite then
+			import.props["UpdateType"] = "Overwrite"
+		else 
+			import.props["UpdateType"] = "AddAndUpdate"
+		end 
+		result = import.post
+		
+		if result.status then 
+			return import.start 
+		else
+			raise "Unable to create import definition due to: #{result.results[0][:status_message]}"
+		end 
+	end 
+	
+	def CreateProfileAttributes(allAttributes)
+		attrs = ET_ProfileAttribute.new 
+		attrs.authStub = self
+		attrs.props = allAttributes
+		return attrs.post
+	end
+	def CreateContentAreas(arrayOfContentAreas)
+		postC = ET_ContentArea.new
+		postC.authStub = self
+		postC.props = arrayOfContentAreas
+		sendResponse = postC.post
+		
+		return sendResponse
+	end 
 	protected
 
 	def determineStack()
@@ -431,7 +545,15 @@ class ET_Configure < ET_Constructor
 		authStub.refreshToken
 		rqstMessage = {}
 		rqstMessage['Action'] = action
-		rqstMessage['Configurations'] = {'Configuration' => props}
+		rqstMessage['Configurations'] = {}
+		if props.is_a? Array then
+			rqstMessage['Configurations']['Configuration'] = []
+			props.each do |profileAttr|
+				rqstMessage['Configurations']['Configuration'] << profileAttr
+			end
+		else 
+			rqstMessage['Configurations'] = {'Configuration' => props}
+		end 
 		rqstMessage['Configurations'][:attributes!] = { 'Configuration' => { 'xsi:type' => ('tns:' + objType) }}
 		response = authStub.auth.call(:configure, :message => rqstMessage)
 		super(response)
@@ -1305,8 +1427,15 @@ class ET_TriggeredSend < ET_CUDSupport
 	end
 
 	def send
-		@tscall = {"TriggeredSendDefinition" => @props, "Subscribers" => @subscribers}
-		obj = ET_Post.new(@authStub, "TriggeredSend", @tscall)
+		if @props.is_a? Array then
+			tscall = []
+			@props.each{ |p|
+				tscall.push({"TriggeredSendDefinition" => {"CustomerKey" => p["CustomerKey"]}, "Subscribers" => p["Subscribers"]})
+			}			
+		else
+			tscall = {"TriggeredSendDefinition" => @props, "Subscribers" => @subscribers}	
+		end 		
+		obj = ET_Post.new(@authStub, "TriggeredSend", tscall)
 	end
 end
 
