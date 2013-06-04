@@ -88,17 +88,13 @@ class ET_Client < ET_CreateWSDL
   attr_accessor :auth, :ready, :status, :debug, :authToken
   attr_reader :authTokenExpiration, :internalAuthToken, :wsdlLoc, :clientId, :clientSecret, :soapHeader, :authObj, :path, :appsignature, :stackID, :refreshKey
 
-  def initialize(getWSDL = nil, debug = nil, params = nil)
+  def initialize(getWSDL = nil, debug = false, params = nil)
     config = YAML.load_file("config.yaml")
     @clientId = config["clientid"]
     @clientSecret = config["clientsecret"]
     @appsignature = config["appsignature"]
     @wsdl = config["defaultwsdl"]
-    @debug = false
-
-    if debug then
-      @debug = debug
-    end
+    @debug = debug
 
     if !getWSDL then
       getWSDL = true
@@ -129,8 +125,6 @@ class ET_Client < ET_CreateWSDL
       else
         self.refreshToken
       end
-
-      self.debug = @debug
 
     rescue
       raise
