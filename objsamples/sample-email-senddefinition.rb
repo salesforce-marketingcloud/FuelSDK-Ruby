@@ -8,8 +8,19 @@ begin
 	SendableDataExtensionCustomerKey = "F6F3871A-D124-499B-BBF5-3EFC0E827A51"
 	EmailIDForSendDefinition = "3113962"
 	ListIDForSendDefinition = "1729515"
-	SendClassificationCustomerKey = "2239"	
-
+	SendClassificationCustomerKey = "2239"
+	
+	p '>>> Retrieve Send Definition Details'
+	getSendDefinition = ET_Email::SendDefinition.new 
+	getSendDefinition.authStub = stubObj
+	getSendDefinition.props = ['Client.ID', 'CreatedDate','ModifiedDate','ObjectID','CustomerKey','Name','CategoryID','Description','SendClassification.CustomerKey','SenderProfile.CustomerKey','SenderProfile.FromName','SenderProfile.FromAddress','DeliveryProfile.CustomerKey','DeliveryProfile.SourceAddressType','DeliveryProfile.PrivateIP','DeliveryProfile.DomainType','DeliveryProfile.PrivateDomain','DeliveryProfile.HeaderSalutationSource','DeliveryProfile.FooterSalutationSource','SuppressTracking','IsSendLogging','Email.ID','BccEmail','AutoBccEmail','TestEmailAddr','EmailSubject','DynamicEmailSubject','IsMultipart','IsWrapped','SendLimit','SendWindowOpen','SendWindowClose','DeduplicateByEmail','ExclusionFilter','Additional']
+	getResponse = getSendDefinition.get
+	p 'Post Status: ' + getResponse.status.to_s
+	p 'Code: ' + getResponse.code.to_s
+	p 'Message: ' + getResponse.message.to_s
+	p 'Result Count: ' + getResponse.results.length.to_s
+	
+=begin
 	p '>>> Create SendDefinition to DataExtension'
 	postSendDefinition = ET_Email::SendDefinition.new 
 	postSendDefinition.authStub = stubObj
@@ -53,12 +64,12 @@ begin
 	p 'Result Count: ' + postResponse.results.length.to_s
 	p 'Results: ' + postResponse.results.inspect
 	
-	p '>>> Start SendDefinition'
+	p '>>> Send SendDefinition'
 	sendSendDefinition = ET_Email::SendDefinition.new 
 	sendSendDefinition.authStub = stubObj
 	sendSendDefinition.props = {"CustomerKey"=>NewSendDefinitionName}
 	sendResponse = sendSendDefinition.send
-	p 'Start Status: ' + sendResponse.status.to_s
+	p 'Send Status: ' + sendResponse.status.to_s
 	p 'Code: ' + sendResponse.code.to_s
 	p 'Message: ' + sendResponse.message.to_s
 	p 'Result Count: ' + sendResponse.results.length.to_s
@@ -90,7 +101,7 @@ begin
 	p 'Results Length: ' + deleteResponse.results.length.to_s
 	p 'Results: ' + deleteResponse.results.to_s
 	
-
+=end
 rescue => e
 	p "Caught exception: #{e.message}"
 	p e.backtrace

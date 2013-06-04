@@ -760,7 +760,7 @@ class ET_CUDSupport < ET_GetSupport
 				
 				newFolder = ET_Folder.new
 				newFolder.authStub = @authStub
-				newFolder.props = {"Name" => @authStub.packageName, "Description" => @authStub.packageName, "ContentType"=> @folderMediaType, "ParentFolder" => {"ID" => @authStub.parentFolders[@folderMediaType]}}
+				newFolder.props = {"Name" => @authStub.packageName, "Description" => @authStub.packageName, "ContentType"=> @folderMediaType, "IsEditable"=>"true", "ParentFolder" => {"ID" => @authStub.parentFolders[@folderMediaType]}}
 				folderResult = newFolder.post
 				if folderResult.status then
 					@authStub.packageFolders[@folderMediaType]  = folderResult.results[0][:new_id]
@@ -1139,6 +1139,8 @@ class ET_DataExtension < ET_CUDSupport
 	def initialize
 		super
 		@obj = 'DataExtension'
+		@folderProperty = 'CategoryID'
+		@folderMediaType = 'dataextension'
 	end
 
 	def post

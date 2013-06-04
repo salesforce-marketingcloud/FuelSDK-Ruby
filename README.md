@@ -7,7 +7,7 @@ ExactTarget Fuel SDK for Ruby
 The Fuel SDK for Ruby provides easy access to ExactTarget's Fuel API Family services, including a collection of REST APIs and a SOAP API. These APIs provide access to ExactTarget functionality via common collection types such as array/hash. 
 
 ## New Features in Version .9 ##
-- **Streamlined Folder Support**: All objects that support folders within the UI now have a property called folderId in the SDK .
+- **Streamlined Folder Support**: All objects that support folders within the UI now have a standardized property called folderId.
 - **Interaction Support**: Now supports Import and Email::SendDefinition objects .
 - **Profile Attribute Support**: Added the ability to manage profile attributes through the ProfileAttribute object.
 - **Support for single request to Add/Update**:A single request can be made which will create the object if one doesn't already or update one if it does.  This works for Subscriber, DataExtension::Row, and List objects using the Put method.
@@ -122,8 +122,9 @@ Sample List:
  - [TriggeredSend](https://github.com/ExactTarget/FuelSDK-Ruby/blob/master/objsamples/sample-triggeredsend.rb)
  - [UnsubEvent](https://github.com/ExactTarget/FuelSDK-Ruby/blob/master/objsamples/sample-unsubevent.rb)
 
+## Copyright and license ##
+Copyright (c) 2013 ExactTarget
 
- 
+Licensed under the MIT License (the "License"); you may not use this work except in compliance with the License. You may obtain a copy of the License in the COPYING file.
 
-
-
+Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
