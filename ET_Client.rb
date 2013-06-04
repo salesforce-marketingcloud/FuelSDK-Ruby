@@ -86,19 +86,16 @@ end
 
 class ET_Client < ET_CreateWSDL
   attr_accessor :auth, :ready, :status, :debug, :authToken
-  attr_reader :authTokenExpiration, :internalAuthToken, :wsdlLoc, :clientId, :clientSecret, :soapHeader, :authObj, :path, :appsignature, :stackID, :refreshKey
+  attr_reader :authTokenExpiration,:internalAuthToken, :wsdlLoc, :clientId,
+    :clientSecret, :soapHeader, :authObj, :path, :appsignature, :stackID, :refreshKey
 
-  def initialize(getWSDL = nil, debug = false, params = nil)
+  def initialize(getWSDL = true, debug = false, params = nil)
     config = YAML.load_file("config.yaml")
     @clientId = config["clientid"]
     @clientSecret = config["clientsecret"]
     @appsignature = config["appsignature"]
     @wsdl = config["defaultwsdl"]
     @debug = debug
-
-    if !getWSDL then
-      getWSDL = true
-    end
 
     begin
       @path = File.dirname(__FILE__)
@@ -121,7 +118,16 @@ class ET_Client < ET_CreateWSDL
         @authObj[:attributes!] = { 'oAuth' => { 'xmlns' => 'http://exacttarget.com' }}
 
         myWSDL = File.read(@path + '/ExactTargetWSDL.xml')
-        @auth = Savon.client(soap_header: @authObj, wsdl: myWSDL, endpoint: @endpoint, wsse_auth: ["*", "*"],raise_errors: false, log: @debug, open_timeout: 180, read_timeout: 180)
+        @auth = Savon.client(
+          soap_header: @authObj,
+          wsdl: myWSDL,
+          endpoint: @endpoint,
+          wsse_auth: ["*", "*"],
+          raise_errors: false,
+          log: @debug,
+          open_timeout:180,
+          read_timeout: 180
+        )
       else
         self.refreshToken
       end
@@ -180,12 +186,14 @@ class ET_Client < ET_CreateWSDL
       @authObj[:attributes!] = { 'oAuth' => { 'xmlns' => 'http://exacttarget.com' }}
 
       myWSDL = File.read(@path + '/ExactTargetWSDL.xml')
-      @auth = Savon.client(soap_header: @authObj,
+      @auth = Savon.client(
+        soap_header: @authObj,
         wsdl: myWSDL,
         endpoint: @endpoint,
         wsse_auth: ["*", "*"],
         raise_errors: false,
-        log: @debug)
+        log: @debug
+      )
 
 
       rescue Exception => e
