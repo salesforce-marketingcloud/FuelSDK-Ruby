@@ -8,6 +8,7 @@ require 'jwt'
 require 'net/http'
 require 'securerandom'
 
+# Construct Response...
 class ET_Constructor
   attr_accessor :status, :code, :message, :results, :request_id, :moreResults
 
