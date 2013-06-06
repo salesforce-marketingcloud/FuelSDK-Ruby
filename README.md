@@ -27,13 +27,13 @@ If you have not registered your application or you need to lookup your Applicati
 All ExactTarget objects exposed through the Fuel SDK begin with be prefixed with "ET\_".  Start by working with the ET_List object:
 
 Add a require statement to reference the Fuel SDK's functionality:
-> require './ET_Client.rb'
+> require 'fuelsdk'
 
 Next, create an instance of the ET_Client class:
-> myClient = ET_Client.new
+> myClient = FuelSDK::ET_Client.new
 
 Create an instance of the object type we want to work with:
-> list = ET_List.new
+> list = FuelSDK::ET_List.new
 
 Associate the ET_Client to the object using the authStub property:
 > list.authStub = myClient
