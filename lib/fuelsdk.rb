@@ -150,48 +150,48 @@ module FuelSDK
       #If we don't already have a token or the token expires within 5 min(300 seconds), get one
       if ((@authToken.nil? || Time.new + 300 > @authTokenExpiration) || force) then
         begin
-        uri = URI.parse("https://auth.exacttargetapis.com/v1/requestToken?legacy=1")
-        http = Net::HTTP.new(uri.host, uri.port)
-        http.use_ssl = true
-        request = Net::HTTP::Post.new(uri.request_uri)
-        jsonPayload = {'clientId' => @clientId, 'clientSecret' => @clientSecret}
+          uri = URI.parse("https://auth.exacttargetapis.com/v1/requestToken?legacy=1")
+          http = Net::HTTP.new(uri.host, uri.port)
+          http.use_ssl = true
+          request = Net::HTTP::Post.new(uri.request_uri)
+          jsonPayload = {'clientId' => @clientId, 'clientSecret' => @clientSecret}
 
-        #Pass in the refreshKey if we have it
-        if @refreshKey then
-          jsonPayload['refreshToken'] = @refreshKey
-        end
+          #Pass in the refreshKey if we have it
+          if @refreshKey then
+            jsonPayload['refreshToken'] = @refreshKey
+          end
 
-        request.body = jsonPayload.to_json
-        request.add_field "Content-Type", "application/json"
-        tokenResponse = JSON.parse(http.request(request).body)
+          request.body = jsonPayload.to_json
+          request.add_field "Content-Type", "application/json"
+          tokenResponse = JSON.parse(http.request(request).body)
 
-        if !tokenResponse.has_key?('accessToken') then
-          raise 'Unable to validate App Keys(ClientID/ClientSecret) provided: ' + http.request(request).body
-        end
+          if !tokenResponse.has_key?('accessToken') then
+            raise 'Unable to validate App Keys(ClientID/ClientSecret) provided: ' + http.request(request).body
+          end
 
-        @authToken = tokenResponse['accessToken']
-        @authTokenExpiration = Time.new + tokenResponse['expiresIn']
-        @internalAuthToken = tokenResponse['legacyToken']
-        if tokenResponse.has_key?("refreshToken") then
-          @refreshKey = tokenResponse['refreshToken']
-        end
+          @authToken = tokenResponse['accessToken']
+          @authTokenExpiration = Time.new + tokenResponse['expiresIn']
+          @internalAuthToken = tokenResponse['legacyToken']
+          if tokenResponse.has_key?("refreshToken") then
+            @refreshKey = tokenResponse['refreshToken']
+          end
 
-        if @endpoint.nil? then
-          self.determineStack
-        end
+          if @endpoint.nil? then
+            self.determineStack
+          end
 
-        @authObj = {'oAuth' => {'oAuthToken' => @internalAuthToken}}
-        @authObj[:attributes!] = { 'oAuth' => { 'xmlns' => 'http://exacttarget.com' }}
+          @authObj = {'oAuth' => {'oAuthToken' => @internalAuthToken}}
+          @authObj[:attributes!] = { 'oAuth' => { 'xmlns' => 'http://exacttarget.com' }}
 
-        myWSDL = File.read(@path + '/ExactTargetWSDL.xml')
-        @auth = Savon.client(
-          soap_header: @authObj,
-          wsdl: myWSDL,
-          endpoint: @endpoint,
-          wsse_auth: ["*", "*"],
-          raise_errors: false,
-          log: @debug
-        )
+          myWSDL = File.read(@path + '/ExactTargetWSDL.xml')
+          @auth = Savon.client(
+            soap_header: @authObj,
+            wsdl: myWSDL,
+            endpoint: @endpoint,
+            wsse_auth: ["*", "*"],
+            raise_errors: false,
+            log: @debug
+          )
 
         rescue Exception => e
           raise 'Unable to validate App Keys(ClientID/ClientSecret) provided: ' + e.message
