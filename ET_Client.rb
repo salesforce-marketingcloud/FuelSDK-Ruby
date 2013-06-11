@@ -81,7 +81,7 @@ class ET_CreateWSDL
 end
 
 class ET_Client < ET_CreateWSDL
-	attr_accessor :auth, :ready, :status, :debug, :authToken, :packageName, :packageFolders, :parentFolders
+	attr_accessor :auth, :status, :debug, :authToken, :packageName, :packageFolders, :parentFolders
 	attr_reader :authTokenExpiration, :internalAuthToken, :wsdlLoc, :clientId, :clientSecret, :soapHeader, :authObj, :path, :appsignature, :stackID, :refreshKey
 	def initialize(getWSDL = nil, debug = nil, params = nil)
 		config = YAML.load_file("config.yaml")
@@ -96,8 +96,8 @@ class ET_Client < ET_CreateWSDL
 			@debug = debug
 		end
 
-		if !getWSDL then
-		getWSDL = true
+		if getWSDL.nil? then
+			getWSDL = false
 		end
 
 		begin
@@ -105,7 +105,7 @@ class ET_Client < ET_CreateWSDL
 
 			#make a new WSDL
 			if getWSDL then
-			super(@path)
+				super(@path)
 			end
 
 			if params && params.has_key?("jwt") then
@@ -140,12 +140,6 @@ class ET_Client < ET_CreateWSDL
 		rescue
 			raise
 		end
-
-		if ((@auth.operations.length > 0) and (@status >= 200 and @status <= 400)) then
-			@ready = true
-		else
-			@ready = false
-		end
 	end
 
 	def debug=(value)
@@ -168,10 +162,11 @@ class ET_Client < ET_CreateWSDL
 
 				request.body = jsonPayload.to_json
 				request.add_field "Content-Type", "application/json"
-				tokenResponse = JSON.parse(http.request(request).body)
+				jsonResponse = http.request(request).body
+				tokenResponse = JSON.parse(jsonResponse)
 
 				if !tokenResponse.has_key?('accessToken') then
-					raise 'Unable to validate App Keys(ClientID/ClientSecret) provided: ' + http.request(request).body
+					raise 'Unable to validate App Keys(ClientID/ClientSecret) provided: ' + jsonResponse
 				end
 
 				@authToken = tokenResponse['accessToken']
@@ -350,7 +345,7 @@ class ET_Client < ET_CreateWSDL
 	end 
 	protected
 
-	def determineStack()
+	def determineStack()		
 		begin
 			uri = URI.parse("https://www.exacttargetapis.com/platform/v1/endpoints/soap?access_token=" + @authToken)
 			http = Net::HTTP.new(uri.host, uri.port)
