@@ -1,24 +1,63 @@
 require "fuelsdk/version"
 
 require 'rubygems'
+require 'open-uri'
+require 'savon'
 require 'date'
+require 'json'
+require 'yaml'
 require 'jwt'
 
-module FuelSDK
-  autoload :HTTPRequest, 'fuelsdk/http_request'
-  autoload :Targeting, 'fuelsdk/targeting'
-  autoload :Soap, 'fuelsdk/soap'
-  autoload :Rest, 'fuelsdk/rest'
-  autoload :SoapClient, 'fuelsdk/soap_client'
-  autoload :RestClient, 'fuelsdk/rest_client'
 
+def indifferent_access key, hash
+  hash[key.to_sym] || hash[key.to_s]
+end
+
+module FuelSDK
+
+  class Soap
+    def client
+      'soap'
+    end
+  end
+
+  class Rest
+    def client
+      'rest'
+    end
+  end
+
+  class Client
+    attr_reader :id, :secret, :signature
+
+    def initialize params={}, debug=false
+      @debug = debug
+      @id = indifferent_access :clientid, params
+      @secret = indifferent_access :clientsecret, params
+      @signature = indifferent_access :appsignature, params
+    end
+  end
+
+  class SoapClient < Client
+    def initialize getWSDL=true, params={}, debug=false
+      super params, debug
+      @wsdl = params["defaultwsdl"]
+    end
+  end
+
+  class RestClient < Client
+  end
+
+
+  # parse response
   class ET_Constructor
     attr_accessor :status, :code, :message, :results, :request_id, :moreResults
 
     def initialize(response = nil, rest = false)
       @results = []
       if !response.nil? && !rest then
-        @@body = response.body
+        envelope = response.hash[:envelope]
+        @@body = envelope[:body]
 
         if ((!response.soap_fault?) or (!response.http_error?)) then
           @code = response.http.code
@@ -48,64 +87,156 @@ module FuelSDK
     end
   end
 
-  class ET_Client
-    attr_accessor :debug, :access_token, :auth_token, :internal_token, :refresh_token,
-      :id, :secret, :signature
+  class ET_CreateWSDL
 
-    def jwt= encoded_jwt
-      raise 'Require app signature to decode JWT' unless self.signature
-      decoded_jwt = JWT.decode(encoded_jwt, self.signature, true)
+    def initialize(path)
+      # Get the header info for the correct wsdl
+      response = HTTPI.head(@wsdl)
+      if response and (response.code >= 200 and response.code <= 400) then
+        header = response.headers
+        # Check when the WSDL was last modified
+        modifiedTime = Date.parse(header['last-modified'])
+        p = path + '/ExactTargetWSDL.xml'
+        # Check if a local file already exists
+        if (File.file?(p) and File.readable?(p) and !File.zero?(p)) then
+          createdTime = File.new(p).mtime.to_date
 
-      self.auth_token = decoded_jwt['request']['user']['oauthToken']
-      self.internal_token = decoded_jwt['request']['user']['internalOauthToken']
-      self.refresh_token = decoded_jwt['request']['user']['refreshToken']
-      #@authTokenExpiration = Time.new + decoded_jwt['request']['user']['expiresIn']
-    end
+          # Check if the locally created WSDL older than the production WSDL
+          if createdTime < modifiedTime then
+            createIt = true
+          else
+            createIt = false
+          end
+        else
+          createIt = true
+        end
 
-    def initialize(params={}, debug=false)
-
-      self.debug = debug
-      client_config = params['client']
-      if client_config
-        self.id = client_config["id"]
-        self.secret = client_config["secret"]
-        self.signature = client_config["signature"]
-      end
-
-      self.jwt = params['jwt'] if params['jwt']
-      self.refresh_token = params['refresh_token'] if params['refresh_token']
-
-      if params["defaultwsdl"] || params["type"] == "soap"
-        extend FuelSDK::Soap
-        self.wsdl = params["defaultwsdl"] if params["defaultwsdl"]
+        if createIt then
+          res = open(@wsdl).read
+          File.open(p, 'w+') { |f|
+            f.write(res)
+          }
+        end
+        @status = response.code
       else
-        extend FuelSDK::Rest
+        @status = response.code
+      end
+    end
+  end
+
+  class ET_Client < ET_CreateWSDL
+    attr_accessor :auth, :ready, :status, :debug, :authToken
+    attr_reader :authTokenExpiration,:internalAuthToken, :wsdlLoc, :clientId,
+      :clientSecret, :soapHeader, :authObj, :path, :appsignature, :stackID, :refreshKey
+
+    def initialize(getWSDL = true, debug = false, params = nil)
+      config = YAML.load_file("config.yaml")
+      @clientId = config["clientid"]
+      @clientSecret = config["clientsecret"]
+      @appsignature = config["appsignature"]
+      @wsdl = config["defaultwsdl"]
+      @debug = debug
+
+      begin
+        @path = File.dirname(__FILE__)
+
+        #make a new WSDL
+        if getWSDL then
+          super(@path)
+        end
+
+        if params && params.has_key?("jwt") then
+          jwt = JWT.decode(params["jwt"], @appsignature, true);
+          @authToken = jwt['request']['user']['oauthToken']
+          @authTokenExpiration = Time.new + jwt['request']['user']['expiresIn']
+          @internalAuthToken = jwt['request']['user']['internalOauthToken']
+          @refreshKey = jwt['request']['user']['refreshToken']
+
+          self.determineStack
+
+          @authObj = {'oAuth' => {'oAuthToken' => @internalAuthToken}}
+          @authObj[:attributes!] = { 'oAuth' => { 'xmlns' => 'http://exacttarget.com' }}
+
+          myWSDL = File.read(@path + '/ExactTargetWSDL.xml')
+          @auth = Savon.client(
+            soap_header: @authObj,
+            wsdl: myWSDL,
+            endpoint: @endpoint,
+            wsse_auth: ["*", "*"],
+            raise_errors: false,
+            log: @debug,
+            open_timeout:180,
+            read_timeout: 180
+          )
+        else
+          self.refreshToken
+        end
+
+      rescue
+        raise
+      end
+
+      if ((@auth.operations.length > 0) and (@status >= 200 and @status <= 400)) then
+        @ready = true
+      else
+        @ready = false
       end
     end
 
-    def refresh force=false
-      raise 'Require Client Id and Client Secret to refresh tokens' unless (id && secret)
+    def debug=(value)
+      @debug = value
+    end
 
-      if (self.access_token.nil? || force)
-        payload = Hash.new.tap do |h|
-          h['clientId']= id
-          h['clientSecret'] = secret
-          h['refreshToken'] = refresh_token if refresh_token
-          h['accessType'] = 'offline'
+    def refreshToken(force = nil)
+      #If we don't already have a token or the token expires within 5 min(300 seconds), get one
+      if ((@authToken.nil? || Time.new + 300 > @authTokenExpiration) || force) then
+        begin
+          uri = URI.parse("https://auth.exacttargetapis.com/v1/requestToken?legacy=1")
+          http = Net::HTTP.new(uri.host, uri.port)
+          http.use_ssl = true
+          request = Net::HTTP::Post.new(uri.request_uri)
+          jsonPayload = {'clientId' => @clientId, 'clientSecret' => @clientSecret}
+
+          #Pass in the refreshKey if we have it
+          if @refreshKey then
+            jsonPayload['refreshToken'] = @refreshKey
+          end
+
+          request.body = jsonPayload.to_json
+          request.add_field "Content-Type", "application/json"
+          tokenResponse = JSON.parse(http.request(request).body)
+
+          if !tokenResponse.has_key?('accessToken') then
+            raise 'Unable to validate App Keys(ClientID/ClientSecret) provided: ' + http.request(request).body
+          end
+
+          @authToken = tokenResponse['accessToken']
+          @authTokenExpiration = Time.new + tokenResponse['expiresIn']
+          @internalAuthToken = tokenResponse['legacyToken']
+          if tokenResponse.has_key?("refreshToken") then
+            @refreshKey = tokenResponse['refreshToken']
+          end
+
+          if @endpoint.nil? then
+            self.determineStack
+          end
+
+          @authObj = {'oAuth' => {'oAuthToken' => @internalAuthToken}}
+          @authObj[:attributes!] = { 'oAuth' => { 'xmlns' => 'http://exacttarget.com' }}
+
+          myWSDL = File.read(@path + '/ExactTargetWSDL.xml')
+          @auth = Savon.client(
+            soap_header: @authObj,
+            wsdl: myWSDL,
+            endpoint: @endpoint,
+            wsse_auth: ["*", "*"],
+            raise_errors: false,
+            log: @debug
+          )
+
+        rescue Exception => e
+          raise 'Unable to validate App Keys(ClientID/ClientSecret) provided: ' + e.message
         end
-
-        options = Hash.new.tap do |h|
-          h['data'] = payload
-          h['params'] = {'legacy' => 1} if self.mode == 'soap'
-        end
-
-        response = post("https://auth.exacttargetapis.com/v1/requestToken", options)
-        raise "Unable to refresh token: #{response['message']}" unless response.has_key?('accessToken')
-
-        self.access_token = response['accessToken']
-        self.internal_token = response['legacyToken']
-        #@authTokenExpiration = Time.new + tokenResponse['expiresIn']
-        self.refresh_token = response['refreshToken'] if response.has_key?("refreshToken")
       end
     end
 
@@ -148,6 +279,23 @@ module FuelSDK
     end
 
 
+    protected
+      def determineStack()
+        begin
+          uri = URI.parse("https://www.exacttargetapis.com/platform/v1/endpoints/soap?access_token=" + @authToken)
+          http = Net::HTTP.new(uri.host, uri.port)
+
+          http.use_ssl = true
+
+          request = Net::HTTP::Get.new(uri.request_uri)
+
+          contextResponse = JSON.parse(http.request(request).body)
+          @endpoint = contextResponse['url']
+
+        rescue StandardError => e
+          raise 'Unable to determine stack using /platform/v1/tokenContext: ' + e.message
+        end
+      end
   end
 
   class ET_Describe < ET_Constructor
