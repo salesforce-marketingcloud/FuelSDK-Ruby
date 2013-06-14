@@ -17,6 +17,7 @@ module FuelSDK
     def put
       client.put id, properties
     end
+    alias :patch :put
 
     def delete
       client.delete id, properties

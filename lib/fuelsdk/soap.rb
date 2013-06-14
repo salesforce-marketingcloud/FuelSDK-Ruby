@@ -5,14 +5,24 @@ module FuelSDK
     # not doing accessor so user, can't update these values from response.
     # You will see in the code some of these
     # items are being updated via back doors and such.
-    attr_reader :code, :message, :results, :request_id, :body, :raw, :success, :more
+    attr_reader :code, :message, :results, :request_id, :body, :raw
 
+    alias :status :code # backward compatibility
+    # some defaults
+    def success
+      @success ||= false
+    end
     alias :success? :success
+
+
+    def more
+      @more ||= false
+    end
     alias :more? :more
 
     def initialize raw, client
       @client = client # keep connection with client in case we request more
-      @more = false
+      @results = []
       unpack raw
     end
 
@@ -37,7 +47,8 @@ module FuelSDK
         @message = parse_msg raw
         @success = @message == 'OK'
 
-        @results = parse_rslts raw
+
+        @results += (parse_rslts raw)
       end
 
       def parse_msg raw
@@ -45,11 +56,10 @@ module FuelSDK
       end
 
       def parse_rslts raw
-        parsed = []
         @more = (raw.body[raw.body.keys.first][:overall_status] == 'MoreDataAvailable')
         rslts = raw.body[raw.body.keys.first][:results]
-        parsed.concat rslts if rslts
-        parsed
+        rslts = [rslts] unless rslts.kind_of? Array
+        rslts
       end
   end
 
@@ -197,7 +207,7 @@ module FuelSDK
           'Objects' => properties,
           :attributes! => { 'Objects' => { 'xsi:type' => ('tns:' + object_type) } }
         }
-        CUDResponse.new client.call(:create, :message => message), self
+        CUDResponse.new client.call(action, :message => message), self
       end
   end
 end
