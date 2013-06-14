@@ -1,5 +1,5 @@
 require 'fuelsdk'
-require 'securerandom'
+require_relative 'sample_helper' # contains auth with credentials
 
 begin
   stubObj = FuelSDK::ET_Client.new auth
@@ -9,32 +9,32 @@ begin
 
   SubscriberTestEmail = "RubySDKExample@jb.kevy.com"
 
-#  # Create Subscriber
-#  p '>>> Create Subscriber'
-#  postSub = FuelSDK::ET_Subscriber.new
-#  postSub.authStub = stubObj
-#  postSub.props = {"EmailAddress" => SubscriberTestEmail}
-#  p '>>> Posting'
-#  postResponse = postSub.post
-#  p "Post Status: #{postResponse.success? ? 'Success' : 'Failure'}"
-#  p 'Code: ' + postResponse.code.to_s
-#  p 'Message: ' + postResponse.message.to_s
-#  p 'Result Count: ' + postResponse.results.length.to_s
-#  p 'Results: ' + postResponse.results.inspect
-#
-#  # Retrieve newly created Subscriber
-#  p '>>> Retrieve newly created Subscriber'
-#  getSub = FuelSDK::ET_Subscriber.new()
-#  getSub.authStub = stubObj
-#  getSub.props = ["SubscriberKey", "EmailAddress", "Status"]
-#  getSub.filter = {'Property' => 'SubscriberKey', 'SimpleOperator' => 'equals', 'Value' => SubscriberTestEmail}
-#  getResponse = getSub.get
-#  p "Retrieve Status: #{getResponse.success? ? 'Success' : 'Failure'}"
-#  p 'Code: ' + getResponse.code.to_s
-#  p 'Message: ' + getResponse.message.to_s
-#  p 'MoreResults: ' + getResponse.more?.to_s
-#  p 'Results Length: ' + getResponse.results.length.to_s
-#  p 'Results: ' + getResponse.results.to_s
+  # Create Subscriber
+  p '>>> Create Subscriber'
+  postSub = FuelSDK::ET_Subscriber.new
+  postSub.authStub = stubObj
+  postSub.props = {"EmailAddress" => SubscriberTestEmail}
+  p '>>> Posting'
+  postResponse = postSub.post
+  p "Post Status: #{postResponse.success? ? 'Success' : 'Failure'}"
+  p 'Code: ' + postResponse.code.to_s
+  p 'Message: ' + postResponse.message.to_s
+  p 'Result Count: ' + postResponse.results.length.to_s
+  p 'Results: ' + postResponse.results.inspect
+
+  # Retrieve newly created Subscriber
+  p '>>> Retrieve newly created Subscriber'
+  getSub = FuelSDK::ET_Subscriber.new()
+  getSub.authStub = stubObj
+  getSub.props = ["SubscriberKey", "EmailAddress", "Status"]
+  getSub.filter = {'Property' => 'SubscriberKey', 'SimpleOperator' => 'equals', 'Value' => SubscriberTestEmail}
+  getResponse = getSub.get
+  p "Retrieve Status: #{getResponse.success? ? 'Success' : 'Failure'}"
+  p 'Code: ' + getResponse.code.to_s
+  p 'Message: ' + getResponse.message.to_s
+  p 'MoreResults: ' + getResponse.more?.to_s
+  p 'Results Length: ' + getResponse.results.length.to_s
+  p 'Results: ' + getResponse.results.to_s
 
   # Update Subscriber
   p '>>> Update Subscriber'
