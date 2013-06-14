@@ -5,16 +5,15 @@ module FuelSDK
     # not doing accessor so user, can't update these values from response.
     # You will see in the code some of these
     # items are being updated via back doors and such.
-    attr_reader :status, :code, :message, :results, :request_id, :body, :raw, :success, :more
+    attr_reader :code, :message, :results, :request_id, :body, :raw, :success, :more
 
     alias :success? :success
     alias :more? :more
 
     def initialize raw, client
       @client = client # keep connection with client in case we request more
-      @results = []
+      @more = false
       unpack raw
-      @success = @message == 'OK'
     end
 
     def continue
@@ -33,34 +32,63 @@ module FuelSDK
         @raw = raw
         @body = raw.body
         @code = raw.http.code
-        @message =  raw.soap_fault? ? raw.body[:fault][:faultstring] : raw.body[raw.body.keys.first][:overall_status]
         @request_id = raw.body[raw.body.keys.first][:request_id]
+
+        @message = parse_msg raw
+        @success = @message == 'OK'
+
+        @results = parse_rslts raw
+      end
+
+      def parse_msg raw
+        raw.soap_fault? ? raw.body[:fault][:faultstring] : raw.body[raw.body.keys.first][:overall_status]
+      end
+
+      def parse_rslts raw
+        parsed = []
         @more = (raw.body[raw.body.keys.first][:overall_status] == 'MoreDataAvailable')
-        if raw.body[raw.body.keys.first][:results]
-          @results.concat raw.body[raw.body.keys.first][:results]
+        rslts = raw.body[raw.body.keys.first][:results]
+        parsed.concat rslts if rslts
+        parsed
+      end
+  end
+
+  class CUDResponse < SoapResponse
+    private
+      #def parse_msg raw
+      #  raw.soap_fault? ? raw.body[:fault][:faultstring] : raw.body[raw.body.keys.first][:results][:status_message]
+      #end
+
+      def parse_rslts raw
+        parsed = []
+        rslts = raw.body[raw.body.keys.first][:results]
+        rslts = [rslts] unless rslts.kind_of? Array
+        rslts.each do |r|
+          parsed << r[:object]
         end
+        parsed
       end
   end
 
   class DescribeResponse < SoapResponse
     attr_reader :properties, :retrievable, :updatable, :required
-    def initialize raw, client
-      super raw, client
-
-      @retrievable, @updatable, @required, @properties = [], [], [], [], []
-      @results = raw.body[raw.body.keys.first][:object_definition][:properties]
-      @results.each do  |r|
-        @retrievable << r[:name] if r[:is_retrievable]
-        @updatable << r[:name] if r[:is_updatable]
-        @required << r[:name] if r[:is_required]
-        @properties << r[:name]
+    private
+      def parse_rslts raw
+        @retrievable, @updatable, @required, @properties = [], [], [], [], []
+        rslts = raw.body[raw.body.keys.first][:object_definition][:properties]
+        rslts.each do  |r|
+          @retrievable << r[:name] if r[:is_retrievable]
+          @updatable << r[:name] if r[:is_updatable]
+          @required << r[:name] if r[:is_required]
+          @properties << r[:name]
+        end
+        @success = true # overall_status is missing from definition response, so need to set here manually
+        rslts
+      rescue
+        @message = "Unable to describe #{raw.locals[:message]['DescribeRequests']['ObjectDefinitionRequest']['ObjectType']}"
+        @success = false
+        nil
       end
-
-      @success = true # overall_status is missing from definition response, so need to set here manually
-    rescue
-      @message = "Unable to describe #{raw.locals[:message]['DescribeRequests']['ObjectDefinitionRequest']['ObjectType']}"
-      @success = false
-    end
   end
 
   module Soap
@@ -150,26 +178,26 @@ module FuelSDK
 
       SoapResponse.new client.call(:retrieve, :message => message), self
     end
-  end
 
-  def post object_type, properties
-    _cud_ :create, object_type, properties
-  end
-
-  def put object_type, properties
-    _cud_ :update, object_type, properties
-  end
-
-  def delete object_type, properties
-    _cud_ :delete, object_type, properties
-  end
-
-  private
-    def _cud_ action, object_type, properties
-      message = {
-        'Objects' => props,
-        :attributes! => { 'Objects' => { 'xsi:type' => ('tns:' + object_type) } }
-      }
-      SoapResponse.new client.call(:create, :message => message), self
+    def post object_type, properties
+      _cud_ :create, object_type, properties
     end
+
+    def put object_type, properties
+      _cud_ :update, object_type, properties
+    end
+
+    def delete object_type, properties
+      _cud_ :delete, object_type, properties
+    end
+
+    private
+      def _cud_ action, object_type, properties
+        message = {
+          'Objects' => properties,
+          :attributes! => { 'Objects' => { 'xsi:type' => ('tns:' + object_type) } }
+        }
+        CUDResponse.new client.call(:create, :message => message), self
+      end
+  end
 end

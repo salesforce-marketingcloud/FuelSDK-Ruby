@@ -28,7 +28,7 @@ module FuelSDK
     attr_reader :id
 
     alias props= properties= # backward compatibility
-    alias authObj= client= # backward compatibility
+    alias authStub= client= # backward compatibility
 
     def id
       self.class.name.split('::').pop.split('_').pop
