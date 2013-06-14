@@ -11,6 +11,7 @@ module FuelSDK
   autoload :Rest, 'fuelsdk/rest'
   autoload :SoapClient, 'fuelsdk/soap_client'
   autoload :RestClient, 'fuelsdk/rest_client'
+  require 'fuelsdk/objects'
 
   class ET_Constructor
     attr_accessor :status, :code, :message, :results, :request_id, :moreResults
@@ -99,7 +100,7 @@ module FuelSDK
           h['params'] = {'legacy' => 1} if self.mode == 'soap'
         end
 
-        response = post("https://auth.exacttargetapis.com/v1/requestToken", options)
+        response = _post_("https://auth.exacttargetapis.com/v1/requestToken", options)
         raise "Unable to refresh token: #{response['message']}" unless response.has_key?('accessToken')
 
         self.access_token = response['accessToken']
@@ -148,33 +149,6 @@ module FuelSDK
     end
 
 
-  end
-
-  class ET_Describe < ET_Constructor
-    def initialize(authStub = nil, objType = nil)
-      begin
-        authStub.refreshToken
-        response = authStub.auth.call(:describe, :message => {
-              'DescribeRequests' =>
-                {'ObjectDefinitionRequest' =>
-                  {'ObjectType' => objType}
-              }
-            })
-      ensure
-        super(response)
-
-        if @status then
-          objDef = @@body[:definition_response_msg][:object_definition]
-
-          if objDef then
-            @overallStatus = true
-          else
-            @overallStatus = false
-          end
-          @results = @@body[:definition_response_msg][:object_definition][:properties]
-        end
-      end
-    end
   end
 
   class ET_Post < ET_Constructor
@@ -291,101 +265,6 @@ module FuelSDK
             @results.push(@@body[:update_response][:results])
           end
         end
-      end
-    end
-  end
-
-  class ET_Continue < ET_Constructor
-    def initialize(authStub, request_id)
-      @results = []
-      authStub.refreshToken
-      obj = {'ContinueRequest' => request_id}
-      response = authStub.auth.call(:retrieve, :message => {'RetrieveRequest' => obj})
-
-      super(response)
-
-      if @status then
-        if @@body[:retrieve_response_msg][:overall_status] != "OK" && @@body[:retrieve_response_msg][:overall_status] != "MoreDataAvailable" then
-          @status = false
-          @message = @@body[:retrieve_response_msg][:overall_status]
-        end
-
-        @moreResults = false
-        if @@body[:retrieve_response_msg][:overall_status] == "MoreDataAvailable" then
-          @moreResults = true
-        end
-
-        if (!@@body[:retrieve_response_msg][:results].is_a? Hash) && (!@@body[:retrieve_response_msg][:results].nil?) then
-          @results = @results + @@body[:retrieve_response_msg][:results]
-        elsif  (!@@body[:retrieve_response_msg][:results].nil?)
-          @results.push(@@body[:retrieve_response_msg][:results])
-        end
-
-        # Store the Last Request ID for use with continue
-        @request_id = @@body[:retrieve_response_msg][:request_id]
-      end
-    end
-  end
-
-  class ET_Get < ET_Constructor
-    def initialize(authStub, objType, props = nil, filter = nil)
-      @results = []
-      authStub.refreshToken
-      if !props then
-        resp = ET_Describe.new(authStub, objType)
-        if resp then
-          props = []
-          resp.results.map { |p|
-            if p[:is_retrievable] then
-              props << p[:name]
-            end
-          }
-        end
-      end
-
-      # If the properties is a hash, then we just want to use the keys
-      if props.is_a? Hash then
-        obj = {'ObjectType' => objType,'Properties' => props.keys}
-      else
-        obj = {'ObjectType' => objType,'Properties' => props}
-      end
-
-      if filter then
-        if filter.has_key?('LogicalOperator') then
-          obj['Filter'] = filter
-          obj[:attributes!] = { 'Filter' => { 'xsi:type' => 'tns:ComplexFilterPart' }}
-          obj['Filter'][:attributes!] = { 'LeftOperand' => { 'xsi:type' => 'tns:SimpleFilterPart' }, 'RightOperand' => { 'xsi:type' => 'tns:SimpleFilterPart' }}
-        else
-          obj['Filter'] = filter
-          obj[:attributes!] = { 'Filter' => { 'xsi:type' => 'tns:SimpleFilterPart' } }
-        end
-      end
-
-      response = authStub.auth.call(:retrieve, :message => {
-          'RetrieveRequest' => obj
-          })
-
-      super(response)
-
-      if @status then
-        if @@body[:retrieve_response_msg][:overall_status] != "OK" && @@body[:retrieve_response_msg][:overall_status] != "MoreDataAvailable" then
-          @status = false
-          @message = @@body[:retrieve_response_msg][:overall_status]
-        end
-
-        @moreResults = false
-        if @@body[:retrieve_response_msg][:overall_status] == "MoreDataAvailable" then
-          @moreResults = true
-        end
-
-        if (!@@body[:retrieve_response_msg][:results].is_a? Hash) && (!@@body[:retrieve_response_msg][:results].nil?) then
-          @results = @results + @@body[:retrieve_response_msg][:results]
-        elsif  (!@@body[:retrieve_response_msg][:results].nil?)
-          @results.push(@@body[:retrieve_response_msg][:results])
-        end
-
-        # Store the Last Request ID for use with continue
-        @request_id = @@body[:retrieve_response_msg][:request_id]
       end
     end
   end
@@ -739,13 +618,6 @@ module FuelSDK
     end
   end
 
-  class ET_Subscriber < ET_CUDSupport
-    def initialize
-      super
-      @obj = 'Subscriber'
-    end
-  end
-
   class ET_DataExtension < ET_CUDSupport
     attr_accessor :columns
 
@@ -970,27 +842,6 @@ module FuelSDK
     end
   end
 
-  class ET_List < ET_CUDSupport
-    def initialize
-      super
-      @obj = 'List'
-    end
-
-    class Subscriber < ET_GetSupport
-      def initialize
-        super
-        @obj = 'ListSubscriber'
-      end
-    end
-  end
-
-  class ET_Email < ET_CUDSupport
-    def initialize
-      super
-      @obj = 'Email'
-    end
-  end
-
   class ET_TriggeredSend < ET_CUDSupport
     attr_accessor :subscribers
     def initialize
@@ -1001,55 +852,6 @@ module FuelSDK
     def send
       @tscall = {"TriggeredSendDefinition" => @props, "Subscribers" => @subscribers}
       ET_Post.new(@authStub, "TriggeredSend", @tscall)
-    end
-  end
-
-  class ET_ContentArea < ET_CUDSupport
-    def initialize
-      super
-      @obj = 'ContentArea'
-    end
-  end
-
-  class ET_Folder < ET_CUDSupport
-    def initialize
-      super
-      @obj = 'DataFolder'
-    end
-  end
-
-  class ET_SentEvent < ET_GetSupport
-    def initialize
-      super
-      @obj = 'SentEvent'
-    end
-  end
-
-  class ET_OpenEvent < ET_GetSupport
-    def initialize
-      super
-      @obj = 'OpenEvent'
-    end
-  end
-
-  class ET_BounceEvent < ET_GetSupport
-    def initialize
-      super
-      @obj = 'BounceEvent'
-    end
-  end
-
-  class ET_UnsubEvent < ET_GetSupport
-    def initialize
-      super
-      @obj = 'UnsubEvent'
-    end
-  end
-
-  class ET_ClickEvent < ET_GetSupport
-    def initialize
-      super
-      @obj = 'ClickEvent'
     end
   end
 

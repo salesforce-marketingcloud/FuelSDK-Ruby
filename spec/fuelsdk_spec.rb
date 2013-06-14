@@ -209,7 +209,7 @@ describe FuelSDK::ET_Client do
 
     subject { FuelSDK::ET_Client.new }
 
-    it { should respond_to(:get) }
-    it { should respond_to(:post) }
+    it { should respond_to(:_get_) }
+    it { should respond_to(:_post_) }
   end
 end

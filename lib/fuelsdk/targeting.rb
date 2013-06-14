@@ -13,7 +13,7 @@ module FuelSDK::Targeting
 
   protected
     def determine_stack
-      response = get("https://www.exacttargetapis.com/platform/v1/endpoints/soap?access_token=#{self.access_token}")
+      response = _get_("https://www.exacttargetapis.com/platform/v1/endpoints/soap?access_token=#{self.access_token}")
       @endpoint = response['url']
     rescue => e
       raise 'Unable to determine stack using: ' + e.message

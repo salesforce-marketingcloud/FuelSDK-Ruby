@@ -4,11 +4,11 @@ require 'json'
 
 module FuelSDK::HTTPRequest
 
-  request_methods = ['get', 'post']
+  request_methods = ['_get_', '_post_']
   request_methods.each do |method|
     class_eval <<-EOT, __FILE__, __LINE__ + 1
       def #{method}(url, options={})                               # def post(url, options)
-        request Net::HTTP::#{method.capitalize}, url, options      #   request Net::HTTP::Post, url, options
+        request Net::HTTP::#{method[1..-2].capitalize}, url, options      #   request Net::HTTP::Post, url, options
       end                                                          # end
     EOT
   end

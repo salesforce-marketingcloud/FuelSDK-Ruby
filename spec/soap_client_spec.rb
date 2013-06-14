@@ -6,8 +6,8 @@ describe FuelSDK::SoapClient do
 
   subject { client }
 
-  it { should respond_to(:get) }
-  it { should respond_to(:post) }
+  it { should respond_to(:_get_) }
+  it { should respond_to(:_post_) }
 
   it { should respond_to(:mode) }
 
