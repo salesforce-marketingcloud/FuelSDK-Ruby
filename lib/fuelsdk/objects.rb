@@ -10,7 +10,6 @@ module FuelSDK
   end
 
   module ET_CUD #create, update, delete
-
     def post
       client.post id, properties
     end
@@ -24,7 +23,7 @@ module FuelSDK
     end
   end
 
-  class ET_BaseObject
+  class ET_Base
     attr_accessor :filter, :properties, :client
     attr_reader :id
 
@@ -36,34 +35,34 @@ module FuelSDK
     end
   end
 
-  class ET_BounceEvent < ET_BaseObject
+  class ET_BounceEvent < ET_Base
     include ET_Get
   end
 
-  class ET_ClickEvent < ET_BaseObject
+  class ET_ClickEvent < ET_Base
     include ET_Get
   end
 
-  class ET_ContentArea < ET_BaseObject
+  class ET_ContentArea < ET_Base
     include ET_Get
     include ET_CUD
   end
 
-  class ET_DataFolder < ET_BaseObject
+  class ET_DataFolder < ET_Base
     include ET_Get
     include ET_CUD
   end
 
-  class ET_Email < ET_BaseObject
+  class ET_Email < ET_Base
     include ET_Get
     include ET_CUD
   end
 
-  class ET_List < ET_BaseObject
+  class ET_List < ET_Base
     include ET_Get
     include ET_CUD
 
-    class Subscriber < ET_BaseObject
+    class Subscriber < ET_Base
       include ET_Get
       def id
         'ListSubscriber'
@@ -71,20 +70,20 @@ module FuelSDK
     end
   end
 
-  class ET_OpenEvent < ET_BaseObject
+  class ET_OpenEvent < ET_Base
     include ET_Get
   end
 
-  class ET_SentEvent < ET_BaseObject
+  class ET_SentEvent < ET_Base
     include ET_Get
   end
 
-  class ET_Subscriber < ET_BaseObject
+  class ET_Subscriber < ET_Base
     include ET_Get
     include ET_CUD
   end
 
-  class ET_UnsubEvent < ET_BaseObject
+  class ET_UnsubEvent < ET_Base
     include ET_Get
   end
 
