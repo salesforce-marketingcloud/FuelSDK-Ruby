@@ -14,7 +14,6 @@ module FuelSDK
     end
 
     def initialize(params={}, debug=false)
-
       self.debug = debug
       client_config = params['client']
       if client_config

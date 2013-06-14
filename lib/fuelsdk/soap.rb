@@ -152,14 +152,24 @@ module FuelSDK
     end
   end
 
-  #{"Objects"=>{"EmailAddress"=>"RubySDKExample@bh.exacttarget.com"},
-  # :attributes!=>{"Objects"=>{"xsi:type"=>"tns:Subscriber"}}}
   def post object_type, properties
+    _cud_ :create, object_type, properties
+  end
+
+  def put object_type, properties
+    _cud_ :update, object_type, properties
   end
 
   def delete object_type, properties
+    _cud_ :delete, object_type, properties
   end
 
-  def delete object_type, properties
-  end
+  private
+    def _cud_ action, object_type, properties
+      message = {
+        'Objects' => props,
+        :attributes! => { 'Objects' => { 'xsi:type' => ('tns:' + object_type) } }
+      }
+      SoapResponse.new client.call(:create, :message => message), self
+    end
 end
