@@ -1,7 +1,7 @@
 require '../ET_Client.rb'
 
 
-begin 
+begin
 	stubObj = ET_Client.new(false, false)
 
 
@@ -19,16 +19,16 @@ begin
 	p 'Results Length: ' + getResponse.results.length.to_s
 	#p 'Results: ' + getResponse.results.to_s
 
-	# Specify a name for the data extension that will be used for testing 
+	# Specify a name for the data extension that will be used for testing
 	# Note: Name and CustomerKey will be the same value
 	# WARNING: Data Extension will be deleted so don't use the name of a
-	# production data extension 
+	# production data extension
 	NameOfDE = "ThisWillBeDeleted-Test"
 
 
 	# Create  Data Extension
 	p '>>> Create Data Extension'
-	de2 = ET_DataExtension.new 
+	de2 = ET_DataExtension.new
 	de2.authStub = stubObj
 	de2.props = {"Name" => NameOfDE,"CustomerKey" => NameOfDE}
 	de2.columns = [{"Name" => "Name", "FieldType" => "Text", "IsPrimaryKey" => "true", "MaxLength" => "100", "IsRequired" => "true"},{"Name" => "OtherField", "FieldType" => "Text"}]
@@ -40,7 +40,7 @@ begin
 
 	# Update DE to add new field
 	p '>>> Update DE to add new field'
-	de3 = ET_DataExtension.new 
+	de3 = ET_DataExtension.new
 	de3.authStub = stubObj
 	de3.props = {"Name" => NameOfDE,"CustomerKey" => NameOfDE}
 	de3.columns = [{"Name" => "AddedField", "FieldType" => "Text"}]
@@ -70,7 +70,7 @@ begin
 
 	# Add a row to a data extension (using CustomerKey)
 	p '>>>  Add a row to a data extension'
-	de4 = ET_DataExtension::Row.new 
+	de4 = ET_DataExtension::Row.new
 	de4.CustomerKey = NameOfDE;
 	de4.authStub = stubObj
 	de4.props = {"Name" => "MAC3", "OtherField" => "Text3"}
@@ -82,7 +82,7 @@ begin
 
 	# Add a row to a data extension (Using Name)
 	p '>>> Add a row to a data extension'
-	de4 = ET_DataExtension::Row.new 
+	de4 = ET_DataExtension::Row.new
 	de4.authStub = stubObj
 	de4.Name = NameOfDE
 	de4.props = {"Name" => "MAC4", "OtherField" => "Text3"}
@@ -109,7 +109,7 @@ begin
 
 	# Update a row in  a data extension
 	p '>>> Update a row in  a data extension'
-	de4 = ET_DataExtension::Row.new 
+	de4 = ET_DataExtension::Row.new
 	de4.authStub = stubObj
 	de4.CustomerKey = NameOfDE
 	de4.props = {"Name" => "MAC3", "OtherField" => "UPDATED!"}
@@ -137,7 +137,7 @@ begin
 
 	# Delete a row from a data extension
 	p '>>> Delete a row from a data extension'
-	de4 = ET_DataExtension::Row.new 
+	de4 = ET_DataExtension::Row.new
 	de4.authStub = stubObj
 	de4.CustomerKey = NameOfDE
 	de4.props = {"Name" => "MAC3"}
@@ -149,7 +149,7 @@ begin
 
 	# Delete a Data Extension
 	p '>>> Delete a  Data Extension'
-	de5 = ET_DataExtension.new 
+	de5 = ET_DataExtension.new
 	de5.authStub = stubObj
 	de5.props = {"Name" => NameOfDE,"CustomerKey" => NameOfDE}
 	delResponse = de5.delete
@@ -174,7 +174,7 @@ begin
 	p 'Results Length: ' + getResponse.results.length.to_s
 	#p 'Results: ' + getResponse.results.to_s
 
-	while getResponse.moreResults do 
+	while getResponse.moreResults do
 		p '>>> Continue Retrieve lots of rows with moreResults'
 		getResponse = row.getMoreResults
 		p 'Retrieve Status: ' + getResponse.status.to_s
@@ -183,7 +183,7 @@ begin
 		p 'MoreResults: ' + getResponse.moreResults.to_s
 		p 'RequestID: ' + getResponse.request_id.to_s
 		p 'Results Length: ' + getResponse.results.length.to_s
-	end 
+	end
 =end
 
 rescue => e

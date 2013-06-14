@@ -1,13 +1,13 @@
 require '../ET_Client.rb'
 
 
-begin 
+begin
 	stubObj = ET_Client.new(false, false)
-	
+
 	# In order for this sample to run, it needs to have an asset that it can associate the campaign to
 	ExampleAssetType = "LIST"
 	ExampleAssetItemID = "1953114"
-	
+
 	# Retrieve all Campaigns
 	p '>>> Retrieve all Campaigns'
 	getCamp = ET_Campaign.new
@@ -20,8 +20,8 @@ begin
 	#p 'Results: ' + getResponse.results.to_json
 	p 'Results(Items) Length: ' + getResponse.results['items'].length.to_s
 	p '-----------------------------'
-	
-	while getResponse.moreResults do 
+
+	while getResponse.moreResults do
 		p '>>> Continue Retrieve all Campaigns with GetMoreResults'
 		getResponse = getCamp.getMoreResults
 		p 'Retrieve Status: ' + getResponse.status.to_s
@@ -30,8 +30,8 @@ begin
 		p 'MoreResults: ' + getResponse.moreResults.to_s
 		p 'RequestID: ' + getResponse.request_id.to_s
 		p 'Results(Items) Length: ' + getResponse.results['items'].length.to_s
-	end 	
-	
+	end
+
 	# Create a new Campaign
 	p '>>> Create a new Campaign'
 	postCamp = ET_Campaign.new
@@ -41,7 +41,7 @@ begin
 	p 'Post Status: ' + postResponse.status.to_s
 	p 'Code: ' + postResponse.code.to_s
 	p 'Message: ' + postResponse.message.to_s
-	p 'Results: ' + postResponse.results.to_json	
+	p 'Results: ' + postResponse.results.to_json
 	p '-----------------------------'
 
 	if postResponse.status then
@@ -69,7 +69,7 @@ begin
 		p 'Patch Status: ' + postResponse.status.to_s
 		p 'Code: ' + postResponse.code.to_s
 		p 'Message: ' + postResponse.message.to_s
-		p 'Results: ' + postResponse.results.to_json	
+		p 'Results: ' + postResponse.results.to_json
 		p '-----------------------------'
 
 		# Retrieve the updated Campaign
@@ -93,7 +93,7 @@ begin
 		p 'Post Status: ' + postResponse.status.to_s
 		p 'Code: ' + postResponse.code.to_s
 		p 'Message: ' + postResponse.message.to_s
-		p 'Results: ' + postResponse.results.to_json	
+		p 'Results: ' + postResponse.results.to_json
 		p '-----------------------------'
 
 		IDOfpostCampaignAsset = postResponse.results[0]['id']
@@ -131,7 +131,7 @@ begin
 		p 'Delete Status: ' + deleteResponse.status.to_s
 		p 'Code: ' + deleteResponse.code.to_s
 		p 'Message: ' + deleteResponse.message.to_s
-		p 'Results: ' + deleteResponse.results.to_json	
+		p 'Results: ' + deleteResponse.results.to_json
 		p '-----------------------------'
 
 		# Get a single a new Campaign Asset to confirm deletion
@@ -155,7 +155,7 @@ begin
 		p 'Delete Status: ' + deleteResponse.status.to_s
 		p 'Code: ' + deleteResponse.code.to_s
 		p 'Message: ' + deleteResponse.message.to_s
-		p 'Results: ' + deleteResponse.results.to_json	
+		p 'Results: ' + deleteResponse.results.to_json
 		p '-----------------------------'
 
 	end
