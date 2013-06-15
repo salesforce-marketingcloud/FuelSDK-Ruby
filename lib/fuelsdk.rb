@@ -48,7 +48,6 @@ module FuelSDK
     end
   end
 
-
   class ET_BaseObject
     attr_accessor :authStub, :props
     attr_reader :obj, :lastRequestID, :endpoint

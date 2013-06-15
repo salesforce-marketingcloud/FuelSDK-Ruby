@@ -14,10 +14,9 @@ module FuelSDK
       client.post id, properties
     end
 
-    def put
-      client.put id, properties
+    def patch
+      client.patch id, properties
     end
-    alias :patch :put
 
     def delete
       client.delete id, properties

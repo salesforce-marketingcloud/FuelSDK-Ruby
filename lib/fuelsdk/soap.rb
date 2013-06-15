@@ -189,7 +189,7 @@ module FuelSDK
       _cud_ :create, object_type, properties
     end
 
-    def put object_type, properties
+    def patch object_type, properties
       _cud_ :update, object_type, properties
     end
 
