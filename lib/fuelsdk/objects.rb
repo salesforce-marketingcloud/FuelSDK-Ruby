@@ -49,9 +49,12 @@ module FuelSDK
     include ET_CUD
   end
 
-  class ET_DataFolder < ET_Base
+  class ET_Folder < ET_Base
     include ET_Get
     include ET_CUD
+    def id
+      'DataFolder'
+    end
   end
 
   class ET_Email < ET_Base
