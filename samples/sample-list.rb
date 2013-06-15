@@ -17,12 +17,13 @@ begin
 	p 'Message: ' + postResponse.message.to_s
 	p 'Result Count: ' + postResponse.results.length.to_s
 	p 'Results: ' + postResponse.results.inspect
+  raise 'Failure creating list' unless postResponse.success?
 
 
 	# Make sure the list created correctly before
-	if postResponse.status then
+	if postResponse.success? then
 
-		newListID = postResponse.results[0][:id]
+		newListID = postResponse.results[0][:new_id]
 
 		# Retrieve newly created List by ID
 		p '>>> Retrieve newly created List'
@@ -37,6 +38,7 @@ begin
 		p 'MoreResults: ' + getResponse.more?.to_s
 		p 'Results Length: ' + getResponse.results.length.to_s
 		p 'Results: ' + getResponse.results.to_s
+    raise 'Failure retrieving list' unless getResponse.success?
 
 		# Update List
 		p '>>> Update List'
@@ -49,6 +51,8 @@ begin
 		p 'Message: ' + patchResponse.message.to_s
 		p 'Result Count: ' + patchResponse.results.length.to_s
 		p 'Results: ' + patchResponse.results.inspect
+    raise 'Failure updating list' unless patchResponse.success?
+    raise 'Failure updating list' unless patchResponse.results.first[:object][:description] == "I updated the description"
 
 		# Retrieve List that should have description updated
 		p '>>> Retrieve List that should have description updated '
@@ -63,6 +67,7 @@ begin
 		p 'MoreResults: ' + getResponse.more?.to_s
 		p 'Results Length: ' + getResponse.results.length.to_s
 		p 'Results: ' + getResponse.results.to_s
+    raise 'Failure retrieving list' unless getResponse.success?
 
 		# Delete List
 		p '>>> Delete List'
@@ -75,6 +80,7 @@ begin
 		p 'Message: ' + deleteResponse.message.to_s
 		p 'Results Length: ' + deleteResponse.results.length.to_s
 		p 'Results: ' + deleteResponse.results.to_s
+    raise 'Failure deleting list' unless deleteResponse.success?
 
 		# Retrieve List to confirm deletion
 		p '>>> Retrieve List to confirm deletion'
@@ -89,6 +95,7 @@ begin
 		p 'MoreResults: ' + getResponse.more?.to_s
 		p 'Results Length: ' + getResponse.results.length.to_s
 		p 'Results: ' + getResponse.results.to_s
+    raise 'Failure retrieving list' unless getResponse.success?
 	end
 
 rescue => e

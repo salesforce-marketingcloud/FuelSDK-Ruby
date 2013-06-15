@@ -22,6 +22,8 @@ begin
   p 'Result Count: ' + postResponse.results.length.to_s
   p 'Results: ' + postResponse.results.inspect
 
+  raise 'Failure creating subscriber' unless postResponse.success?
+
   # Retrieve newly created Subscriber
   p '>>> Retrieve newly created Subscriber'
   getSub = FuelSDK::ET_Subscriber.new()
@@ -36,6 +38,8 @@ begin
   p 'Results Length: ' + getResponse.results.length.to_s
   p 'Results: ' + getResponse.results.to_s
 
+  raise 'Failure retrieving subscriber' unless getResponse.success?
+
   # Update Subscriber
   p '>>> Update Subscriber'
   patchSub = FuelSDK::ET_Subscriber.new
@@ -47,6 +51,8 @@ begin
   p 'Message: ' + patchResponse.message.to_s
   p 'Result Count: ' + patchResponse.results.length.to_s
   p 'Results: ' + patchResponse.results.inspect
+
+  raise 'Failure updating subscriber' unless patchResponse.success?
 
   # Retrieve Subscriber that should have status unsubscribed now
   p '>>> Retrieve Subscriber that should have status unsubscribed now'
@@ -62,6 +68,8 @@ begin
   p 'Results Length: ' + getResponse.results.length.to_s
   p 'Results: ' + getResponse.results.to_s
 
+  raise 'Failure retrieving subscriber' unless getResponse.success?
+
   # Delete Subscriber
   p '>>> Delete Subscriber'
   deleteSub = FuelSDK::ET_Subscriber.new()
@@ -73,6 +81,8 @@ begin
   p 'Message: ' + deleteResponse.message.to_s
   p 'Results Length: ' + deleteResponse.results.length.to_s
   p 'Results: ' + deleteResponse.results.to_s
+
+  raise 'Failure deleting subscriber' unless deleteResponse.success?
 
   # Retrieve Subscriber to confirm deletion
   p '>>> Retrieve Subscriber to confirm deletion'
@@ -88,6 +98,7 @@ begin
   p 'Results Length: ' + getResponse.results.length.to_s
   p 'Results: ' + getResponse.results.to_s
 
+  raise 'Failure retrieving subscriber' unless getResponse.success?
 
 =begin
   # Do not run the "Retrieve All Subscribers" request for testing if you have more than 100,000 records in your account as it will take a long time to complete.

@@ -63,22 +63,22 @@ module FuelSDK
       end
   end
 
-  class CUDResponse < SoapResponse
-    private
-      #def parse_msg raw
-      #  raw.soap_fault? ? raw.body[:fault][:faultstring] : raw.body[raw.body.keys.first][:results][:status_message]
-      #end
+  #class CUDResponse < SoapResponse
+  #  private
+  #    #def parse_msg raw
+  #    #  raw.soap_fault? ? raw.body[:fault][:faultstring] : raw.body[raw.body.keys.first][:results][:status_message]
+  #    #end
 
-      def parse_rslts raw
-        parsed = []
-        rslts = raw.body[raw.body.keys.first][:results]
-        rslts = [rslts] unless rslts.kind_of? Array
-        rslts.each do |r|
-          parsed << r[:object] if r.include? :object
-        end
-        parsed
-      end
-  end
+  #    def parse_rslts raw
+  #      parsed = []
+  #      rslts = raw.body[raw.body.keys.first][:results]
+  #      rslts = [rslts] unless rslts.kind_of? Array
+  #      rslts.each do |r|
+  #        parsed << r[:object] if r.include? :object
+  #      end
+  #      parsed
+  #    end
+  #end
 
   class DescribeResponse < SoapResponse
     attr_reader :properties, :retrievable, :updatable, :required
@@ -207,7 +207,7 @@ module FuelSDK
           'Objects' => properties,
           :attributes! => { 'Objects' => { 'xsi:type' => ('tns:' + object_type) } }
         }
-        CUDResponse.new client.call(action, :message => message), self
+        SoapResponse.new client.call(action, :message => message), self
       end
   end
 end
