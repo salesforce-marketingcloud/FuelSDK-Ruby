@@ -97,4 +97,19 @@ module FuelSDK
     #  return postResponse
     #end
   end
+
+  class SoapClient < ET_Client
+    def initialize(params={}, debug=false)
+      params.merge! 'type' => 'soap'
+      super(params, debug)
+    end
+  end
+
+  class RestClient < ET_Client
+    def initialize(params={}, debug=false)
+      params.merge! 'type' => 'rest'
+      params.delete! 'wsdl'
+      super(params, debug)
+    end
+  end
 end

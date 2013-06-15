@@ -9,9 +9,7 @@ module FuelSDK
   autoload :Targeting, 'fuelsdk/targeting'
   autoload :Soap, 'fuelsdk/soap'
   autoload :Rest, 'fuelsdk/rest'
-  autoload :ET_Client, 'fuelsdk/client'
-  autoload :SoapClient, 'fuelsdk/soap_client'
-  autoload :RestClient, 'fuelsdk/rest_client'
+  require 'fuelsdk/clients'
   require 'fuelsdk/objects'
 
   class ET_Constructor
