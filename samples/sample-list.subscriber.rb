@@ -1,6 +1,5 @@
 require 'fuelsdk'
 require_relative 'sample_helper'
-require 'pry'
 
 begin
 	stubObj = FuelSDK::ET_Client.new auth
