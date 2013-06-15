@@ -57,7 +57,7 @@ module FuelSDK
 
       def parse_rslts raw
         @more = (raw.body[raw.body.keys.first][:overall_status] == 'MoreDataAvailable')
-        rslts = raw.body[raw.body.keys.first][:results]
+        rslts = raw.body[raw.body.keys.first][:results] || []
         rslts = [rslts] unless rslts.kind_of? Array
         rslts
       end
@@ -74,7 +74,7 @@ module FuelSDK
         rslts = raw.body[raw.body.keys.first][:results]
         rslts = [rslts] unless rslts.kind_of? Array
         rslts.each do |r|
-          parsed << r[:object]
+          parsed << r[:object] if r.include? :object
         end
         parsed
       end
