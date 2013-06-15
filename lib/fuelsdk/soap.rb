@@ -152,10 +152,6 @@ module FuelSDK
       DescribeResponse.new client.call(:describe, :message => message), self
     end
 
-    def normalize object_type
-      object_type.capitalize.singularize
-    end
-
     def get object_type, properties=nil, filter=nil
       if properties.nil?
         rsp = describe object_type
