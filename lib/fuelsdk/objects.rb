@@ -22,9 +22,25 @@ module FuelSDK
       client.soap_delete id, properties
     end
   end
+
   module ET_RestGet
+    def get
+      client.rest_get id, properties
+    end
   end
+
   module ET_RestCUD
+    def post
+      client.rest_post id, properties
+    end
+
+    def patch
+      client.rest_patch id, properties
+    end
+
+    def delete
+      client.rest_delete id, properties
+    end
   end
 
   class ET_Base
@@ -97,6 +113,31 @@ module FuelSDK
   class ET_Campaign < ET_Base
     include ET_RestGet
     include ET_RestCUD
-  end
 
+
+    def properties
+      @properties ||= {}
+      @properties.merge! 'id' => '' unless @properties.include? 'id'
+      @properties
+    end
+
+    def id
+      "https://www.exacttargetapis.com/hub/v1/campaigns/%{id}"
+    end
+
+    class Asset
+      include ET_RestGet
+      include ET_RestCUD
+
+      def properties
+        @properties ||= {}
+        @properties.merge! 'assetId' => '' unless @properties.include? 'assetId'
+        @properties
+      end
+
+      def id
+        'https://www.exacttargetapis.com/hub/v1/campaigns/%{id}/assets/%{assetId}'
+      end
+    end
+  end
 end

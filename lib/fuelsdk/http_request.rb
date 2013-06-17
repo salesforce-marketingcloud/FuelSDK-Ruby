@@ -6,7 +6,20 @@ module FuelSDK
 
   class HTTPResponse < FuelSDK::ET_Response
 
+    def initialize raw, client, request
+      super raw, client
+      @request = request
+    end
+
     def continue
+      rsp = nil
+      if more?
+       rsp = unpack @client.rest_get(@request['url'], @request['options'])
+      else
+        puts 'No more data'
+      end
+
+      rsp
     end
 
     def [] key
@@ -19,6 +32,8 @@ module FuelSDK
         @message = raw.message
         @body = JSON.parse(raw.body)
         @results = @body
+        @more = ((@results['count'] || @results['totalCount']) > @results['page'] * @results['pageSize']) rescue false
+        @success = @message == 'OK'
       end
 
       # by default try everything against results
@@ -33,7 +48,7 @@ module FuelSDK
     request_methods.each do |method|
       class_eval <<-EOT, __FILE__, __LINE__ + 1
         def #{method}(url, options={})                                      # def post(url, options)
-          request Net::HTTP::#{method.capitalize}, url, options      #   request Net::HTTP::Post, url, options
+          request Net::HTTP::#{method.capitalize}, url, options             #   request Net::HTTP::Post, url, options
         end                                                                 # end
       EOT
     end
@@ -58,7 +73,7 @@ module FuelSDK
         _request.content_type = options['content_type'] if options['content_type']
         response = http.request(_request)
 
-        HTTPResponse.new(response, self)
+        HTTPResponse.new(response, self, :url => url, :options => options)
       end
   end
 end

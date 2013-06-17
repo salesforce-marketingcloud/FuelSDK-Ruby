@@ -11,27 +11,29 @@ module FuelSDK
   autoload :Rest, 'fuelsdk/rest'
   require 'fuelsdk/client'
   require 'fuelsdk/objects'
+end
 
+=begin
   class ET_Constructor
     attr_accessor :status, :code, :message, :results, :request_id, :moreResults
 
     def initialize(response = nil, rest = false)
       @results = []
-      if !response.nil? && !rest then
-        @@body = response.body
+      #if !response.nil? && !rest then
+      #  @@body = response.body
 
-        if ((!response.soap_fault?) or (!response.http_error?)) then
-          @code = response.http.code
-          @status = true
-        elsif (response.soap_fault?) then
-          @code = response.http.code
-          @message = @@body[:fault][:faultstring]
-          @status = false
-        elsif (response.http_error?) then
-          @code = response.http.code
-          @status = false
-        end
-      elsif
+      #  if ((!response.soap_fault?) or (!response.http_error?)) then
+      #    @code = response.http.code
+      #    @status = true
+      #  elsif (response.soap_fault?) then
+      #    @code = response.http.code
+      #    @message = @@body[:fault][:faultstring]
+      #    @status = false
+      #  elsif (response.http_error?) then
+      #    @code = response.http.code
+      #    @status = false
+      #  end
+      #elsif
         @code = response.code
         @status = true
         if @code != "200" then
@@ -455,21 +457,19 @@ module FuelSDK
         originalProps = @props
         ## FIX THIS
         if @props.is_a? Array then
-=begin
-          multiRow = []
-          @props.each { |currentDE|
+ #         multiRow = []
+ #         @props.each { |currentDE|
 
-            currentDE['columns'].each { |key|
-              currentDE['Fields'] = {}
-              currentDE['Fields']['Field'] = []
-              currentDE['Fields']['Field'].push(key)
-            }
-            currentDE.delete('columns')
-            multiRow.push(currentDE.dup)
-          }
+ #           currentDE['columns'].each { |key|
+ #             currentDE['Fields'] = {}
+ #             currentDE['Fields']['Field'] = []
+ #             currentDE['Fields']['Field'].push(key)
+ #           }
+ #           currentDE.delete('columns')
+ #           multiRow.push(currentDE.dup)
+ #         }
 
-          @props = multiRow
-=end
+ #         @props = multiRow
         else
           currentFields = []
           currentProp = {}
@@ -569,5 +569,4 @@ module FuelSDK
       ET_Post.new(@authStub, "TriggeredSend", @tscall)
     end
   end
-
-end
+=end

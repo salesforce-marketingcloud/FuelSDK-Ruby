@@ -87,7 +87,7 @@ module FuelSDK
           h['params'] = {'legacy' => 1}
         end
 
-        response = rest.post("https://auth.exacttargetapis.com/v1/requestToken", options)
+        response = post("https://auth.exacttargetapis.com/v1/requestToken", options)
         raise "Unable to refresh token: #{response['message']}" unless response.has_key?('accessToken')
 
         self.access_token = response['accessToken']
