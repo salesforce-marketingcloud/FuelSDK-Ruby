@@ -63,11 +63,10 @@ module FuelSDK
         'content_type' => 'application/json'}
     end
 
-    def rest_request action, url, options
+    def rest_request action, url, options={}
       retried = false
       begin
         (options['params'] ||= {}).merge! 'access_token' => access_token
-        binding.pry
         rsp = rest_client.send(action, url, options)
         raise 'Unauthorized' if rsp.message == 'Unauthorized'
       rescue

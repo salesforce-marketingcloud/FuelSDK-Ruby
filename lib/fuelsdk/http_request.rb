@@ -30,7 +30,7 @@ module FuelSDK
       def unpack raw
         @code = raw.code.to_i
         @message = raw.message
-        @body = JSON.parse(raw.body)
+        @body = JSON.parse(raw.body) rescue {}
         @results = @body
         @more = ((@results['count'] || @results['totalCount']) > @results['page'] * @results['pageSize']) rescue false
         @success = @message == 'OK'

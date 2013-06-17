@@ -125,7 +125,7 @@ module FuelSDK
       "https://www.exacttargetapis.com/hub/v1/campaigns/%{id}"
     end
 
-    class Asset
+    class Asset < ET_Base
       include ET_RestGet
       include ET_RestCUD
 
