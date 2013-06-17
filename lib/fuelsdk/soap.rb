@@ -108,7 +108,7 @@ module FuelSDK
 
     def soap_get object_type, properties=nil, filter=nil
       if properties.nil?
-        rsp = describe object_type
+        rsp = soap_describe object_type
         if rsp.success?
           properties = rsp.retrievable
         else

@@ -5,7 +5,7 @@ module FuelSDK
     end
 
     def info
-      client.soap_describe id, properties, filter
+      client.soap_describe id
     end
   end
 
