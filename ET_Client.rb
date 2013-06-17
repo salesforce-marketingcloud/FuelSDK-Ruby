@@ -5,6 +5,8 @@ require 'date'
 require 'json'
 require 'yaml'
 require 'jwt'
+require 'net/http'
+require 'securerandom'
 
 class ET_Constructor
 	attr_accessor :status, :code, :message, :results, :request_id, :moreResults
@@ -153,11 +155,12 @@ class ET_Client < ET_CreateWSDL
 			http = Net::HTTP.new(uri.host, uri.port)
 			http.use_ssl = true
 			request = Net::HTTP::Post.new(uri.request_uri)
-			jsonPayload = {'clientId' => @clientId, 'clientSecret' => @clientSecret}
+			jsonPayload = {'clientId' => @clientId, 'clientSecret' => @clientSecret, 'accessType' => 'offline'}
 			
 			#Pass in the refreshKey if we have it 
 			if @refreshKey then
 				jsonPayload['refreshToken'] = @refreshKey
+				jsonPayload['scope'] = "cas:#{@internalAuthToken}"
 			end 
 			
 			request.body = jsonPayload.to_json			
