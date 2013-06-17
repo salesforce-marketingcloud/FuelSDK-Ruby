@@ -2,38 +2,63 @@ require 'open-uri'
 require 'net/https'
 require 'json'
 
-module FuelSDK::HTTPRequest
+module FuelSDK
 
-  request_methods = ['_get_', '_post_', '__patch__', '__delete__']
-  request_methods.each do |method|
-    class_eval <<-EOT, __FILE__, __LINE__ + 1
-      def #{method}(url, options={})                               # def post(url, options)
-        request Net::HTTP::#{method[1..-2].capitalize}, url, options      #   request Net::HTTP::Post, url, options
-      end                                                          # end
-    EOT
+  class HTTPResponse < FuelSDK::ET_Response
+
+    def continue
+    end
+
+    def [] key
+      @results[key]
+    end
+
+    private
+      def unpack raw
+        @code = raw.code.to_i
+        @message = raw.message
+        @body = JSON.parse(raw.body)
+        @results = @body
+      end
+
+      # by default try everything against results
+      def method_missing method, *args, &block
+        @results.send(method, *args, &block)
+      end
   end
 
-  private
+  module HTTPRequest
 
-    def generate_uri(url, params=nil)
-      uri = URI.parse(url)
-      uri.query = URI.encode_www_form(params) if params
-      uri
+    request_methods = ['get', 'post', 'patch', 'delete']
+    request_methods.each do |method|
+      class_eval <<-EOT, __FILE__, __LINE__ + 1
+        def #{method}(url, options={})                                      # def post(url, options)
+          request Net::HTTP::#{method.capitalize}, url, options      #   request Net::HTTP::Post, url, options
+        end                                                                 # end
+      EOT
     end
 
-    def request(method, url, options={})
-      uri = generate_uri url, options['params']
+    private
 
-      http = Net::HTTP.new(uri.host, uri.port)
-      http.use_ssl = true
+      def generate_uri(url, params=nil)
+        uri = URI.parse(url)
+        uri.query = URI.encode_www_form(params) if params
+        uri
+      end
 
-      data = options['data']
-      _request = method.new uri.request_uri
-      _request.body = data.to_json if data
-      _request.content_type = 'application/json'
-      response = http.request(_request)
+      def request(method, url, options={})
+        uri = generate_uri url, options['params']
 
-      JSON.parse(response.body)
-    end
+        http = Net::HTTP.new(uri.host, uri.port)
+        http.use_ssl = true
 
+        data = options['data']
+        _request = method.new uri.request_uri
+        _request.body = data.to_json if data
+        _request.content_type = 'application/json'
+        response = http.request(_request)
+
+        HTTPResponse.new(response, self)
+      end
+  end
 end

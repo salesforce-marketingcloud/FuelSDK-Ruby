@@ -1,8 +1,15 @@
-module FuelSDK::Rest
+module FuelSDK
+  module Rest
 
-  include FuelSDK::Targeting
+    include FuelSDK::Targeting
 
-  def mode
-    "rest"
+    def rest
+      self
+    end
+
+    def rest_get url, params={}
+      params.merge! 'access_token' => access_token
+      (rest.get url, options)
+    end
   end
 end

@@ -1,7 +1,49 @@
 module FuelSDK
+  class ET_Response
+    # not doing accessor so user, can't update these values from response.
+    # You will see in the code some of these
+    # items are being updated via back doors and such.
+    attr_reader :code, :message, :results, :request_id, :body, :raw
+
+    # some defaults
+    def success
+      @success ||= false
+    end
+    alias :success? :success
+    alias :status :success # backward compatibility
+
+    def more
+      @more ||= false
+    end
+    alias :more? :more
+
+    def initialize raw, client
+      @client = client # keep connection with client in case we request more
+      @results = []
+      @raw = raw
+      @body = raw.body
+      unpack raw
+    rescue => ex # all else fails return raw
+      puts ex.message
+      raw
+    end
+
+    def continue
+      raise NotImplementedError
+    end
+
+    private
+      def unpack raw
+        raise NotImplementedError
+      end
+  end
+
   class ET_Client
     attr_accessor :debug, :access_token, :auth_token, :internal_token, :refresh_token,
       :id, :secret, :signature
+
+    include FuelSDK::Soap
+    include FuelSDK::Rest
 
     def jwt= encoded_jwt
       raise 'Require app signature to decode JWT' unless self.signature
@@ -25,12 +67,7 @@ module FuelSDK
       self.jwt = params['jwt'] if params['jwt']
       self.refresh_token = params['refresh_token'] if params['refresh_token']
 
-      if params["defaultwsdl"] || params["type"] == "soap"
-        extend FuelSDK::Soap
-        self.wsdl = params["defaultwsdl"] if params["defaultwsdl"]
-      else
-        extend FuelSDK::Rest
-      end
+      self.wsdl = params["defaultwsdl"] if params["defaultwsdl"]
     end
 
     def refresh force=false
@@ -46,10 +83,10 @@ module FuelSDK
 
         options = Hash.new.tap do |h|
           h['data'] = payload
-          h['params'] = {'legacy' => 1} if self.mode == 'soap'
+          h['params'] = {'legacy' => 1}
         end
 
-        response = _post_("https://auth.exacttargetapis.com/v1/requestToken", options)
+        response = rest.post("https://auth.exacttargetapis.com/v1/requestToken", options)
         raise "Unable to refresh token: #{response['message']}" unless response.has_key?('accessToken')
 
         self.access_token = response['accessToken']
@@ -57,6 +94,10 @@ module FuelSDK
         #@authTokenExpiration = Time.new + tokenResponse['expiresIn']
         self.refresh_token = response['refreshToken'] if response.has_key?("refreshToken")
       end
+    end
+
+    def refresh!
+      refresh true
     end
 
     #def AddSubscriberToList(emailAddress, listIDs, subscriberKey = nil)
@@ -96,20 +137,5 @@ module FuelSDK
 
     #  return postResponse
     #end
-  end
-
-  class SoapClient < ET_Client
-    def initialize(params={}, debug=false)
-      params.merge! 'type' => 'soap'
-      super(params, debug)
-    end
-  end
-
-  class RestClient < ET_Client
-    def initialize(params={}, debug=false)
-      params.merge! 'type' => 'rest'
-      params.delete! 'wsdl'
-      super(params, debug)
-    end
   end
 end
