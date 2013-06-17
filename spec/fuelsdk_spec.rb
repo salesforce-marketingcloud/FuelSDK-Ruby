@@ -4,11 +4,6 @@ describe FuelSDK::ET_Client do
 
   context 'initialized' do
 
-    it 'defaults to RestClient' do
-      client = FuelSDK::ET_Client.new
-      expect(client.mode).to eq 'rest'
-    end
-
     it 'with client parameters' do
       client = FuelSDK::ET_Client.new 'client' => { 'id' => '1234', 'secret' => 'ssssh', 'signature' => 'hancock' }
       expect(client.secret).to eq 'ssssh'
@@ -26,34 +21,19 @@ describe FuelSDK::ET_Client do
       expect(client.debug).to be_false
     end
 
-    describe 'with type=soap' do
-
-      let(:client) { FuelSDK::ET_Client.new 'type' => 'soap' }
-
-      it 'creates SoapClient' do
-        expect(client).to be_kind_of FuelSDK::Soap
-      end
-
-      it '#mode returns soap' do
-        expect(client.mode).to eq 'soap'
-      end
-
-      it '#wsdl defaults to https://webservice.exacttarget.com/etframework.wsdl' do
-        expect(client.wsdl).to eq 'https://webservice.exacttarget.com/etframework.wsdl'
-      end
+    it 'creates SoapClient' do
+      client = FuelSDK::ET_Client.new
+      expect(client).to be_kind_of FuelSDK::Soap
     end
 
-    describe 'with type=rest' do
+    it '#wsdl defaults to https://webservice.exacttarget.com/etframework.wsdl' do
+      client = FuelSDK::ET_Client.new
+      expect(client.wsdl).to eq 'https://webservice.exacttarget.com/etframework.wsdl'
+    end
 
-      let(:client) { FuelSDK::ET_Client.new 'type' => 'rest' }
-
-      it 'creates RestClient' do
-        expect(client).to be_kind_of FuelSDK::Rest
-      end
-
-      it '#mode returns rest' do
-        expect(client.mode).to eq 'rest'
-      end
+    it 'creates RestClient' do
+      client = FuelSDK::ET_Client.new
+      expect(client).to be_kind_of FuelSDK::Rest
     end
 
     describe 'with a wsdl' do
@@ -209,7 +189,9 @@ describe FuelSDK::ET_Client do
 
     subject { FuelSDK::ET_Client.new }
 
-    it { should respond_to(:_get_) }
-    it { should respond_to(:_post_) }
+    it { should respond_to(:get) }
+    it { should respond_to(:post) }
+    it { should respond_to(:patch) }
+    it { should respond_to(:delete) }
   end
 end

@@ -55,7 +55,7 @@ module FuelSDK
         data = options['data']
         _request = method.new uri.request_uri
         _request.body = data.to_json if data
-        _request.content_type = 'application/json'
+        _request.content_type = options['content_type'] if options['content_type']
         response = http.request(_request)
 
         HTTPResponse.new(response, self)

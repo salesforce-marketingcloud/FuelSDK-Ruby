@@ -83,6 +83,7 @@ module FuelSDK
 
         options = Hash.new.tap do |h|
           h['data'] = payload
+          h['content_type'] = 'application/json'
           h['params'] = {'legacy' => 1}
         end
 

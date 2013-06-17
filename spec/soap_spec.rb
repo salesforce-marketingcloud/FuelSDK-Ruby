@@ -1,15 +1,13 @@
 require 'spec_helper'
 
-describe FuelSDK::SoapClient do
+describe FuelSDK::Soap do
 
-  let(:client) { FuelSDK::SoapClient.new }
+  let(:client) { FuelSDK::ET_Client.new }
 
   subject { client }
 
-  it { should respond_to(:_get_) }
-  it { should respond_to(:_post_) }
-
-  it { should respond_to(:mode) }
+  it { should respond_to(:soap_get) }
+  it { should respond_to(:soap_post) }
 
   it { should respond_to(:header) }
   it { should_not respond_to(:header=) }
@@ -20,9 +18,8 @@ describe FuelSDK::SoapClient do
   it { should respond_to(:endpoint) }
   it { should_not respond_to(:endpoint=) }
 
-  it { should respond_to(:client) }
+  it { should respond_to(:soap_client) }
 
-  its(:mode) { should eq 'soap' }
   its(:debug) { should be_false }
   its(:wsdl) { should eq 'https://webservice.exacttarget.com/etframework.wsdl' }
 
