@@ -136,7 +136,7 @@ module FuelSDK
       end
       message = {'RetrieveRequest' => message}
 
-      SoapResponse.new soap_client.call(:retrieve, :message => message), self
+      soap_request :retrieve, :message => message
     end
 
     def soap_post object_type, properties
@@ -157,7 +157,21 @@ module FuelSDK
           'Objects' => properties,
           :attributes! => { 'Objects' => { 'xsi:type' => ('tns:' + object_type) } }
         }
-        SoapResponse.new soap_client.call(action, :message => message), self
+        soap_request action, :message => message
+      end
+
+      def soap_request action, message
+          retried = false
+          begin
+            rsp = soap_client.call(action, message)
+          rescue
+            raise if retried
+            retried = true
+            retry
+          end
+          SoapResponse.new rsp, self
+      rescue
+        SoapResponse.new rsp, self
       end
   end
 end
