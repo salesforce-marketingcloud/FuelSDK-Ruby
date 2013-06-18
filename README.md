@@ -63,8 +63,8 @@ Print out the results for viewing
 			:"@xsi:type"=>"List"}
 		],
 	@code=200,
-	@status=true,
-	@moreResults=false,
+	@success?=true,
+	@more?=false,
 	@request_id="41f0f293-954f-4ac7-8e7a-0a5756022218"
 >
 </pre>
