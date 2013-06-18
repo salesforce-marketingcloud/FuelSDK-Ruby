@@ -14,6 +14,7 @@ module FuelSDK
     def continue
       rsp = nil
       if more?
+       @request['options']['page'] = @results['page'].to_i + 1
        rsp = unpack @client.rest_get(@request['url'], @request['options'])
       else
         puts 'No more data'
