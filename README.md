@@ -9,17 +9,14 @@ The Fuel SDK for Ruby provides easy access to ExactTarget's Fuel API Family serv
 ## Requirements ##
 Ruby Version 1.9.3
 
-Gems:
-
-- [savon (2.x)](http://rubygems.org/gems/savon)
-- [json (1.7.x)](http://rubygems.org/gems/json)
-- [jwt (0.1.6)](https://rubygems.org/gems/jwt)
-
-
 ## Getting Started ##
-After downloading the project, rename the config.yaml.template file to config.yaml.
+Add this line to your application's Gemfile:
 
-Edit config.yaml so you can input the ClientID and Client Secret values provided when you registered your application. If you are building a HubExchange application for the Interactive Marketing Hub then, you must also provide the Application Signature (appsignature).  Only change the value for the defaultwsdl configuration item if instructed by ExactTarget.
+```ruby
+gem 'fuelsdk'
+```
+
+Pass the ClientID and Client Secret values provided when you registered your application via Hash into ET_Client instance. If you are building a HubExchange application for the Interactive Marketing Hub then, you must also provide the Application Signature (appsignature).  Only change the value for the defaultwsdl configuration item if instructed by ExactTarget.
 
 If you have not registered your application or you need to lookup your Application Key or Application Signature values, please go to App Center at [Code@: ExactTarget's Developer Community](http://code.exacttarget.com/appcenter "Code@ App Center").
 
