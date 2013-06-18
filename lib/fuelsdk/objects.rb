@@ -110,6 +110,18 @@ module FuelSDK
     include ET_SoapGet
   end
 
+  class ET_TriggeredSend < ET_Base
+    attr_accessor :subscribers
+    include ET_SoapGet
+    include ET_SoapCUD
+    def id
+      'TriggeredSendDefinition'
+    end
+    def send
+      client.soap_post 'TriggeredSend', 'TriggeredSendDefinition' => properties, 'Subscribers' => subscribers
+    end
+  end
+
   class ET_Campaign < ET_Base
     include ET_RestGet
     include ET_RestCUD

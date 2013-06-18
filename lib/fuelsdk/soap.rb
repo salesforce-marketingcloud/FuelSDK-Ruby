@@ -171,6 +171,7 @@ module FuelSDK
           end
           SoapResponse.new rsp, self
       rescue
+        raise if rsp.nil?
         SoapResponse.new rsp, self
       end
   end
