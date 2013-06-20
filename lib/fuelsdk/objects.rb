@@ -1,119 +1,132 @@
 module FuelSDK
-  module ET_SoapGet
-    def get
-      client.soap_get id, properties, filter
+  module Objects
+    module SoapRead
+      def get
+        client.soap_get id, properties, filter
+      end
+
+      def info
+        client.soap_describe id
+      end
     end
 
-    def info
-      client.soap_describe id
-    end
-  end
+    module SoapCUD #create, update, delete
+      def post
+        client.soap_post id, properties
+      end
 
-  module ET_SoapCUD #create, update, delete
-    def post
-      client.soap_post id, properties
-    end
+      def patch
+        client.soap_patch id, properties
+      end
 
-    def patch
-      client.soap_patch id, properties
-    end
-
-    def delete
-      client.soap_delete id, properties
-    end
-  end
-
-  module ET_RestGet
-    def get
-      client.rest_get id, properties
-    end
-  end
-
-  module ET_RestCUD
-    def post
-      client.rest_post id, properties
+      def delete
+        client.soap_delete id, properties
+      end
     end
 
-    def patch
-      client.rest_patch id, properties
+    module RestRead
+      def get
+        client.rest_get id, properties
+      end
     end
 
-    def delete
-      client.rest_delete id, properties
+    module RestCUD
+      def post
+        client.rest_post id, properties
+      end
+
+      def patch
+        client.rest_patch id, properties
+      end
+
+      def delete
+        client.rest_delete id, properties
+      end
     end
-  end
 
-  class ET_Base
-    attr_accessor :filter, :properties, :client
-    attr_reader :id
+    class Base
+      attr_accessor :filter, :properties, :client
+      attr_reader :id
 
-    alias props= properties= # backward compatibility
-    alias authStub= client= # backward compatibility
+      alias props= properties= # backward compatibility
+      alias authStub= client= # backward compatibility
 
-    def id
-      self.class.name.split('::').pop.split('_').pop
-    end
-  end
+      def id
+        self.class.id
+      end
 
-  class ET_BounceEvent < ET_Base
-    include ET_SoapGet
-  end
-
-  class ET_ClickEvent < ET_Base
-    include ET_SoapGet
-  end
-
-  class ET_ContentArea < ET_Base
-    include ET_SoapGet
-    include ET_SoapCUD
-  end
-
-  class ET_Folder < ET_Base
-    include ET_SoapGet
-    include ET_SoapCUD
-    def id
-      'DataFolder'
+      class << self
+        def id
+          self.name.split('::').pop.split('_').pop
+        end
+      end
     end
   end
 
-  class ET_Email < ET_Base
-    include ET_SoapGet
-    include ET_SoapCUD
+  class ET_BounceEvent < Objects::Base
+    include Objects::SoapRead
   end
 
-  class ET_List < ET_Base
-    include ET_SoapGet
-    include ET_SoapCUD
+  class ET_ClickEvent < Objects::Base
+    include Objects::SoapRead
+  end
 
-    class Subscriber < ET_Base
-      include ET_SoapGet
+  class ET_ContentArea < Objects::Base
+    include Objects::SoapRead
+    include Objects::SoapCUD
+  end
+
+  class ET_DataFolder < Objects::Base
+    include Objects::SoapRead
+    include Objects::SoapCUD
+  end
+
+  class ET_Folder < ET_DataFolder
+    class << self
+      def id
+        ET_DataFolder.id
+      end
+    end
+  end
+
+  class ET_Email < Objects::Base
+    include Objects::SoapRead
+    include Objects::SoapCUD
+  end
+
+  class ET_List < Objects::Base
+    include Objects::SoapRead
+    include Objects::SoapCUD
+
+    class Subscriber < Objects::Base
+      include Objects::SoapRead
       def id
         'ListSubscriber'
       end
     end
   end
 
-  class ET_OpenEvent < ET_Base
-    include ET_SoapGet
+  class ET_OpenEvent < Objects::Base
+    include Objects::SoapRead
   end
 
-  class ET_SentEvent < ET_Base
-    include ET_SoapGet
+  class ET_SentEvent < Objects::Base
+    include Objects::SoapRead
   end
 
-  class ET_Subscriber < ET_Base
-    include ET_SoapGet
-    include ET_SoapCUD
+  class ET_Subscriber < Objects::Base
+    include Objects::SoapRead
+    include Objects::SoapCUD
   end
 
-  class ET_UnsubEvent < ET_Base
-    include ET_SoapGet
+  class ET_UnsubEvent < Objects::Base
+    include Objects::SoapRead
   end
 
-  class ET_TriggeredSend < ET_Base
+  class ET_TriggeredSend < Objects::Base
     attr_accessor :subscribers
-    include ET_SoapGet
-    include ET_SoapCUD
+    include Objects::SoapRead
+    include Objects::SoapCUD
     def id
       'TriggeredSendDefinition'
     end
@@ -122,10 +135,9 @@ module FuelSDK
     end
   end
 
-  class ET_Campaign < ET_Base
-    include ET_RestGet
-    include ET_RestCUD
-
+  class ET_Campaign < Objects::Base
+    include Objects::RestRead
+    include Objects::RestCUD
 
     def properties
       @properties ||= {}
@@ -137,9 +149,9 @@ module FuelSDK
       "https://www.exacttargetapis.com/hub/v1/campaigns/%{id}"
     end
 
-    class Asset < ET_Base
-      include ET_RestGet
-      include ET_RestCUD
+    class Asset < Objects::Base
+      include Objects::RestRead
+      include Objects::RestCUD
 
       def properties
         @properties ||= {}
