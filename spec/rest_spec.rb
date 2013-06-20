@@ -38,7 +38,7 @@ describe FuelSDK::Rest do
       expect( client.get_url_properties "some_url/%{parent}/%{child}", {'parent'=> 1, 'other' => 1} ).to eq({'parent' => 1})
     end
 
-    it 'remaining properties are query params' do
+    it 'filters url properties from properties leaving query params' do
       properties = {'parent'=> 1, 'other' => 1}
       client.get_url_properties "some_url/%{parent}/%{child}", properties
       expect(properties).to eq 'other' => 1
