@@ -42,31 +42,29 @@ Print out the results for viewing
 **Example Output:**
 
 <pre>
-#&lt;ET_Get:0x355bc48
-	@results=[
-		{
-			:client=>{
-				:id=>"1000001",
-				:partner_client_key=>nil
-				},
-			:partner_key=>nil,
-			:created_date=>#&lt;DateTime: 2009-06-12T14:42:06+00:00 ((2454995j,52926s,100000000n),+0s,2299161j)&gt;,
-			:modified_date=>#&lt;DateTime: 2011-08-17T14:50:30+00:00 ((2455791j,53430s,697000000n),+0s,2299161j)&gt;,
-			:id=>"1718921",
-			:object_id=>"f41c7d1b-8957-de11-92ee-001cc494ae9e",
-			:customer_key=>"All Subscribers - 578623",
-			:list_name=>"All Subscribers",
-			:category=>"578623",
-			:type=>"Private",
-			:description=>"Contains all subscribers",
-			:list_classification=>"ExactTargetList",
-			:"@xsi:type"=>"List"}
-		],
-	@code=200,
-	@success?=true,
-	@more?=false,
-	@request_id="41f0f293-954f-4ac7-8e7a-0a5756022218"
->
+<FuelSDK::SoapResponse:0x007fb86abcf190
+ @body= {:retrieve_response_msg=> {:overall_status=>"OK", :request_id=>"XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX", :results=> ...
+ @code= 200,
+ @message= 'OK',
+ @request_id="XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX",
+ @results=
+  [{:client=>{:id=>"xxxx"},
+    :partner_key=>nil,
+    :created_date=>
+     #<DateTime: 2013-05-30T23:02:00+00:00 ((2456443j,82920s,0n),+0s,2299161j)>,
+    :id=>"xxxx",
+    :object_id=>nil,
+    :email_address=>"xxxx",
+    :attributes=>
+     [{:name=>"Full Name", :value=>"Justin Barber"},
+      {:name=>"Gender", :value=>nil},
+      {:name=>"Email Address", :value=>"xxx"},
+      {:name=>"User Defined", :value=>"02/02/1982"}],
+    :subscriber_key=>"xxxx",
+    :status=>"Active",
+    :email_type_preference=>"HTML",
+    :"@xsi:type"=>"Subscriber"},
+ @success=true>
 </pre>
 
 ## ET\_Client Class ##

@@ -21,7 +21,6 @@ module FuelSDK
       @client = client # keep connection with client in case we request more
       @results = []
       @raw = raw
-      @body = raw.body
       unpack raw
     rescue => ex # all else fails return raw
       puts ex.message

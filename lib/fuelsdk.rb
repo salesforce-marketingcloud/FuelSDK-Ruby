@@ -13,6 +13,10 @@ module FuelSDK
   require 'fuelsdk/objects'
 end
 
+# backwards compatability
+ET_Client = FuelSDK::ET_Client
+ET_Subscriber = FuelSDK::ET_Subscriber
+
 =begin
   class ET_DataExtension < ET_CUDSupport
     attr_accessor :columns

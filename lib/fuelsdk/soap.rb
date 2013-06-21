@@ -15,26 +15,34 @@ module FuelSDK
     end
 
     private
+      def unpack_body raw
+        @body = raw.body
+        @request_id = raw.body[raw.body.keys.first][:request_id]
+        unpack_msg raw
+      rescue
+        @message = raw.http.body
+        @body = raw.http.body
+      end
+
       def unpack raw
         @code = raw.http.code
-        @request_id = raw.body[raw.body.keys.first][:request_id]
-
-        @message = parse_msg raw
+        unpack_body raw
         @success = @message == 'OK'
-
-
         @results += (parse_rslts raw)
       end
 
       def parse_msg raw
-        raw.soap_fault? ? raw.body[:fault][:faultstring] : raw.body[raw.body.keys.first][:overall_status]
+        @message = raw.soap_fault? ? raw.body[:fault][:faultstring] : raw.body[raw.body.keys.first][:overall_status]
       end
 
       def parse_rslts raw
-        @more = (raw.body[raw.body.keys.first][:overall_status] == 'MoreDataAvailable')
-        rslts = raw.body[raw.body.keys.first][:results] || []
-        rslts = [rslts] unless rslts.kind_of? Array
-        rslts
+        if success?
+          @more = (raw.body[raw.body.keys.first][:overall_status] == 'MoreDataAvailable')
+          rslts = raw.body[raw.body.keys.first][:results] || []
+          rslts = [rslts] unless rslts.kind_of? Array
+          return rslts
+        end
+        []
       end
   end
 
