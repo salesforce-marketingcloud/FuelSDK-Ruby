@@ -4,7 +4,7 @@ require 'json'
 
 module FuelSDK
 
-  class HTTPResponse < FuelSDK::ET_Response
+  class HTTPResponse < FuelSDK::Response
 
     def initialize raw, client, request
       super raw, client

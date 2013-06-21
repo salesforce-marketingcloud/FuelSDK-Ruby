@@ -1,7 +1,7 @@
 require 'savon'
 module FuelSDK
 
-  class SoapResponse < FuelSDK::ET_Response
+  class SoapResponse < FuelSDK::Response
 
     def continue
       rsp = nil

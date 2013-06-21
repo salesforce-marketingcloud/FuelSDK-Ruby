@@ -3,11 +3,11 @@ require 'securerandom'
 require_relative 'sample_helper'
 
 begin
-	stubObj = FuelSDK::ET_Client.new auth
+	stubObj = FuelSDK::Client.new auth
 
 	# Get all TriggeredSendDefinitions
 	p '>>> Get all TriggeredSendDefinitions'
-	getTS = FuelSDK::ET_TriggeredSend.new
+	getTS = FuelSDK::TriggeredSend.new
 	getTS.authStub = stubObj
 	getTS.props = ["CustomerKey", "Name", "TriggeredSendStatus"]
 	getResponse = getTS.get
@@ -24,7 +24,7 @@ begin
 
 	# Create a TriggeredSend Definition
 	p '>>> Create a TriggeredSend Definition'
-	postTrig = FuelSDK::ET_TriggeredSend.new
+	postTrig = FuelSDK::TriggeredSend.new
 	postTrig.authStub = stubObj
 	postTrig.props = {'CustomerKey' => TSNameForCreateThenDelete,'Name' => TSNameForCreateThenDelete, 'Email' => {"ID"=>"3113962"}, "SendClassification"=> {"CustomerKey"=> "2240"}}
 	postResponse = postTrig.post
@@ -42,7 +42,7 @@ begin
 
 	# Pause a TriggeredSend
 	p '>>> Pause a TriggeredSend'
-	patchTrig = FuelSDK::ET_TriggeredSend.new
+	patchTrig = FuelSDK::TriggeredSend.new
 	patchTrig.authStub = stubObj
 	patchTrig.props = {"CustomerKey" => NameOfTestTS, "TriggeredSendStatus" =>"Inactive"}
 	patchResponse = patchTrig.patch
@@ -55,7 +55,7 @@ begin
 
 	# Retrieve Single TriggeredSend
 	p '>>> Retrieve Single TriggeredSend'
-	getTS = FuelSDK::ET_TriggeredSend.new
+	getTS = FuelSDK::TriggeredSend.new
 	getTS.authStub = stubObj
 	getTS.props = ["CustomerKey", "Name", "TriggeredSendStatus"]
 	getTS.filter = {'Property' => 'CustomerKey','SimpleOperator' => 'equals','Value' => NameOfTestTS}
@@ -70,7 +70,7 @@ begin
 
 	# Start a TriggeredSend by setting to Active
 	p '>>> Start a TriggeredSend by setting to Active'
-	patchTrig = FuelSDK::ET_TriggeredSend.new
+	patchTrig = FuelSDK::TriggeredSend.new
 	patchTrig.authStub = stubObj
 	patchTrig.props = {"CustomerKey" => NameOfTestTS, "TriggeredSendStatus" =>"Active"}
 	patchResponse = patchTrig.patch
@@ -83,7 +83,7 @@ begin
 
 	# Retrieve Single TriggeredSend After setting back to active
 	p '>>> Retrieve Single TriggeredSend After setting back to active'
-	getTS = FuelSDK::ET_TriggeredSend.new
+	getTS = FuelSDK::TriggeredSend.new
 	getTS.authStub = stubObj
 	getTS.props = ["CustomerKey", "Name", "TriggeredSendStatus"]
 	getTS.filter = {'Property' => 'CustomerKey','SimpleOperator' => 'equals','Value' => NameOfTestTS}
@@ -98,7 +98,7 @@ begin
 
 	# Send an email with TriggeredSend
 	p '>>> Send an email with TriggeredSend'
-	sendTrig = FuelSDK::ET_TriggeredSend.new
+	sendTrig = FuelSDK::TriggeredSend.new
 	sendTrig.authStub = stubObj
 	sendTrig.props = {"CustomerKey" => NameOfTestTS}
 	sendTrig.subscribers = [{"EmailAddress"=>"testing@bh.exacttarget.com", "SubscriberKey" => "testing@bh.exacttarget.com"}]
@@ -113,7 +113,7 @@ begin
 
 	# Delete a TriggeredSend Definition
 	p '>>> Delete a TriggeredSend Definition '
-	deleteTrig = FuelSDK::ET_TriggeredSend.new
+	deleteTrig = FuelSDK::TriggeredSend.new
 	deleteTrig.authStub = stubObj
 	deleteTrig.props = {'CustomerKey' => TSNameForCreateThenDelete}
 	deleteResponse = deleteTrig.delete

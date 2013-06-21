@@ -1,92 +1,111 @@
 require 'spec_helper.rb'
 require 'objects_helper_spec.rb'
 
-describe FuelSDK::ET_BounceEvent do
+describe FuelSDK::BounceEvent do
 
-  let(:object) { FuelSDK::ET_BounceEvent.new }
+  let(:object) { FuelSDK::BounceEvent.new }
   subject{ object }
 
   it_behaves_like 'Soap Read Only Object'
   its(:id){ should eq 'BounceEvent' }
 end
 
-describe FuelSDK::ET_ClickEvent do
+describe FuelSDK::ClickEvent do
 
-  let(:object) { FuelSDK::ET_ClickEvent.new }
+  let(:object) { FuelSDK::ClickEvent.new }
   subject{ object }
 
   it_behaves_like 'Soap Read Only Object'
   its(:id){ should eq 'ClickEvent' }
 end
 
-describe FuelSDK::ET_ContentArea do
+describe FuelSDK::ContentArea do
 
-  let(:object) { FuelSDK::ET_ContentArea.new }
+  let(:object) { FuelSDK::ContentArea.new }
   subject{ object }
 
   it_behaves_like 'Soap Object'
   its(:id){ should eq 'ContentArea' }
 end
 
-describe FuelSDK::ET_DataFolder do
+describe FuelSDK::DataFolder do
 
-  let(:object) { FuelSDK::ET_DataFolder.new }
+  let(:object) { FuelSDK::DataFolder.new }
   subject{ object }
 
   it_behaves_like 'Soap Object'
   its(:id){ should eq 'DataFolder' }
 end
 
-describe FuelSDK::ET_Folder do
+describe FuelSDK::Folder do
 
-  let(:object) { FuelSDK::ET_Folder.new }
+  let(:object) { FuelSDK::Folder.new }
   subject{ object }
 
   it_behaves_like 'Soap Object'
   its(:id){ should eq 'DataFolder' }
 end
 
-describe FuelSDK::ET_Email do
+describe FuelSDK::Email do
 
-  let(:object) { FuelSDK::ET_Email.new }
+  let(:object) { FuelSDK::Email.new }
   subject{ object }
 
   it_behaves_like 'Soap Object'
   its(:id){ should eq 'Email' }
 end
 
-describe FuelSDK::ET_List do
+describe FuelSDK::List do
 
-  let(:object) { FuelSDK::ET_List.new }
+  let(:object) { FuelSDK::List.new }
   subject{ object }
 
   it_behaves_like 'Soap Object'
   its(:id){ should eq 'List' }
 end
 
-describe FuelSDK::ET_List::Subscriber do
+describe FuelSDK::List::Subscriber do
 
-  let(:object) { FuelSDK::ET_List::Subscriber.new }
+  let(:object) { FuelSDK::List::Subscriber.new }
   subject{ object }
 
   it_behaves_like 'Soap Read Only Object'
   its(:id){ should eq 'ListSubscriber' }
 end
 
-describe FuelSDK::ET_OpenEvent do
+describe FuelSDK::OpenEvent do
 
-  let(:object) { FuelSDK::ET_OpenEvent.new }
+  let(:object) { FuelSDK::OpenEvent.new }
   subject{ object }
 
   it_behaves_like 'Soap Read Only Object'
   its(:id){ should eq 'OpenEvent' }
 end
 
-describe FuelSDK::ET_SentEvent do
+describe FuelSDK::SentEvent do
 
-  let(:object) { FuelSDK::ET_SentEvent.new }
+  let(:object) { FuelSDK::SentEvent.new }
   subject{ object }
 
   it_behaves_like 'Soap Read Only Object'
   its(:id){ should eq 'SentEvent' }
+end
+
+describe FuelSDK::Subscriber do
+
+  let(:object) { FuelSDK::Subscriber.new }
+  subject{ object }
+
+  it_behaves_like 'Soap Object'
+  its(:id){ should eq 'Subscriber' }
+end
+
+# verify backward compats
+describe ET_Subscriber do
+
+  let(:object) { ET_Subscriber.new }
+  subject{ object }
+
+  it_behaves_like 'Soap Object'
+  its(:id){ should eq 'Subscriber' }
 end

@@ -2,13 +2,13 @@ require 'fuelsdk'
 require_relative 'sample_helper'
 
 begin
-	stubObj = FuelSDK::ET_Client.new auth
+	stubObj = FuelSDK::Client.new auth
 
 	NewListName = "RubySDKList"
 
 	# Create List
 	p '>>> Create List'
-	postList = FuelSDK::ET_List.new
+	postList = FuelSDK::List.new
 	postList.authStub = stubObj
 	postList.props = {"ListName" => NewListName, "Description" => "This list was created with the RubySDK", "Type" => "Private" }
 	postResponse = postList.post
@@ -27,7 +27,7 @@ begin
 
 		# Retrieve newly created List by ID
 		p '>>> Retrieve newly created List'
-		getList = FuelSDK::ET_List.new()
+		getList = FuelSDK::List.new()
 		getList.authStub = stubObj
 		getList.props = ["ID","PartnerKey","CreatedDate","ModifiedDate","Client.ID","Client.PartnerClientKey","ListName","Description","Category","Type","CustomerKey","ListClassification","AutomatedEmail.ID"]
 		getList.filter = {'Property' =>  'ID','SimpleOperator' => 'equals','Value' => newListID}
@@ -42,7 +42,7 @@ begin
 
 		# Update List
 		p '>>> Update List'
-		patchSub = FuelSDK::ET_List.new
+		patchSub = FuelSDK::List.new
 		patchSub.authStub = stubObj
 		patchSub.props = {"ID" => newListID, "Description" => "I updated the description"}
 		patchResponse = patchSub.patch
@@ -56,7 +56,7 @@ begin
 
 		# Retrieve List that should have description updated
 		p '>>> Retrieve List that should have description updated '
-		getList = FuelSDK::ET_List.new()
+		getList = FuelSDK::List.new()
 		getList.authStub = stubObj
 		getList.props = ["ID","PartnerKey","CreatedDate","ModifiedDate","Client.ID","Client.PartnerClientKey","ListName","Description","Category","Type","CustomerKey","ListClassification","AutomatedEmail.ID"]
 		getList.filter = {'Property' => 'ID','SimpleOperator' => 'equals','Value' => newListID}
@@ -71,7 +71,7 @@ begin
 
 		# Delete List
 		p '>>> Delete List'
-		deleteSub = FuelSDK::ET_List.new()
+		deleteSub = FuelSDK::List.new()
 		deleteSub.authStub = stubObj
 		deleteSub.props = {"ID" => newListID}
 		deleteResponse = deleteSub.delete
@@ -84,7 +84,7 @@ begin
 
 		# Retrieve List to confirm deletion
 		p '>>> Retrieve List to confirm deletion'
-		getList = FuelSDK::ET_List.new()
+		getList = FuelSDK::List.new()
 		getList.authStub = stubObj
 		getList.props = ["ID","PartnerKey","CreatedDate","ModifiedDate","Client.ID","Client.PartnerClientKey","ListName","Description","Category","Type","CustomerKey","ListClassification","AutomatedEmail.ID"]
 		getList.filter = {'Property' => 'ID','SimpleOperator' => 'equals','Value' => newListID}

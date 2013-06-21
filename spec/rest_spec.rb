@@ -1,6 +1,6 @@
 require 'spec_helper'
 describe FuelSDK::Rest do
-  let(:client) { FuelSDK::ET_Client.new }
+  let(:client) { FuelSDK::Client.new }
 
   subject { client }
   it { should respond_to(:rest_get) }

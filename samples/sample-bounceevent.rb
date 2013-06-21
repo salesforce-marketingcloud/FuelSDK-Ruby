@@ -2,14 +2,14 @@ require 'fuelsdk'
 require_relative 'sample_helper'
 
 begin
-	stubObj = FuelSDK::ET_Client.new auth
+	stubObj = FuelSDK::Client.new auth
 
 	## Modify the date below to reduce the number of results returned from the request
 	## Setting this too far in the past could result in a very large response size
 	retrieveDate = '2011-01-15T13:00:00.000'
 
 	p '>>> Retrieve Filtered BounceEvents with GetMoreResults'
-	getBounceEvent = FuelSDK::ET_BounceEvent.new()
+	getBounceEvent = FuelSDK::BounceEvent.new()
 	getBounceEvent.authStub = stubObj
 	getBounceEvent.props = ["SendID","SubscriberKey","EventDate","Client.ID","EventType","BatchID","TriggeredSendDefinitionObjectID","PartnerKey"]
 	getBounceEvent.filter = {'Property' => 'EventDate','SimpleOperator' => 'greaterThan','DateValue' => retrieveDate}
@@ -38,7 +38,7 @@ begin
 	#  The following request could potentially bring back large amounts of data if run against a production account
 =begin
 	p '>>> Retrieve All BounceEvents with GetMoreResults'
-	getBounceEvent = FuelSDK::ET_BounceEvent.new()
+	getBounceEvent = FuelSDK::BounceEvent.new()
 	getBounceEvent.authStub = stubObj
 	getBounceEvent.props = ["SendID","SubscriberKey","EventDate","Client.ID","EventType","BatchID","TriggeredSendDefinitionObjectID","PartnerKey"]
 	getResponse = getBounceEvent.get

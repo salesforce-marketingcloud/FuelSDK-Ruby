@@ -1,44 +1,44 @@
 require 'spec_helper.rb'
 
-describe FuelSDK::ET_Client do
+describe FuelSDK::Client do
 
   context 'initialized' do
 
     it 'with client parameters' do
-      client = FuelSDK::ET_Client.new 'client' => { 'id' => '1234', 'secret' => 'ssssh', 'signature' => 'hancock' }
+      client = FuelSDK::Client.new 'client' => { 'id' => '1234', 'secret' => 'ssssh', 'signature' => 'hancock' }
       expect(client.secret).to eq 'ssssh'
       expect(client.id).to eq '1234'
       expect(client.signature).to eq 'hancock'
     end
 
     it 'with debug=true' do
-      client = FuelSDK::ET_Client.new({}, true)
+      client = FuelSDK::Client.new({}, true)
       expect(client.debug).to be_true
     end
 
     it 'with debug=false' do
-      client = FuelSDK::ET_Client.new({}, false)
+      client = FuelSDK::Client.new({}, false)
       expect(client.debug).to be_false
     end
 
     it 'creates SoapClient' do
-      client = FuelSDK::ET_Client.new
+      client = FuelSDK::Client.new
       expect(client).to be_kind_of FuelSDK::Soap
     end
 
     it '#wsdl defaults to https://webservice.exacttarget.com/etframework.wsdl' do
-      client = FuelSDK::ET_Client.new
+      client = FuelSDK::Client.new
       expect(client.wsdl).to eq 'https://webservice.exacttarget.com/etframework.wsdl'
     end
 
     it 'creates RestClient' do
-      client = FuelSDK::ET_Client.new
+      client = FuelSDK::Client.new
       expect(client).to be_kind_of FuelSDK::Rest
     end
 
     describe 'with a wsdl' do
 
-      let(:client) { FuelSDK::ET_Client.new 'defaultwsdl' => 'somewsdl' }
+      let(:client) { FuelSDK::Client.new 'defaultwsdl' => 'somewsdl' }
 
       it'creates a SoapClient' do
         expect(client).to be_kind_of FuelSDK::Soap
@@ -52,7 +52,7 @@ describe FuelSDK::ET_Client do
 
   context 'instance can set' do
 
-    let(:client) { FuelSDK::ET_Client.new }
+    let(:client) { FuelSDK::Client.new }
 
     it 'client id' do
       client.id = 123
@@ -100,7 +100,7 @@ describe FuelSDK::ET_Client do
     }
 
     it 'raises an exception when signature is missing' do
-      expect { FuelSDK::ET_Client.new.jwt = encoded }.to raise_exception 'Require app signature to decode JWT'
+      expect { FuelSDK::Client.new.jwt = encoded }.to raise_exception 'Require app signature to decode JWT'
     end
 
     describe 'decodes JWT' do
@@ -114,7 +114,7 @@ describe FuelSDK::ET_Client do
       }
 
       let(:client) {
-        FuelSDK::ET_Client.new 'client' => { 'id' => '1234', 'secret' => 'ssssh', 'signature' => sig }
+        FuelSDK::Client.new 'client' => { 'id' => '1234', 'secret' => 'ssssh', 'signature' => sig }
       }
 
       it 'making auth token available to client' do
@@ -135,7 +135,7 @@ describe FuelSDK::ET_Client do
   end
 
   describe '#refresh_token' do
-    let(:client) { FuelSDK::ET_Client.new }
+    let(:client) { FuelSDK::Client.new }
 
     it 'defaults to nil' do
       expect(client.refresh_token).to be_nil
@@ -149,7 +149,7 @@ describe FuelSDK::ET_Client do
 
   describe '#refresh' do
 
-    let(:client) { FuelSDK::ET_Client.new }
+    let(:client) { FuelSDK::Client.new }
 
     context 'raises an exception' do
 
@@ -169,7 +169,7 @@ describe FuelSDK::ET_Client do
     end
 
     #context 'posts' do
-    #  let(:client) { FuelSDK::ET_Client.new 'client' => { 'id' => 123, 'secret' => 'sssh'} }
+    #  let(:client) { FuelSDK::Client.new 'client' => { 'id' => 123, 'secret' => 'sssh'} }
     #  it 'accessType=offline' do
     #  client.stub(:post)
     #    .with({'clientId' => 123, 'secret' => 'ssh', 'accessType' => 'offline'})
@@ -177,7 +177,7 @@ describe FuelSDK::ET_Client do
     #end
 
     #context 'updates' do
-    #  let(:client) { FuelSDK::ET_Client.new 'client' => { 'id' => 123, 'secret' => 'sssh'} }
+    #  let(:client) { FuelSDK::Client.new 'client' => { 'id' => 123, 'secret' => 'sssh'} }
 
     #  it 'access_token' do
     #    #client.stub(:post).
@@ -187,7 +187,7 @@ describe FuelSDK::ET_Client do
 
   describe 'includes HTTPRequest' do
 
-    subject { FuelSDK::ET_Client.new }
+    subject { FuelSDK::Client.new }
 
     it { should respond_to(:get) }
     it { should respond_to(:post) }

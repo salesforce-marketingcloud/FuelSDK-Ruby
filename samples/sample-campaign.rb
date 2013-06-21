@@ -3,11 +3,11 @@ require_relative 'sample_helper'
 
 
 begin
-	stubObj = FuelSDK::ET_Client.new auth
+	stubObj = FuelSDK::Client.new auth
 
 	# Create List
 	p '>>> Create List'
-	postList = FuelSDK::ET_List.new
+	postList = FuelSDK::List.new
 	postList.authStub = stubObj
 	postList.props = {"ListName" => 'RubyAssetList', "Description" => "This list was created with the RubySDK", "Type" => "Private" }
 	postResponse = postList.post
@@ -25,7 +25,7 @@ begin
 
 	# Retrieve all Campaigns
 	p '>>> Retrieve all Campaigns'
-	getCamp = FuelSDK::ET_Campaign.new
+	getCamp = FuelSDK::Campaign.new
 	getCamp.authStub = stubObj
 	getResponse = getCamp.get
 	p 'Retrieve Status: ' + getResponse.status.to_s
@@ -50,7 +50,7 @@ begin
 
 	# Create a new Campaign
 	p '>>> Create a new Campaign'
-	postCamp = FuelSDK::ET_Campaign.new
+	postCamp = FuelSDK::Campaign.new
 	postCamp.authStub = stubObj
 	postCamp.props = {"name" => "RubySDKCreatedForTest1", "description"=> "RubySDKCreatedForTest", "color"=>"FF9933", "favorite"=>"false"}
 	postResponse = postCamp.post
@@ -66,7 +66,7 @@ begin
 
 		# Retrieve the new Campaign
 		p '>>> Retrieve the new Campaign'
-		getCamp =  FuelSDK::ET_Campaign.new
+		getCamp =  FuelSDK::Campaign.new
 		getCamp.authStub = stubObj
 		getCamp.props = {"id" => IDOfpostCampaign}
 		getResponse = getCamp.get
@@ -80,7 +80,7 @@ begin
 
 		# Update the new Campaign
 		p '>>> Update the new Campaign'
-		patchCamp = FuelSDK::ET_Campaign.new
+		patchCamp = FuelSDK::Campaign.new
 		patchCamp.authStub = stubObj
 		patchCamp.props = {"id"=> IDOfpostCampaign, "name" => "RubySDKCreated-Updated!"}
 		patchResponse = patchCamp.patch
@@ -94,7 +94,7 @@ begin
 
 		# Retrieve the updated Campaign
 		p '>>> Retrieve the updated Campaign'
-		getCamp = FuelSDK::ET_Campaign.new
+		getCamp = FuelSDK::Campaign.new
 		getCamp.authStub = stubObj
 		getCamp.props = {"id" => IDOfpostCampaign}
 		getResponse = getCamp.get
@@ -108,7 +108,7 @@ begin
 
 		# Create a new Campaign Asset
 		p '>>> Create a new Campaign Asset'
-		postCampAsset = FuelSDK::ET_Campaign::Asset.new
+		postCampAsset = FuelSDK::Campaign::Asset.new
 		postCampAsset.authStub = stubObj
 		postCampAsset.props = {"id" => IDOfpostCampaign, "ids"=> [ExampleAssetItemID], "type"=> ExampleAssetType}
 		postResponse = postCampAsset.post
@@ -124,7 +124,7 @@ begin
 
 		# Retrieve all Campaign Asset for a campaign
 		p '>>> Retrieve all Campaign Asset for a Campaign'
-		getCampAsset = FuelSDK::ET_Campaign::Asset.new
+		getCampAsset = FuelSDK::Campaign::Asset.new
 		getCampAsset.authStub = stubObj
 		getCampAsset.props = {"id" => IDOfpostCampaign}
 		getResponse = getCampAsset.get
@@ -138,7 +138,7 @@ begin
 
 		# Retrieve a single new Campaign Asset
 		p '>>> Retrieve a single new Campaign Asset'
-		getCampAsset = FuelSDK::ET_Campaign::Asset.new
+		getCampAsset = FuelSDK::Campaign::Asset.new
 		getCampAsset.authStub = stubObj
 		getCampAsset.props = {"id" => IDOfpostCampaign, "assetId" => IDOfpostCampaignAsset}
 		getResponse = getCampAsset.get
@@ -152,7 +152,7 @@ begin
 
 		# Delete the new Campaign Asset
 		p '>>> Delete the new Campaign Asset'
-		deleteCampAsset = FuelSDK::ET_Campaign::Asset.new
+		deleteCampAsset = FuelSDK::Campaign::Asset.new
 		deleteCampAsset.authStub = stubObj
 		deleteCampAsset.props = {"id" => IDOfpostCampaign, "assetId"=> IDOfpostCampaignAsset}
 		deleteResponse = deleteCampAsset.delete
@@ -166,7 +166,7 @@ begin
 
 		# Get a single a new Campaign Asset to confirm deletion
 		p '>>> Get a single a new Campaign Asset to confirm deletion'
-		getCampAsset = FuelSDK::ET_Campaign::Asset.new
+		getCampAsset = FuelSDK::Campaign::Asset.new
 		getCampAsset.authStub = stubObj
 		getCampAsset.props = {"id" => IDOfpostCampaign}
 		getResponse = getCampAsset.get
@@ -186,7 +186,7 @@ rescue => e
 ensure
 		# Delete the new Campaign
 		p '>>> Delete the new Campaign'
-		deleteCamp = FuelSDK::ET_Campaign.new
+		deleteCamp = FuelSDK::Campaign.new
 		deleteCamp.authStub = stubObj
 		deleteCamp.props = {"id"=> IDOfpostCampaign}
 		deleteResponse = deleteCamp.delete
@@ -199,7 +199,7 @@ ensure
   raise 'Failure deleting campaign asset' unless deleteResponse.success?
 
 		p '>>> Delete List'
-		deleteSub = FuelSDK::ET_List.new()
+		deleteSub = FuelSDK::List.new()
 		deleteSub.authStub = stubObj
 		deleteSub.props = {"ID" => ExampleAssetItemID}
 		deleteResponse = deleteSub.delete

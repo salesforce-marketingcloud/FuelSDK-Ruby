@@ -2,7 +2,7 @@ require 'spec_helper'
 
 describe FuelSDK::Soap do
 
-  let(:client) { FuelSDK::ET_Client.new }
+  let(:client) { FuelSDK::Client.new }
 
   subject { client }
 

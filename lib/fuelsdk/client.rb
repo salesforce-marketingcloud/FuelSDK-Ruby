@@ -1,5 +1,5 @@
 module FuelSDK
-  class ET_Response
+  class Response
     # not doing accessor so user, can't update these values from response.
     # You will see in the code some of these
     # items are being updated via back doors and such.
@@ -37,7 +37,7 @@ module FuelSDK
       end
   end
 
-  class ET_Client
+  class Client
     attr_accessor :debug, :access_token, :auth_token, :internal_token, :refresh_token,
       :id, :secret, :signature
 

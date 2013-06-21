@@ -19,4 +19,7 @@ end
 shared_examples_for 'Soap Read Only Object' do
   it { should respond_to(:id) }
   it_behaves_like 'Soap Read Object'
+  it { should_not respond_to(:post) }
+  it { should_not respond_to(:patch) }
+  it { should_not respond_to(:delete) }
 end

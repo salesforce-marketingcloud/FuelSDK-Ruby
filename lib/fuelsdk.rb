@@ -14,8 +14,20 @@ module FuelSDK
 end
 
 # backwards compatability
-ET_Client = FuelSDK::ET_Client
-ET_Subscriber = FuelSDK::ET_Subscriber
+ET_Client = FuelSDK::Client
+ET_BounceEvent = FuelSDK::BounceEvent
+ET_ClickEvent = FuelSDK::ClickEvent
+ET_ContentArea = FuelSDK::ContentArea
+ET_DataFolder = FuelSDK::DataFolder
+ET_Folder = FuelSDK::Folder
+ET_Email = FuelSDK::Email
+ET_List = FuelSDK::List
+ET_OpenEvent = FuelSDK::OpenEvent
+ET_SentEvent = FuelSDK::SentEvent
+ET_Subscriber = FuelSDK::Subscriber
+ET_UnsubEvent = FuelSDK::UnsubEvent
+ET_TriggeredSend = FuelSDK::TriggeredSend
+ET_Campaign = FuelSDK::Campaign
 
 =begin
   class ET_DataExtension < ET_CUDSupport

@@ -57,44 +57,44 @@ module FuelSDK
 
       class << self
         def id
-          self.name.split('::').pop.split('_').pop
+          self.name.split('::').pop
         end
       end
     end
   end
 
-  class ET_BounceEvent < Objects::Base
+  class BounceEvent < Objects::Base
     include Objects::SoapRead
   end
 
-  class ET_ClickEvent < Objects::Base
+  class ClickEvent < Objects::Base
     include Objects::SoapRead
   end
 
-  class ET_ContentArea < Objects::Base
-    include Objects::SoapRead
-    include Objects::SoapCUD
-  end
-
-  class ET_DataFolder < Objects::Base
+  class ContentArea < Objects::Base
     include Objects::SoapRead
     include Objects::SoapCUD
   end
 
-  class ET_Folder < ET_DataFolder
+  class DataFolder < Objects::Base
+    include Objects::SoapRead
+    include Objects::SoapCUD
+  end
+
+  class Folder < DataFolder
     class << self
       def id
-        ET_DataFolder.id
+        DataFolder.id
       end
     end
   end
 
-  class ET_Email < Objects::Base
+  class Email < Objects::Base
     include Objects::SoapRead
     include Objects::SoapCUD
   end
 
-  class ET_List < Objects::Base
+  class List < Objects::Base
     include Objects::SoapRead
     include Objects::SoapCUD
 
@@ -106,24 +106,24 @@ module FuelSDK
     end
   end
 
-  class ET_OpenEvent < Objects::Base
+  class OpenEvent < Objects::Base
     include Objects::SoapRead
   end
 
-  class ET_SentEvent < Objects::Base
+  class SentEvent < Objects::Base
     include Objects::SoapRead
   end
 
-  class ET_Subscriber < Objects::Base
+  class Subscriber < Objects::Base
     include Objects::SoapRead
     include Objects::SoapCUD
   end
 
-  class ET_UnsubEvent < Objects::Base
+  class UnsubEvent < Objects::Base
     include Objects::SoapRead
   end
 
-  class ET_TriggeredSend < Objects::Base
+  class TriggeredSend < Objects::Base
     attr_accessor :subscribers
     include Objects::SoapRead
     include Objects::SoapCUD
@@ -135,7 +135,7 @@ module FuelSDK
     end
   end
 
-  class ET_Campaign < Objects::Base
+  class Campaign < Objects::Base
     include Objects::RestRead
     include Objects::RestCUD
 
