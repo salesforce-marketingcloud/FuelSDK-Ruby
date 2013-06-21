@@ -21,27 +21,26 @@ module FuelSDK
         unpack_msg raw
       rescue
         @message = raw.http.body
-        @body = raw.http.body
+        @body = raw.http.body unless @body
       end
 
       def unpack raw
         @code = raw.http.code
         unpack_body raw
         @success = @message == 'OK'
-        @results += (parse_rslts raw)
+        @results += (unpack_rslts raw)
       end
 
-      def parse_msg raw
+      def unpack_msg raw
         @message = raw.soap_fault? ? raw.body[:fault][:faultstring] : raw.body[raw.body.keys.first][:overall_status]
       end
 
-      def parse_rslts raw
-        if success?
-          @more = (raw.body[raw.body.keys.first][:overall_status] == 'MoreDataAvailable')
-          rslts = raw.body[raw.body.keys.first][:results] || []
-          rslts = [rslts] unless rslts.kind_of? Array
-          return rslts
-        end
+      def unpack_rslts raw
+        @more = (raw.body[raw.body.keys.first][:overall_status] == 'MoreDataAvailable')
+        rslts = raw.body[raw.body.keys.first][:results] || []
+        rslts = [rslts] unless rslts.kind_of? Array
+        rslts
+      rescue
         []
       end
   end
@@ -49,7 +48,7 @@ module FuelSDK
   class DescribeResponse < SoapResponse
     attr_reader :properties, :retrievable, :updatable, :required
     private
-      def parse_rslts raw
+      def unpack_rslts raw
         @retrievable, @updatable, @required, @properties = [], [], [], [], []
         rslts = raw.body[raw.body.keys.first][:object_definition][:properties]
         rslts.each do  |r|
@@ -144,7 +143,7 @@ module FuelSDK
       end
       message = {'RetrieveRequest' => message}
 
-      soap_request :retrieve, :message => message
+      soap_request :retrieve, message
     end
 
     def soap_post object_type, properties
@@ -165,13 +164,13 @@ module FuelSDK
           'Objects' => properties,
           :attributes! => { 'Objects' => { 'xsi:type' => ('tns:' + object_type) } }
         }
-        soap_request action, :message => message
+        soap_request action, message
       end
 
       def soap_request action, message
           retried = false
           begin
-            rsp = soap_client.call(action, message)
+            rsp = soap_client.call(action, :message => message)
           rescue
             raise if retried
             retried = true
