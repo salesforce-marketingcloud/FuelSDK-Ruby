@@ -121,7 +121,7 @@ module FuelSDK
         }
       }
 
-      DescribeResponse.new soap_client.call(:describe, :message => message), self
+      soap_request :describe, message
     end
 
     def soap_get object_type, properties=nil, filter=nil
@@ -157,20 +157,34 @@ module FuelSDK
       soap_request :retrieve, message
     end
 
-    def soap_post object_type, properties
-      soap_cud :create, object_type, properties
+    def soap_post object_type, properties, attributes=nil
+      soap_cud :create, object_type, properties, attributes
     end
 
-    def soap_patch object_type, properties
-      soap_cud :update, object_type, properties
+    def soap_patch object_type, properties, attributes=nil
+      soap_cud :update, object_type, properties, attributes
     end
 
     def soap_delete object_type, properties
       soap_cud :delete, object_type, properties
     end
 
+    def format_attibute_properties attributes
+      attrs = []
+      attributes.each do |name, value|
+        attrs.push 'Name' => name, 'Value' => value
+      end
+
+      attrs
+    end
+
     private
-      def soap_cud action, object_type, properties
+
+      def soap_cud action, object_type, properties, attributes=nil
+        if attributes and !properties.kind_of? Array
+          properties['Attributes'] = format_attibute_properties attributes
+        end
+
         message = {
           'Objects' => properties,
           :attributes! => { 'Objects' => { 'xsi:type' => ('tns:' + object_type) } }
@@ -179,18 +193,19 @@ module FuelSDK
       end
 
       def soap_request action, message
-          retried = false
-          begin
-            rsp = soap_client.call(action, :message => message)
-          rescue
-            raise if retried
-            retried = true
-            retry
-          end
-          SoapResponse.new rsp, self
+        response = action.eql?(:describe) ? DescribeResponse : SoapResponse
+        retried = false
+        begin
+          rsp = soap_client.call(action, :message => message)
+        rescue
+          raise if retried
+          retried = true
+          retry
+        end
+        response.new rsp, self
       rescue
         raise if rsp.nil?
-        SoapResponse.new rsp, self
+        response.new rsp, self
       end
   end
 end
