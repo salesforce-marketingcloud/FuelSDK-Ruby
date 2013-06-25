@@ -58,53 +58,75 @@ describe FuelSDK::Soap do
     end
 
     describe '#soap_post' do
-      it 'calls client with :create and Object properties message' do
-        expect(subject.soap_post 'Subscriber', 'EmailAddress' => 'test@kevy.com' ).to eq([:create,
+      subject {
+        client.stub(:soap_request) do |action, message|
+          [action, message]
+        end
+
+        client.stub_chain(:soap_describe,:editable)
+          .and_return(['First Name', 'Last Name', 'Gender'])
+        client
+      }
+      it 'formats soap :create message for single object' do
+        expect(subject.soap_post 'Subscriber', 'EmailAddress' => 'test@fuelsdk.com' ).to eq([:create,
           {
-            'Objects' => {'EmailAddress' => 'test@kevy.com'},
+            'Objects' => [{'EmailAddress' => 'test@fuelsdk.com'}],
             :attributes! => {'Objects' => {'xsi:type' => ('tns:Subscriber')}}
           }])
       end
 
-      it 'handles creating multiple Objects' do
-        expect(subject.soap_post 'Subscriber', [{'EmailAddress' => 'first@kevy.com'}, {'EmailAddress' => 'second@kevy.com'}] ).to eq([:create,
+      it 'formats soap :create message for multiple objects' do
+        expect(subject.soap_post 'Subscriber', [{'EmailAddress' => 'first@fuelsdk.com'}, {'EmailAddress' => 'second@fuelsdk.com'}] ).to eq([:create,
           {
-            'Objects' => [{'EmailAddress' => 'first@kevy.com'}, {'EmailAddress' => 'second@kevy.com'}],
+            'Objects' => [{'EmailAddress' => 'first@fuelsdk.com'}, {'EmailAddress' => 'second@fuelsdk.com'}],
             :attributes! => {'Objects' => {'xsi:type' => ('tns:Subscriber')}}
           }])
       end
 
-      it 'handles attributes in Object properties message' do
-        expect(subject.soap_post 'Subscriber', {'EmailAddress' => 'test@kevy.com'}, {"First Name" => "Kevy"} ).to eq([:create,
+      it 'formats soap :create message for single object with an attribute' do
+        expect(subject.soap_post 'Subscriber', {'EmailAddress' => 'test@fuelsdk.com',
+          "First Name" => "first"}).to eq([:create,
           {
-            'Objects' => {
-              'EmailAddress' => 'test@kevy.com',
-              'Attributes' => [{'Name' => 'First Name', 'Value' => 'Kevy'}],
-            },
+            'Objects' => [{
+              'EmailAddress' => 'test@fuelsdk.com',
+              'Attributes' => [{'Name' => 'First Name', 'Value' => 'first'}],
+            }],
             :attributes! => {'Objects' => {'xsi:type' => ('tns:Subscriber')}}
           }])
       end
 
-      it 'handles multiple attributes in Object properties message' do
-        expect(subject.soap_post 'Subscriber', {'EmailAddress' => 'test@kevy.com'},
-          {"First Name" => "Kevy", "Last Name" => "Kid"}).to eq([:create,
+      it 'formats soap :create message for single object with multiple attributes' do
+        expect(subject.soap_post 'Subscriber', {'EmailAddress' => 'test@fuelsdk.com',
+          "First Name" => "first", "Last Name" => "subscriber"}).to eq([:create,
           {
-            'Objects' => {
-              'EmailAddress' => 'test@kevy.com',
+            'Objects' => [{
+              'EmailAddress' => 'test@fuelsdk.com',
               'Attributes' => [
-                {'Name' => 'First Name', 'Value' => 'Kevy'},
-                {'Name' => 'Last Name', 'Value' => 'Kid'},
+                {'Name' => 'First Name', 'Value' => 'first'},
+                {'Name' => 'Last Name', 'Value' => 'subscriber'},
               ],
-            },
+            }],
             :attributes! => {'Objects' => {'xsi:type' => ('tns:Subscriber')}}
           }])
       end
 
-      it 'attributes are ignored for multiple objects' do
-        expect(subject.soap_post 'Subscriber', [{'EmailAddress' => 'first@kevy.com'}, {'EmailAddress' => 'second@kevy.com'}],
-          {"First Name" => "Kevy", "Last Name" => "Kid"}).to eq([:create,
+      it 'formats soap :create message for multiple objects with multiple attributes' do
+        expect(subject.soap_post 'Subscriber', [{'EmailAddress' => 'first@fuelsdk.com', "First Name" => "first", "Last Name" => "subscriber"},
+          {'EmailAddress' => 'second@fuelsdk.com', "First Name" => "second", "Last Name" => "subscriber"}]).to eq([:create,
           {
-            'Objects' => [{ 'EmailAddress' => 'first@kevy.com', }, { 'EmailAddress' => 'second@kevy.com', }],
+            'Objects' => [
+              {'EmailAddress' => 'first@fuelsdk.com',
+                'Attributes' => [
+                  {'Name' => 'First Name', 'Value' => 'first'},
+                  {'Name' => 'Last Name', 'Value' => 'subscriber'},
+                ]
+              },
+              {'EmailAddress' => 'second@fuelsdk.com',
+                'Attributes' => [
+                  {'Name' => 'First Name', 'Value' => 'second'},
+                  {'Name' => 'Last Name', 'Value' => 'subscriber'},
+                ]
+              }],
             :attributes! => {'Objects' => {'xsi:type' => ('tns:Subscriber')}}
           }])
       end

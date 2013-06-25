@@ -157,19 +157,19 @@ module FuelSDK
       soap_request :retrieve, message
     end
 
-    def soap_post object_type, properties, attributes=nil
-      soap_cud :create, object_type, properties, attributes
+    def soap_post object_type, properties
+      soap_cud :create, object_type, properties
     end
 
-    def soap_patch object_type, properties, attributes=nil
-      soap_cud :update, object_type, properties, attributes
+    def soap_patch object_type, properties
+      soap_cud :update, object_type, properties
     end
 
     def soap_delete object_type, properties
       soap_cud :delete, object_type, properties
     end
 
-    def format_attibute_properties attributes
+    def format_attributes attributes
       attrs = []
       attributes.each do |name, value|
         attrs.push 'Name' => name, 'Value' => value
@@ -180,9 +180,22 @@ module FuelSDK
 
     private
 
-      def soap_cud action, object_type, properties, attributes=nil
-        if attributes and !properties.kind_of? Array
-          properties['Attributes'] = format_attibute_properties attributes
+      def soap_cud action, object_type, properties
+        # get a list of attributes so we can seperate
+        # them from standard object properties
+        type_attrs = soap_describe(object_type).editable
+
+        properties = [properties] unless properties.kind_of? Array
+        properties.each do |p|
+          formated_attrs = []
+          p.each do |k, v|
+            if type_attrs.include? k
+              p.delete k
+              attrs = format_attributes k => v
+              formated_attrs.concat attrs
+            end
+          end
+          (p['Attributes'] ||= []).concat formated_attrs unless formated_attrs.empty?
         end
 
         message = {
