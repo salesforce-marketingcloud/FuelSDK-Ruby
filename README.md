@@ -46,7 +46,7 @@ Print out the results for viewing
 
 <pre>
 <FuelSDK::SoapResponse:0x007fb86abcf190
- @body= {:retrieve_response_msg=> {:overall_status=>"OK", :request_id=>"XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX", :results=> ...
+ @body= {:retrieve_response_msg=> {:overall_status=>"OK", :request_id=>"XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX", :results=>..}
  @code= 200,
  @message= 'OK',
  @request_id="XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX",
@@ -81,9 +81,6 @@ All methods on Fuel SDK objects return a generic object that follows the same st
 - code: HTTP Error Code (will always be 200 for SOAP requests)
 - message: Text values containing more details in the event of an error
 - results: Collection containing the details unique to the method called.
-
-Get Methods also return an addition value to indicate if more information is available (that information can be retrieved using the getMoreResults method):
-
  - more? - Boolean value that indicates on Get requests if more data is available.
 
 
