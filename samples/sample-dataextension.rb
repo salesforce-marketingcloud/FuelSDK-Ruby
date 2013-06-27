@@ -70,8 +70,6 @@ begin
   raise 'Failure retrieving data extension columns' unless getResponse.success?
   raise 'Failure retrieving correct number of data extension columns' unless getResponse.results.count == 3
 
-  raise
-
 	# Add a row to a data extension (using CustomerKey)
 	p '>>>  Add a row to a data extension'
 	de4 = ET_DataExtension::Row.new
@@ -79,7 +77,6 @@ begin
 	de4.authStub = stubObj
 	de4.props = {"Name" => "MAC3", "OtherField" => "Text3"}
 	postResponse = de4.post
-  binding.pry
 	p 'Post Status: ' + postResponse.status.to_s
 	p 'Code: ' + postResponse.code.to_s
 	p 'Message: ' + postResponse.message.to_s
@@ -204,9 +201,9 @@ rescue => e
   p "Caught exception: #{e.message}"
   p e.backtrace
 
-  #de5 = ET_DataExtension.new
-  #de5.authStub = stubObj
-  #de5.props = {"Name" => NameOfDE,"CustomerKey" => NameOfDE}
-  #de5.delete
+  de5 = ET_DataExtension.new
+  de5.authStub = stubObj
+  de5.props = {"Name" => NameOfDE,"CustomerKey" => NameOfDE}
+  de5.delete
 
 end

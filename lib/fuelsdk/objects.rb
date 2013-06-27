@@ -217,7 +217,36 @@ module FuelSDK
         super
       end
 
+      def delete
+        munge_keys self.properties
+        super
+      end
+
       private
+        #::TODO::
+        # opportunity for meta programming here... but need to get this out the door
+        def munge_keys d
+          d.each do |o|
+
+            next if explicit_keys(o) && explicit_customer_key(o)
+
+            formatted = []
+            o['CustomerKey'] = customer_key unless explicit_customer_key o
+            unless explicit_properties(o)
+              o.each do |k, v|
+                next if k == 'CustomerKey'
+                formatted.concat FuelSDK.format_name_value_pairs k => v
+                o.delete k
+              end
+              o['Keys'] = {'Key' => formatted }
+            end
+          end
+        end
+
+        def explicit_keys h
+          h['Keys'] and h['Keys']['Key']
+        end
+
         def munge_properties d
           d.each do |o|
 
