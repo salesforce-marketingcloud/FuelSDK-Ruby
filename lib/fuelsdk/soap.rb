@@ -54,7 +54,7 @@ module FuelSDK
         definition = raw.body[raw.body.keys.first][:object_definition]
         _props = definition[:properties]
         _props.each do  |p|
-          @retrievable << p[:name] if p[:is_retrievable]
+          @retrievable << p[:name] if p[:is_retrievable] and (p[:name] != 'DataRetentionPeriod')
           @updatable << p[:name] if p[:is_updatable]
           @required << p[:name] if p[:is_required]
           @properties << p[:name]
@@ -125,7 +125,7 @@ module FuelSDK
     end
 
     def soap_get object_type, properties=nil, filter=nil
-      if properties.nil?
+      if properties.nil? or properties.empty?
         rsp = soap_describe object_type
         if rsp.success?
           properties = rsp.retrievable
@@ -169,15 +169,6 @@ module FuelSDK
       soap_cud :delete, object_type, properties
     end
 
-    def format_name_value_pairs attributes
-      attrs = []
-      attributes.each do |name, value|
-        attrs.push 'Name' => name, 'Value' => value
-      end
-
-      attrs
-    end
-
     private
 
       def soap_cud action, object_type, properties
@@ -191,7 +182,7 @@ module FuelSDK
           p.each do |k, v|
             if type_attrs.include? k
               p.delete k
-              attrs = format_name_value_pairs k => v
+              attrs = FuelSDK.format_name_value_pairs k => v
               formated_attrs.concat attrs
             end
           end

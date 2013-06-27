@@ -388,7 +388,86 @@ describe FuelSDK::DataExtension::Row do
     end
   end
 
-  describe '#munge_properties' do
+  describe '#get' do
+    subject {
+      object.stub_chain(:client, :soap_get) do |id, properties, filter|
+        [id, properties, filter]
+      end
+
+      object
+    }
+
+    it 'passes id including name to super get' do
+      subject.name = 'Justin'
+      expect(subject.get).to eq(['DataExtensionObject[Justin]', [], nil])
+    end
+  end
+
+  describe '#post' do
+    subject {
+      object.stub_chain(:client, :soap_post) do |id, properties|
+        [id, properties]
+      end
+
+      object
+    }
+
+    it 'raises an error when missing both name and customer key' do
+      subject.properties = [{'Name' => 'Some DE'}, {'Name' => 'Some DE'}]
+      expect{subject.post}.to raise_error('Unable to process DataExtension::Row ' \
+        'request due to missing CustomerKey and Name')
+    end
+
+    it 'uses explicitly defined properties' do
+      subject.properties = [{'CustomerKey' => 'Subscribers',
+        'Properties' => {'Property' => [{'Name' => 'Name', 'Value' => 'Justin'}]}}]
+      expect(subject.post).to eq([
+        'DataExtensionObject', [{
+          'CustomerKey' => 'Subscribers',
+          'Properties' => {'Property' => [{'Name' => 'Name', 'Value' => 'Justin'}]}}]
+      ])
+    end
+
+    it 'inserts customer key into properties when set using accessor' do
+      subject.customer_key = 'Subscribers'
+      subject.properties = [{'Properties' => {
+        'Property' => [{'Name' => 'Name', 'Value' => 'Justin'}]}}]
+      expect(subject.post).to eq([
+        'DataExtensionObject', [{
+          'CustomerKey' => 'Subscribers',
+          'Properties' => {'Property' => [{'Name' => 'Name', 'Value' => 'Justin'}]}}]
+      ])
+    end
+
+    it 'uses name to get customer key for inseration' do
+      subject.name = 'Subscribers'
+
+      rsp = mock(FuelSDK::SoapResponse)
+      rsp.stub(:results).and_return([{:name => 'Products', :customer_key => 'ProductsKey'}])
+      rsp.stub(:success?).and_return true
+
+      subject.stub_chain(:client, :soap_get).and_return(rsp)
+      subject.properties = [{'Properties' => {
+        'Property' => [{'Name' => 'Name', 'Value' => 'Justin'}]}}]
+
+      expect(subject.post).to eq([
+        'DataExtensionObject', [{
+          'CustomerKey' => 'ProductsKey',
+          'Properties' => {'Property' => [{'Name' => 'Name', 'Value' => 'Justin'}]}}]
+      ])
+    end
+
+    it 'correctly formats array property' do
+      subject.customer_key = 'Subscribers'
+
+      subject.properties = [{'Name' => 'Justin'}]
+
+      expect(subject.post).to eq([
+        'DataExtensionObject', [{
+          'CustomerKey' => 'Subscribers',
+          'Properties' => {'Property' => [{'Name' => 'Name', 'Value' => 'Justin'}]}}]
+      ])
+    end
   end
 end
 

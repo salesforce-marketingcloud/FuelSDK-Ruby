@@ -5,6 +5,7 @@ require 'date'
 require 'jwt'
 
 module FuelSDK
+  require 'fuelsdk/utils'
   autoload :HTTPRequest, 'fuelsdk/http_request'
   autoload :Targeting, 'fuelsdk/targeting'
   autoload :Soap, 'fuelsdk/soap'

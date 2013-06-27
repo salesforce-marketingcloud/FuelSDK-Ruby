@@ -151,7 +151,6 @@ module FuelSDK
     attr_accessor :fields
     alias columns= fields= # backward compatibility
 
-
     def post
       munge_fields self.properties
       super
@@ -191,8 +190,6 @@ module FuelSDK
       end
 
       def get
-        retrieve_required
-
         super "#{id}[#{name}]"
       end
 
@@ -227,11 +224,14 @@ module FuelSDK
             next if explicit_properties(o) && explicit_customer_key(o)
 
             formatted = []
-            o.each do |k, v|
-              formatted.concat client.format_name_value_pairs k => v
+            o['CustomerKey'] = customer_key unless explicit_customer_key o
+            unless explicit_properties(o)
+              o.each do |k, v|
+                next if k == 'CustomerKey'
+                formatted.concat FuelSDK.format_name_value_pairs k => v
+                o.delete k
+              end
               o['Properties'] = {'Property' => formatted }
-              o['CustomerKey'] = customer_key unless explicit_customer_key o
-              o.delete k
             end
           end
         end
