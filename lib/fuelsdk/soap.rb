@@ -169,7 +169,7 @@ module FuelSDK
       soap_cud :delete, object_type, properties
     end
 
-    def format_attributes attributes
+    def format_name_value_pairs attributes
       attrs = []
       attributes.each do |name, value|
         attrs.push 'Name' => name, 'Value' => value
@@ -191,7 +191,7 @@ module FuelSDK
           p.each do |k, v|
             if type_attrs.include? k
               p.delete k
-              attrs = format_attributes k => v
+              attrs = format_name_value_pairs k => v
               formated_attrs.concat attrs
             end
           end

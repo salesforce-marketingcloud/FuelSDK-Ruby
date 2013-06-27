@@ -56,6 +56,11 @@ module FuelSDK
       alias props= properties= # backward compatibility
       alias authStub= client= # backward compatibility
 
+      def properties
+        @properties = [@properties].compact unless @properties.kind_of? Array
+        @properties
+      end
+
       def id
         self.class.id
       end
@@ -148,12 +153,12 @@ module FuelSDK
 
 
     def post
-      munge_fields
+      munge_fields self.properties
       super
     end
 
     def patch
-      munge_fields
+      munge_fields self.properties
       super
     end
 
@@ -182,44 +187,76 @@ module FuelSDK
       alias CustomerKey= customer_key=
 
       def id
-        retrieve_required
         'DataExtensionObject'
       end
 
       def get
+        retrieve_required
+
         super "#{id}[#{name}]"
       end
 
+      def name
+        unless @name
+          retrieve_required
+        end
+        @name
+      end
+
+      def customer_key
+        unless @customer_key
+          retrieve_required
+        end
+        @customer_key
+      end
+
       def post
-        properties = [properties] unless properties.kind_of? Array
-        properties.each do |p|
-          normalized = {}
-          formatted = []
-          p.each do |k, v|
-            p.delete k
-            formatted.concat client.format_attributes k => v
-          end
-          p['CustomerKey'] = customer_key
-          p['Properties'] = {'Property' => formatted
-        }
+        munge_properties self.properties
+        super
+      end
+
+      def patch
+        munge_properties self.properties
         super
       end
 
       private
+        def munge_properties d
+          d.each do |o|
+
+            next if explicit_properties(o) && explicit_customer_key(o)
+
+            formatted = []
+            o.each do |k, v|
+              formatted.concat client.format_name_value_pairs k => v
+              o['Properties'] = {'Property' => formatted }
+              o['CustomerKey'] = customer_key unless explicit_customer_key o
+              o.delete k
+            end
+          end
+        end
+
+        def explicit_properties h
+          h['Properties'] and h['Properties']['Property']
+        end
+
+        def explicit_customer_key h
+          h['CustomerKey']
+        end
+
         def retrieve_required
-          if !name && !customer_key
+          # have to use instance variables so we don't recursivelly retrieve_required
+          if !@name && !@customer_key
             raise 'Unable to process DataExtension::Row ' \
               'request due to missing CustomerKey and Name'
           end
-          if !name || !customer_key
-            de = DataExtension.new
-            de.client = client
-            de.filter = {
-              'Property' => name.nil? ? 'CustomerKey' : 'Name',
+          if !@name || !@customer_key
+            filter = {
+              'Property' => @name.nil? ? 'CustomerKey' : 'Name',
               'SimpleOperator' => 'equals',
-              'Value' => customer_key || name
+              'Value' => @customer_key || @name
             }
-            rsp = de.get
+            rsp = client.soap_get 'DataExtension', ['Name', 'CustomerKey'], filter
             if rsp.success? && rsp.results.count == 1
               self.name = rsp.results.first[:name]
               self.customer_key = rsp.results.first[:customer_key]
@@ -232,16 +269,16 @@ module FuelSDK
 
     private
 
-      def munge_fields
-        if self.properties.kind_of? Array and (fields and !fields.empty?)
+      def munge_fields d
+        # maybe one day will make it smart enough to zip properties and fields if count is same?
+        if d.kind_of? Array and d.count > 1 and (fields and !fields.empty?)
           # we could map the field to all DataExtensions, but lets make user be explicit.
           # if they are going to use fields attribute properties should
           # be a single DataExtension Defined in a Hash
           raise 'Unable to handle muliple DataExtension definitions and a field definition'
         end
 
-        self.properties = [self.properties] unless self.properties.kind_of? Array
-        self.properties.each do |de|
+        d.each do |de|
 
           if (explicit_fields(de) and (de['columns'] || de['fields'] || has_fields)) or
             (de['columns'] and (de['fields'] || has_fields)) or
@@ -260,8 +297,8 @@ module FuelSDK
         end
       end
 
-      def explicit_fields de
-        de['Fields'] and de['Fields']['Field']
+      def explicit_fields h
+        h['Fields'] and h['Fields']['Field']
       end
 
       def has_fields

@@ -1,6 +1,29 @@
 require 'spec_helper.rb'
 require 'objects_helper_spec.rb'
 
+describe FuelSDK::Objects::Base do
+
+  let(:object) { FuelSDK::Objects::Base.new }
+  subject{ object }
+
+  describe '#properties' do
+    it 'is empty by default' do
+      expect(object.properties).to be_empty
+    end
+
+    it 'returns item in array when item is not an array' do
+      object.properties = {'name' => 'value'}
+      expect(object.properties).to eq([{'name' => 'value'}])
+    end
+
+    it 'returns array when assigned array' do
+      object.properties = [{'name' => 'value'}]
+      expect(object.properties).to eq([{'name' => 'value'}])
+    end
+  end
+
+end
+
 describe FuelSDK::BounceEvent do
 
   let(:object) { FuelSDK::BounceEvent.new }
@@ -128,9 +151,10 @@ describe FuelSDK::DataExtension do
       object
     }
 
+    # maybe one day will make it smart enough to zip properties and fields if count is same?
     it 'raises an error when it has a list of properties and fields' do
       subject.fields = [{'Name' => 'Name'}]
-      subject.properties = [{'Name' => 'Some DE'}]
+      subject.properties = [{'Name' => 'Some DE'}, {'Name' => 'Some DE'}]
       expect{subject.post}.to raise_error(
         'Unable to handle muliple DataExtension definitions and a field definition')
     end
@@ -302,6 +326,69 @@ describe FuelSDK::DataExtension do
           }]
         ])
     end
+  end
+end
+
+describe FuelSDK::DataExtension::Row do
+  let(:object) { FuelSDK::DataExtension::Row.new }
+  subject{ object }
+
+  it_behaves_like 'Soap Object'
+  its(:id){ should eq 'DataExtensionObject' }
+  it { should respond_to :name }
+  it { should respond_to :name= }
+  it { should respond_to :customer_key }
+  it { should respond_to :customer_key= }
+
+  describe '#name' do
+    it 'raises error when missing both name and customer key' do
+      expect{ subject.name }.to raise_error('Unable to process DataExtension::Row '\
+        'request due to missing CustomerKey and Name')
+    end
+
+    it 'returns value' do
+      subject.name = 'name'
+      expect( subject.name ).to eq 'name'
+    end
+  end
+
+  describe '#customer_key' do
+    it 'raises error when missing both name and customer key' do
+      expect{ subject.customer_key }.to raise_error('Unable to process DataExtension::Row '\
+        'request due to missing CustomerKey and Name')
+    end
+
+    it 'returns value' do
+      subject.customer_key = 'key'
+      expect( subject.customer_key ).to eq 'key'
+    end
+  end
+
+  describe '#retrieve_required' do
+    it 'raises error when missing both name and customer key' do
+      expect{ subject.send(:retrieve_required)}.to raise_error('Unable to process DataExtension::Row '\
+        'request due to missing CustomerKey and Name')
+      expect{ subject.name }.to raise_error('Unable to process DataExtension::Row '\
+        'request due to missing CustomerKey and Name')
+    end
+
+    it 'updates missing' do
+      rsp = mock(FuelSDK::SoapResponse)
+      rsp.stub(:results).and_return([{:name => 'Products', :customer_key => 'ProductsKey'}])
+      rsp.stub(:success?).and_return true
+
+      subject.stub_chain(:client,:soap_get).and_return(rsp)
+      subject.name = 'Not Nil'
+
+      # this really wouldn't work this way. name shouldn't be updated since its whats being used for filter,
+      # but its a good test to show retrieve_required being fired
+      expect(subject.name).to eq 'Not Nil' # not fired
+      expect(subject.customer_key).to eq 'ProductsKey' # fired... stubbed get returns customer_key and name for update
+      expect(subject.name).to eq 'Products' # returned name
+    end
+  end
+
+  describe '#munge_properties' do
   end
 end
 
