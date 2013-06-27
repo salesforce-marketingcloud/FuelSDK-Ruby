@@ -18,6 +18,7 @@ ET_Client = FuelSDK::Client
 ET_BounceEvent = FuelSDK::BounceEvent
 ET_ClickEvent = FuelSDK::ClickEvent
 ET_ContentArea = FuelSDK::ContentArea
+ET_DataExtension = FuelSDK::DataExtension
 ET_DataFolder = FuelSDK::DataFolder
 ET_Folder = FuelSDK::Folder
 ET_Email = FuelSDK::Email
