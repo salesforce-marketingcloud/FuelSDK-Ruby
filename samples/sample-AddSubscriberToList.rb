@@ -1,7 +1,8 @@
-require '../ET_Client.rb'
+require 'fuelsdk'
+require_relative 'sample_helper'
 
 begin
-	stubObj = ET_Client.new(false, false)
+	stubObj = ET_Client.new auth
 
 	NewListName = "RubySDKList"
 
@@ -19,6 +20,7 @@ begin
 	p 'Message: ' + postResponse.message.to_s
 	p 'Result Count: ' + postResponse.results.length.to_s
 	p 'Results: ' + postResponse.results.inspect
+  raise 'Failure creating list' unless postResponse.success?
 
 	if postResponse.status then
 
@@ -31,6 +33,7 @@ begin
 		p 'Message: ' + AddSubResponse.message.to_s
 		p 'Result Count: ' + AddSubResponse.results.length.to_s
 		p 'Results: ' + AddSubResponse.results.inspect
+    raise 'Failure adding user to list' unless AddSubResponse.success?
 
 		# Delete List
 		p '>>> Delete List'
@@ -43,6 +46,7 @@ begin
 		p 'Message: ' + deleteResponse.message.to_s
 		p 'Results Length: ' + deleteResponse.results.length.to_s
 		p 'Results: ' + deleteResponse.results.to_s
+    raise 'Failure deleting list' unless deleteResponse.success?
 	end
 
 rescue => e

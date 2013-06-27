@@ -100,42 +100,26 @@ module FuelSDK
       refresh true
     end
 
-    #def AddSubscriberToList(emailAddress, listIDs, subscriberKey = nil)
-    #  newSub = FuelSDK::ET_Subscriber.new
-    #  newSub.authStub = self
-    #  lists = []
+    def AddSubscriberToList(email, ids, subscriber_key = nil)
+      s = FuelSDK::Subscriber.new
+      s.client = self
+      lists = ids.collect{|id| {'ID' => id}}
+      s.properties = {"EmailAddress" => email, "Lists" => lists}
+      s.propertiess['SubscriberKey'] = subscriber_key if subscriber_key
 
-    #  listIDs.each{ |p|
-    #    lists.push({"ID"=> p})
-    #  }
+      # Try to add the subscriber
+      if(rsp = s.post and rsp.results.first[:error_code] == '12014')
+        # subscriber already exists we need to update.
+        rsp = s.patch
+      end
+      rsp
+    end
 
-    #  newSub.props = {"EmailAddress" => emailAddress, "Lists" => lists}
-    #  if !subscriberKey.nil? then
-    #    newSub.props['SubscriberKey']  = subscriberKey;
-    #  end
-
-    #  # Try to add the subscriber
-    #  postResponse = newSub.post
-
-    #  if postResponse.status == false then
-    #    # If the subscriber already exists in the account then we need to do an update.
-    #    # Update Subscriber On List
-    #    if postResponse.results[0][:error_code] == "12014" then
-    #      patchResponse = newSub.patch
-    #      return patchResponse
-    #    end
-    #  end
-    #  return postResponse
-    #end
-
-    #def CreateDataExtensions(dataExtensionDefinitions)
-    #  newDEs = FuelSDK::ET_DataExtension.new
-    #  newDEs.authStub = self
-
-    #  newDEs.props = dataExtensionDefinitions
-    #  postResponse = newDEs.post
-
-    #  return postResponse
-    #end
+    def CreateDataExtensions(definitions)
+      de = FuelSDK::DataExtension.new
+      de.client = self
+      de.properties = definitions
+      de.post
+    end
   end
 end

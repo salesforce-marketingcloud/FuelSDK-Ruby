@@ -1,7 +1,8 @@
-require '../ET_Client.rb'
+require 'fuelsdk'
+require_relative 'sample_helper'
 
 begin
-	myclient = ET_Client.new(false, false)
+	myclient = ET_Client.new auth
 
 	## Example using CreateDataExtensions() method
 
@@ -20,6 +21,8 @@ begin
 	p 'Message: ' + createDEResponse.message.to_s
 	p 'Results Length: ' + createDEResponse.results.length.to_s
 	p 'Results: ' + createDEResponse.results.to_s
+  raise 'Failure creating data extensions' unless createDEResponse.success?
+  raise 'Failure creating data extensions' unless createDEResponse.results.count == 2
 
 	# Cleaning up the newly created DEs
 	# Delete deOne
