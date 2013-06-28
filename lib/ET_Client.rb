@@ -53,6 +53,11 @@ class ET_CreateWSDL
 		header = response.headers
 		# Check when the WSDL was last modified
 		modifiedTime = Date.parse(header['last-modified'])
+
+		# create directory if necessary
+		unless File.directory?(path)
+			FileUtils.mkdir_p(path)
+		end
 		p = path + '/ExactTargetWSDL.xml'
 		# Check if a local file already exists
 		if (File.file?(p) and File.readable?(p) and !File.zero?(p)) then
@@ -111,7 +116,14 @@ class ET_Client < ET_CreateWSDL
 		end
 
 		begin
-			@path = File.dirname(__FILE__)
+
+			if Rails.root.present?
+				# Store in project tmp folder if used by Rails
+				@path = File.expand_path(File.join(Rails.root, "tmp", "libs", "fuelsdk"))
+			else
+				@path = File.dirname(__FILE__)
+			end
+
 			# make a new WSDL # getWSDL was always true
 			super(@path)
 
