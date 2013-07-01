@@ -30,3 +30,4 @@ ET_Subscriber = FuelSDK::Subscriber
 ET_UnsubEvent = FuelSDK::UnsubEvent
 ET_TriggeredSend = FuelSDK::TriggeredSend
 ET_Campaign = FuelSDK::Campaign
+ET_Get = FuelSDK::Get

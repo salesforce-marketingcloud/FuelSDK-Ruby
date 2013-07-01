@@ -364,4 +364,19 @@ module FuelSDK
       end
     end
   end
+
+  class Get < Objects::Base
+    include Objects::Soap::Read
+    attr_accessor :id
+    def initialize client, id, properties=nil, filter=nil
+      self.properties = properties
+      self.filter = filter
+      self.client = client
+      self.id = id
+    end
+
+    def get
+        super id
+    end
+  end
 end
