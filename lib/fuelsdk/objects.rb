@@ -368,7 +368,8 @@ module FuelSDK
   class Get < Objects::Base
     include Objects::Soap::Read
     attr_accessor :id
-    def initialize client, id, properties=nil, filter=nil
+
+    def initialize client, id, properties, filter
       self.properties = properties
       self.filter = filter
       self.client = client
@@ -377,6 +378,14 @@ module FuelSDK
 
     def get
         super id
+    end
+
+    class << self
+      def new client, id, properties=nil, filter=nil
+        o = self.allocate
+        o.send :initialize, client, id, properties, filter
+        return o.get
+      end
     end
   end
 end
