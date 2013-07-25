@@ -117,12 +117,7 @@ class ET_Client < ET_CreateWSDL
 
 		begin
 
-			if Rails.root.present?
-				# Store in project tmp folder if used by Rails
-				@path = File.expand_path(File.join(Rails.root, "tmp", "libs", "fuelsdk"))
-			else
-				@path = File.dirname(__FILE__)
-			end
+			@path = File.expand_path(File.join("/tmp", "libs", "fuelsdk"))
 
 			# make a new WSDL # getWSDL was always true
 			super(@path)
