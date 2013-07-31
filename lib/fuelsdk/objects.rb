@@ -364,4 +364,98 @@ module FuelSDK
       end
     end
   end
+
+  class Get < Objects::Base
+    include Objects::Soap::Read
+    attr_accessor :id
+
+    def initialize client, id, properties, filter
+      self.properties = properties
+      self.filter = filter
+      self.client = client
+      self.id = id
+    end
+
+    def get
+        super id
+    end
+
+    class << self
+      def new client, id, properties=nil, filter=nil
+        o = self.allocate
+        o.send :initialize, client, id, properties, filter
+        return o.get
+      end
+    end
+  end
+  
+  class Post < Objects::Base
+    include Objects::Soap::CUD
+    attr_accessor :id
+  
+    def initialize client, id, properties
+      self.properties = properties
+      self.client = client
+      self.id = id
+    end
+  
+    def post
+      super
+    end
+  
+    class << self
+      def new client, id, properties=nil
+        o = self.allocate
+        o.send :initialize, client, id, properties
+        return o.post
+      end
+    end
+  end  
+  
+  class Delete < Objects::Base
+    include Objects::Soap::CUD
+    attr_accessor :id
+  
+    def initialize client, id, properties
+      self.properties = properties
+      self.client = client
+      self.id = id
+    end
+  
+    def delete
+      super
+    end
+  
+    class << self
+      def new client, id, properties=nil
+        o = self.allocate
+        o.send :initialize, client, id, properties
+        return o.delete
+      end
+    end
+  end    
+
+  class Patch < Objects::Base
+      include Objects::Soap::CUD
+      attr_accessor :id
+    
+      def initialize client, id, properties
+        self.properties = properties
+        self.client = client
+        self.id = id
+      end
+    
+      def patch
+        super
+      end
+    
+      class << self
+        def new client, id, properties=nil
+          o = self.allocate
+          o.send :initialize, client, id, properties
+          return o.patch
+        end
+      end
+  end      
+  
 end
