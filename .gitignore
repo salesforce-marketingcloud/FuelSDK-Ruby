@@ -21,5 +21,6 @@ ExactTargetWSDL.xml
 config.yaml
 /objsamples/config.yaml
 /objsamples/AllTest.bat
-/samples/sample_helper.rb
+samples/sample_helper.rb
 .DS_STORE
+gengem.bat

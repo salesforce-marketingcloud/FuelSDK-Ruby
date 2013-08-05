@@ -8,6 +8,7 @@ module FuelSDK
         end
 
         def info
+			
           client.soap_describe id
         end
       end
@@ -57,9 +58,14 @@ module FuelSDK
       alias authStub= client= # backward compatibility
 
       def properties
-        @properties = [@properties].compact unless @properties.kind_of? Array
+        #@properties = [@properties].compact unless @properties.kind_of? Array
         @properties
       end
+	  
+	  #Backwards compatibility 
+	  def props
+		@properties
+	  end 
 
       def id
         self.class.id
@@ -102,6 +108,33 @@ module FuelSDK
   class Email < Objects::Base
     include Objects::Soap::Read
     include Objects::Soap::CUD
+  
+    class SendDefinition < Objects::Base
+      include Objects::Soap::Read
+      include Objects::Soap::CUD
+	  
+      def id
+        'EmailSendDefinition'
+      end
+
+      def send
+        perform_response = client.soap_perform id, 'start' , properties
+        p 'After perform'
+        p perform_response.results[0].inspect
+        if perform_response.status then
+          @last_task_id = perform_response.results[0][:result][:task][:id]
+        end 
+        perform_response
+      end
+
+      def status
+        client.soap_get "Send", ['ID','CreatedDate', 'ModifiedDate', 'Client.ID', 'Email.ID', 'SendDate','FromAddress','FromName','Duplicates','InvalidAddresses','ExistingUndeliverables','ExistingUnsubscribes','HardBounces','SoftBounces','OtherBounces','ForwardedEmails','UniqueClicks','UniqueOpens','NumberSent','NumberDelivered','NumberTargeted','NumberErrored','NumberExcluded','Unsubscribes','MissingAddresses','Subject','PreviewURL','SentDate','EmailName','Status','IsMultipart','SendLimit','SendWindowOpen','SendWindowClose','BCCEmail','EmailSendDefinition.ObjectID','EmailSendDefinition.CustomerKey'], {'Property' => 'ID','SimpleOperator' => 'equals','Value' => @last_task_id}
+      end
+      
+      private
+      attr_accessor :last_task_id
+      
+    end
   end
 
   class List < Objects::Base
@@ -131,6 +164,24 @@ module FuelSDK
 
   class UnsubEvent < Objects::Base
     include Objects::Soap::Read
+  end
+  
+  class ProfileAttribute < Objects::Base
+    def get
+      client.soap_describe "Subscriber"
+    end
+
+    def post
+      client.soap_configure "PropertyDefinition","create", properties
+    end
+
+    def delete
+      client.soap_configure "PropertyDefinition","delete", properties
+    end
+
+    def patch
+      client.soap_configure "PropertyDefinition","update", properties
+    end
   end
 
   class TriggeredSend < Objects::Base
@@ -364,6 +415,8 @@ module FuelSDK
       end
     end
   end
+  
+  # Direct Verb Access Section
 
   class Get < Objects::Base
     include Objects::Soap::Read

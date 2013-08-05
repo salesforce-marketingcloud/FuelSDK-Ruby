@@ -119,9 +119,35 @@ module FuelSDK
             'ObjectType' => object_type
           }
         }
-      }
-
+      } 
       soap_request :describe, message
+    end
+  
+    def soap_perform object_type, action, properties
+      message = {}
+      message['Action'] = action
+      message['Definitions'] = {'Definition' => properties}
+      message['Definitions'][:attributes!] = { 'Definition' => { 'xsi:type' => ('tns:' + object_type) }}
+
+      soap_request :perform, message
+    end
+    
+    
+    def soap_configure  object_type, action, properties
+     message = {}
+     message['Action'] = action
+     message['Configurations'] = {}
+     if properties.is_a? Array then
+       message['Configurations']['Configuration'] = []
+       properties.each do |configItem|
+         message['Configurations']['Configuration'] << configItem
+       end
+     else 
+       message['Configurations'] = {'Configuration' => properties}
+     end 
+     message['Configurations'][:attributes!] = { 'Configuration' => { 'xsi:type' => ('tns:' + object_type) }}
+     
+     soap_request :configure, message
     end
 
     def soap_get object_type, properties=nil, filter=nil
@@ -174,8 +200,9 @@ module FuelSDK
       def soap_cud action, object_type, properties
         # get a list of attributes so we can seperate
         # them from standard object properties
-        type_attrs = soap_describe(object_type).editable
+        #type_attrs = soap_describe(object_type).editable	
 
+=begin
         properties = [properties] unless properties.kind_of? Array
         properties.each do |p|
           formated_attrs = []
@@ -188,7 +215,7 @@ module FuelSDK
           end
           (p['Attributes'] ||= []).concat formated_attrs unless formated_attrs.empty?
         end
-
+=end
         message = {
           'Objects' => properties,
           :attributes! => { 'Objects' => { 'xsi:type' => ('tns:' + object_type) } }

@@ -27,7 +27,7 @@ begin
 		newListID = postResponse.results[0][:new_id]
 		# Adding Subscriber To a List
 		p '>>> Add Subscriber To a List'
-		AddSubResponse = stubObj.AddSubscriberToList("AddSubTesting@bh.exacttarget.com", [newListID])
+		AddSubResponse = stubObj.AddSubscriberToList("AddSubTesting@bh.exacttarget.com", [newListID], "Test")
 		p 'AddSubResponse Status: ' + AddSubResponse.status.to_s
 		p 'Code: ' + AddSubResponse.code.to_s
 		p 'Message: ' + AddSubResponse.message.to_s
