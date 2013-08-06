@@ -15,6 +15,55 @@ module FuelSDK
 
       module CUD #create, update, delete
         def post
+          if  self.respond_to?('folder_property') && !self.folder_id.nil?
+			properties[self.folder_property]  = self.folder_id
+		  elsif self.respond_to?('folder_property') && !self.folder_property.nil? && !client.package_name.nil? then 
+			  if client.package_folders.nil? then
+				  getPackageFolder = ET_Folder.new
+				  getPackageFolder.authStub = client
+				  getPackageFolder.properties = ["ID", "ContentType"]
+				  getPackageFolder.filter = {"Property" => "Name", "SimpleOperator" => "equals", "Value" => client.package_name}
+				  resultPackageFolder = getPackageFolder.get
+				  if resultPackageFolder.status then 
+					  client.package_folders = {}
+					  resultPackageFolder.results.each do |value|
+						  client.package_folders[value[:content_type]] = value[:id]
+					  end
+				  else
+					  raise "Unable to retrieve folders from account due to: #{resultPackageFolder.message}"
+				  end 
+			  end 
+			  
+			  if !client.package_folders.has_key?(self.folder_media_type) then  
+				  if client.parentFolders.nil? then
+					  parentFolders = ET_Folder.new
+					  parentFolders.authStub = client
+					  parentFolders.properties = ["ID", "ContentType"]
+					  parentFolders.filter = {"Property" => "ParentFolder.ID", "SimpleOperator" => "equals", "Value" => "0"}
+					  resultParentFolders = parentFolders.get
+					  if resultParentFolders.status then 
+						  client.parent_folders = {}
+						  resultParentFolders.results.each do |value|
+							  client.parent_folders[value[:content_type]] = value[:id]
+						  end
+					  else
+						  raise "Unable to retrieve folders from account due to: #{resultParentFolders.message}"
+					  end
+				  end
+				  
+				  newFolder = ET_Folder.new
+				  newFolder.authStub = client
+				  newFolder.properties = {"Name" => client.package_name, "Description" => client.package_name, "ContentType"=> self.folder_media_type, "IsEditable"=>"true", "ParentFolder" => {"ID" => client.parentFolders[self.folder_media_type]}}
+				  folderResult = newFolder.post
+				  if folderResult.status then
+					  client.package_folders[self.folder_media_type]  = folderResult.results[0][:new_id]
+				  else 
+					  raise "Unable to create folder for Post due to: #{folderResult.message}"
+				  end 
+				  
+			  end 			
+			  properties[self.folder_property] = client.package_folders[self.folder_media_type]
+		  end
           client.soap_post id, properties
         end
 
@@ -80,16 +129,26 @@ module FuelSDK
   end
 
   class BounceEvent < Objects::Base
+	attr_accessor :get_since_last_batch
     include Objects::Soap::Read
   end
 
   class ClickEvent < Objects::Base
+	attr_accessor :get_since_last_batch
     include Objects::Soap::Read
   end
 
   class ContentArea < Objects::Base
     include Objects::Soap::Read
     include Objects::Soap::CUD
+
+    def folder_property 
+      'CategoryID'
+    end 
+    
+    def folder_media_type
+      'content'
+    end 
   end
 
   class DataFolder < Objects::Base
@@ -108,6 +167,15 @@ module FuelSDK
   class Email < Objects::Base
     include Objects::Soap::Read
     include Objects::Soap::CUD
+	attr_accessor :folder_id
+	
+	def folder_property 
+		'CategoryID'
+	end 
+
+	def folder_media_type
+		'email'
+	end 
   
     class SendDefinition < Objects::Base
       include Objects::Soap::Read
@@ -117,10 +185,17 @@ module FuelSDK
         'EmailSendDefinition'
       end
 
+      def folder_property 
+        'CategoryID'
+      end 
+      
+      def folder_media_type
+        'userinitiatedsends'
+      end 
+     
+
       def send
         perform_response = client.soap_perform id, 'start' , properties
-        p 'After perform'
-        p perform_response.results[0].inspect
         if perform_response.status then
           @last_task_id = perform_response.results[0][:result][:task][:id]
         end 
@@ -137,9 +212,67 @@ module FuelSDK
     end
   end
 
+
+	
+  class Import < Objects::Base
+    include Objects::Soap::Read
+    include Objects::Soap::CUD
+    
+
+    def id
+          'ImportDefinition'
+    end
+  
+    def post
+      originalProp = properties        
+      cleanProps
+      obj = super
+      properties = originalProp
+      return obj
+    end
+    
+    def patch
+      super
+    end    
+    
+    def start
+      perform_response = client.soap_perform id, 'start' , properties
+      if perform_response.status then
+        @last_task_id = perform_response.results[0][:result][:task][:id]
+      end 
+      perform_response
+    end
+    
+    def status
+      client.soap_get "ImportResultsSummary", ['ImportDefinitionCustomerKey','TaskResultID','ImportStatus','StartDate','EndDate','DestinationID','NumberSuccessful','NumberDuplicated','NumberErrors','TotalRows','ImportType'], {'Property' => 'TaskResultID','SimpleOperator' => 'equals','Value' => @last_task_id}
+    end
+    
+    private
+    attr_accessor :last_task_id
+    
+    def cleanProps
+        # If the ID property is specified for the destination then it must be a list import
+        if properties.has_key?('DestinationObject') then
+            if properties['DestinationObject'].has_key?('ID') then
+                properties[:attributes!] = { 'DestinationObject' => { 'xsi:type' => 'tns:List'}} 
+            end 
+        end 
+    end 
+  end
+  
+  
   class List < Objects::Base
     include Objects::Soap::Read
     include Objects::Soap::CUD
+	attr_accessor :folder_id
+	
+	def folder_property 
+		'Category'
+	end 
+	
+	def folder_media_type
+		'list'
+	end 
 
     class Subscriber < Objects::Base
       include Objects::Soap::Read
@@ -150,10 +283,12 @@ module FuelSDK
   end
 
   class OpenEvent < Objects::Base
+	attr_accessor :get_since_last_batch
     include Objects::Soap::Read
   end
 
   class SentEvent < Objects::Base
+	attr_accessor :get_since_last_batch
     include Objects::Soap::Read
   end
 
@@ -163,6 +298,7 @@ module FuelSDK
   end
 
   class UnsubEvent < Objects::Base
+	attr_accessor :get_since_last_batch
     include Objects::Soap::Read
   end
   
@@ -187,10 +323,19 @@ module FuelSDK
   class TriggeredSend < Objects::Base
     include Objects::Soap::Read
     include Objects::Soap::CUD
-    attr_accessor :subscribers
+	attr_accessor :folder_i, :subscribers
     def id
       'TriggeredSendDefinition'
     end
+
+    def folder_property 
+      'CategoryID'
+    end 
+    
+    def folder_media_type
+      'triggered_send'
+    end 
+
     def send
       client.soap_post 'TriggeredSend', 'TriggeredSendDefinition' => properties, 'Subscribers' => subscribers
     end
@@ -199,7 +344,16 @@ module FuelSDK
   class DataExtension < Objects::Base
     include Objects::Soap::Read
     include Objects::Soap::CUD
-    attr_accessor :fields
+    attr_accessor :fields, :folder_id
+	
+	def folder_property 
+	  'CategoryID'
+	end 
+
+	def folder_media_type
+	  'dataextension'
+	end 
+	
     alias columns= fields= # backward compatibility
 
     def post

@@ -39,7 +39,7 @@ module FuelSDK
 
   class Client
     attr_accessor :debug, :access_token, :auth_token, :internal_token, :refresh_token,
-      :id, :secret, :signature
+      :id, :secret, :signature, :package_name, :package_folders, :parent_folders
 
     include FuelSDK::Soap
     include FuelSDK::Rest
@@ -52,6 +52,7 @@ module FuelSDK
       self.internal_token = decoded_jwt['request']['user']['internalOauthToken']
       self.refresh_token = decoded_jwt['request']['user']['refreshToken']
       #@authTokenExpiration = Time.new + decoded_jwt['request']['user']['expiresIn']
+	  self.package_name = decoded_jwt['request']['application']['package']
     end
 
     def initialize(params={}, debug=false)

@@ -11,6 +11,7 @@ begin
 	postList = FuelSDK::List.new
 	postList.authStub = stubObj
 	postList.props = {"ListName" => NewListName, "Description" => "This list was created with the RubySDK", "Type" => "Private" }
+	#postList.folder_id = 1083760
 	postResponse = postList.post
 	p 'Post Status: ' + postResponse.status.to_s
 	p 'Code: ' + postResponse.code.to_s

@@ -35,3 +35,4 @@ ET_Post = FuelSDK::Post
 ET_Delete = FuelSDK::Delete
 ET_Patch = FuelSDK::Patch
 ET_ProfileAttribute = FuelSDK::ProfileAttribute
+ET_Import = FuelSDK::Import
