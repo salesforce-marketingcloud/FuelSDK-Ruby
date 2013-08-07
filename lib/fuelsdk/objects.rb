@@ -8,7 +8,6 @@ module FuelSDK
         end
 
         def info
-			
           client.soap_describe id
         end
       end
@@ -232,7 +231,11 @@ module FuelSDK
     end
     
     def patch
-      super
+      originalProp = properties        
+      cleanProps
+      obj = super
+      properties = originalProp
+      return obj
     end    
     
     def start

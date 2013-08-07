@@ -39,7 +39,7 @@ module FuelSDK
 
   class Client
     attr_accessor :debug, :access_token, :auth_token, :internal_token, :refresh_token,
-      :id, :secret, :signature, :package_name, :package_folders, :parent_folders
+      :id, :secret, :signature, :package_name, :package_folders, :parent_folders, :auth_token_expiration
 
     include FuelSDK::Soap
     include FuelSDK::Rest
@@ -51,7 +51,7 @@ module FuelSDK
       self.auth_token = decoded_jwt['request']['user']['oauthToken']
       self.internal_token = decoded_jwt['request']['user']['internalOauthToken']
       self.refresh_token = decoded_jwt['request']['user']['refreshToken']
-      #@authTokenExpiration = Time.new + decoded_jwt['request']['user']['expiresIn']
+      #@auth_token_expiration = Time.new + decoded_jwt['request']['user']['expiresIn']
 	  self.package_name = decoded_jwt['request']['application']['package']
     end
 
@@ -86,14 +86,16 @@ module FuelSDK
           h['content_type'] = 'application/json'
           h['params'] = {'legacy' => 1}
         end
-
         response = post("https://auth.exacttargetapis.com/v1/requestToken", options)
         raise "Unable to refresh token: #{response['message']}" unless response.has_key?('accessToken')
 
         self.access_token = response['accessToken']
         self.internal_token = response['legacyToken']
-        #@authTokenExpiration = Time.new + tokenResponse['expiresIn']
+        self.auth_token_expiration = Time.new + response['expiresIn']
         self.refresh_token = response['refreshToken'] if response.has_key?("refreshToken")
+		return true
+	  else 
+		return false
       end
     end
 

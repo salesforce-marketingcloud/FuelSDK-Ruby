@@ -224,9 +224,14 @@ module FuelSDK
       end
 
       def soap_request action, message
+        #Try to refresh the token and if we do then we need to regenerate the header as well. 
+        if self.refresh 
+          self.header
+        end 
         response = action.eql?(:describe) ? DescribeResponse : SoapResponse
         retried = false
         begin
+		
           rsp = soap_client.call(action, :message => message)
         rescue
           raise if retried
