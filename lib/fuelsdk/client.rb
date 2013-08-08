@@ -51,7 +51,7 @@ module FuelSDK
       self.auth_token = decoded_jwt['request']['user']['oauthToken']
       self.internal_token = decoded_jwt['request']['user']['internalOauthToken']
       self.refresh_token = decoded_jwt['request']['user']['refreshToken']
-      #@auth_token_expiration = Time.new + decoded_jwt['request']['user']['expiresIn']
+      self.auth_token_expiration = Time.new + decoded_jwt['request']['user']['expiresIn']
 	  self.package_name = decoded_jwt['request']['application']['package']
     end
 
@@ -72,8 +72,8 @@ module FuelSDK
 
     def refresh force=false
       raise 'Require Client Id and Client Secret to refresh tokens' unless (id && secret)
-
-      if (self.access_token.nil? || force)
+      #If we don't already have a token or the token expires within 5 min(300 seconds)
+	  if (self.access_token.nil? || Time.new + 300 > self.auth_token_expiration || force) then
         payload = Hash.new.tap do |h|
           h['clientId']= id
           h['clientSecret'] = secret
