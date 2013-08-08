@@ -78,7 +78,7 @@ module FuelSDK
   end
 
   module Soap
-    attr_accessor :wsdl, :debug, :internal_token
+    attr_accessor :wsdl, :debug#, :internal_token
 
     include FuelSDK::Targeting
 
@@ -99,8 +99,8 @@ module FuelSDK
     end
 
     def soap_client
-      self.refresh unless internal_token
-      @soap_client ||= Savon.client(
+      self.refresh
+      @soap_client = Savon.client(
         soap_header: header,
         wsdl: wsdl,
         endpoint: endpoint,
@@ -224,14 +224,9 @@ module FuelSDK
       end
 
       def soap_request action, message
-        #Try to refresh the token and if we do then we need to regenerate the header as well. 
-        if self.refresh 
-          self.header
-        end 
         response = action.eql?(:describe) ? DescribeResponse : SoapResponse
         retried = false
         begin
-		
           rsp = soap_client.call(action, :message => message)
         rescue
           raise if retried
