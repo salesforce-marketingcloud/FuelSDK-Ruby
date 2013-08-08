@@ -38,7 +38,7 @@ begin
 	# Specify the name of a TriggeredSend that was setup for testing
 	# Do not use a production Triggered Send Definition
 
-	NameOfTestTS = TSNameForCreateThenDelete
+	NameOfTestTS = "TEXTEXT"
 
 	# Pause a TriggeredSend
 	p '>>> Pause a TriggeredSend'

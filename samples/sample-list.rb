@@ -2,7 +2,7 @@ require 'fuelsdk'
 require_relative 'sample_helper'
 
 begin
-	stubObj = FuelSDK::Client.new auth, true
+	stubObj = FuelSDK::Client.new auth
 
 	NewListName = "RubySDKList"
 
@@ -19,9 +19,6 @@ begin
 	p 'Result Count: ' + postResponse.results.length.to_s
 	p 'Results: ' + postResponse.results.inspect
   raise 'Failure creating list' unless postResponse.success?
-  
-  #sleep 1020 
-
 
 	# Make sure the list created correctly before
 	if postResponse.success? then

@@ -14,7 +14,7 @@ module FuelSDK
 
       module CUD #create, update, delete
         def post
-          if  self.respond_to?('folder_property') && !self.folder_id.nil?
+          if self.respond_to?('folder_property') && !self.folder_id.nil?
 			properties[self.folder_property]  = self.folder_id
 		  elsif self.respond_to?('folder_property') && !self.folder_property.nil? && !client.package_name.nil? then 
 			  if client.package_folders.nil? then
@@ -140,6 +140,7 @@ module FuelSDK
   class ContentArea < Objects::Base
     include Objects::Soap::Read
     include Objects::Soap::CUD
+	attr_accessor :folder_id
 
     def folder_property 
       'CategoryID'
@@ -179,6 +180,7 @@ module FuelSDK
     class SendDefinition < Objects::Base
       include Objects::Soap::Read
       include Objects::Soap::CUD
+	  attr_accessor :folder_id
 	  
       def id
         'EmailSendDefinition'
@@ -326,7 +328,7 @@ module FuelSDK
   class TriggeredSend < Objects::Base
     include Objects::Soap::Read
     include Objects::Soap::CUD
-	attr_accessor :folder_i, :subscribers
+	attr_accessor :folder_id, :subscribers
     def id
       'TriggeredSendDefinition'
     end
@@ -340,7 +342,16 @@ module FuelSDK
     end 
 
     def send
-      client.soap_post 'TriggeredSend', 'TriggeredSendDefinition' => properties, 'Subscribers' => subscribers
+      if self.properties.is_a? Array then
+        tscall = []
+        self.properties.each{ |p|
+          tscall.push({"TriggeredSendDefinition" => {"CustomerKey" => p["CustomerKey"]}, "Subscribers" => p["Subscribers"]})
+        }
+      else
+        tscall = {"TriggeredSendDefinition" => self.properties, "Subscribers" => @subscribers}	
+      end
+		p tscall.inspect
+      client.soap_post 'TriggeredSend', tscall
     end
   end
 
