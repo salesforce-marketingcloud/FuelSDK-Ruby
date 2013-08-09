@@ -4,7 +4,13 @@ require 'pry'
 
 begin
 	stubObj = ET_Client.new auth
-
+	
+	# Specify a name for the data extension that will be used for testing
+	# Note: Name and CustomerKey will be the same value
+	# WARNING: Data Extension will be deleted so don't use the name of a
+	# production data extension
+	NameOfDE = "ThisWillBeDeleted-Testz"
+	
 	# Get all of the DataExtensions in an Account
 	p '>>> Get all of the DataExtensions in an Account'
 	de = ET_DataExtension.new
@@ -19,12 +25,6 @@ begin
 	p 'Results Length: ' + getResponse.results.length.to_s
 	#p 'Results: ' + getResponse.results.to_s
   raise 'Failure retrieving data extensions' unless getResponse.success?
-
-	# Specify a name for the data extension that will be used for testing
-	# Note: Name and CustomerKey will be the same value
-	# WARNING: Data Extension will be deleted so don't use the name of a
-	# production data extension
-	NameOfDE = "ThisWillBeDeleted-Testz"
 
 	# Create  Data Extension
 	p '>>> Create Data Extension'

@@ -445,21 +445,32 @@ module FuelSDK
         #::TODO::
         # opportunity for meta programming here... but need to get this out the door
         def munge_keys d
-          d.each do |o|
+			if d.kind_of? Array
+			  d.each do |o|
 
-            next if explicit_keys(o) && explicit_customer_key(o)
+				next if explicit_keys(o) && explicit_customer_key(o)
 
-            formatted = []
-            o['CustomerKey'] = customer_key unless explicit_customer_key o
-            unless explicit_properties(o)
-              o.each do |k, v|
-                next if k == 'CustomerKey'
-                formatted.concat FuelSDK.format_name_value_pairs k => v
-                o.delete k
-              end
-              o['Keys'] = {'Key' => formatted }
-            end
-          end
+				formatted = []
+				o['CustomerKey'] = customer_key unless explicit_customer_key o
+				unless explicit_properties(o)
+				  o.each do |k, v|
+					next if k == 'CustomerKey'
+					formatted.concat FuelSDK.format_name_value_pairs k => v
+					o.delete k
+				  end
+				  o['Keys'] = {'Key' => formatted }
+				end
+			  end
+			else 
+				formatted = []
+				d.each do |k, v|
+					next if k == 'CustomerKey'
+					formatted.concat FuelSDK.format_name_value_pairs k => v
+					d.delete k
+				end
+				d['CustomerKey'] = customer_key
+				d['Keys'] = {'Key' => formatted }
+			end
         end
 
         def explicit_keys h
@@ -467,21 +478,30 @@ module FuelSDK
         end
 
         def munge_properties d
-          d.each do |o|
+			if d.kind_of? Array
+			  d.each do |o|
+				next if explicit_properties(o) && explicit_customer_key(o)
 
-            next if explicit_properties(o) && explicit_customer_key(o)
-
-            formatted = []
-            o['CustomerKey'] = customer_key unless explicit_customer_key o
-            unless explicit_properties(o)
-              o.each do |k, v|
-                next if k == 'CustomerKey'
-                formatted.concat FuelSDK.format_name_value_pairs k => v
-                o.delete k
-              end
-              o['Properties'] = {'Property' => formatted }
-            end
-          end
+				formatted = []
+				o['CustomerKey'] = customer_key unless explicit_customer_key o
+				unless explicit_properties(o)
+				  o.each do |k, v|
+					next if k == 'CustomerKey'
+					formatted.concat FuelSDK.format_name_value_pairs k => v
+					o.delete k
+				  end
+				  o['Properties'] = {'Property' => formatted }
+				end
+			  end
+			else 
+				formatted = []
+				d.each do |k, v|
+					formatted.concat FuelSDK.format_name_value_pairs k => v
+					d.delete k
+				end
+				d['CustomerKey'] = customer_key
+				d['Properties'] = {'Property' => formatted }
+			end 
         end
 
         def explicit_properties h
@@ -526,23 +546,29 @@ module FuelSDK
           raise 'Unable to handle muliple DataExtension definitions and a field definition'
         end
 
-        d.each do |de|
+		if d.kind_of? Array
+			d.each do |de|
+			  p de
+			  if (explicit_fields(de) and (de['columns'] || de['fields'] || has_fields)) or
+				(de['columns'] and (de['fields'] || has_fields)) or
+				(de['fields'] and has_fields)
+				raise 'Fields are defined in too many ways. Please only define once.' # ahhh what, to do...
+			  end
 
-          if (explicit_fields(de) and (de['columns'] || de['fields'] || has_fields)) or
-            (de['columns'] and (de['fields'] || has_fields)) or
-            (de['fields'] and has_fields)
-            raise 'Fields are defined in too many ways. Please only define once.' # ahhh what, to do...
-          end
+			  # let users who chose, to define fields explicitly within the hash definition
+			  next if explicit_fields de
 
-          # let users who chose, to define fields explicitly within the hash definition
-          next if explicit_fields de
+			  de['Fields'] = {'Field' => de['columns'] || de['fields'] || fields}
+			  # sanitize
 
-          de['Fields'] = {'Field' => de['columns'] || de['fields'] || fields}
-          # sanitize
-          de.delete 'columns'
-          de.delete 'fields'
-          raise 'DataExtension needs atleast one field.' unless de['Fields']['Field']
-        end
+			  raise 'DataExtension needs atleast one field.' unless de['Fields']['Field']
+			end
+		else 
+			self.properties['Fields'] = {'Field' => self.properties['columns'] || self.properties['fields'] || fields}
+			raise 'DataExtension needs atleast one field.' unless self.properties['Fields']['Field']
+			self.properties.delete 'columns'
+			self.properties.delete 'fields'
+		end 
       end
 
       def explicit_fields h
