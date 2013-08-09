@@ -350,7 +350,6 @@ module FuelSDK
       else
         tscall = {"TriggeredSendDefinition" => self.properties, "Subscribers" => @subscribers}	
       end
-		p tscall.inspect
       client.soap_post 'TriggeredSend', tscall
     end
   end
@@ -548,7 +547,6 @@ module FuelSDK
 
 		if d.kind_of? Array
 			d.each do |de|
-			  p de
 			  if (explicit_fields(de) and (de['columns'] || de['fields'] || has_fields)) or
 				(de['columns'] and (de['fields'] || has_fields)) or
 				(de['fields'] and has_fields)
