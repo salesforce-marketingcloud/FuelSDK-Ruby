@@ -10,7 +10,7 @@ Gem::Specification.new do |spec|
   spec.email         = []
   spec.description   = %q{Fuel SDK for Ruby}
   spec.summary       = %q{Fuel SDK for Ruby}
-  spec.homepage      = "https://github.com/ExactTarget/FuelSDK-Ruby"
+  spec.homepage      = "https://code.exacttarget.com/sdks"
   spec.license       = ""
 
   spec.files         = `git ls-files`.split($/)
