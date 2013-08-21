@@ -6,8 +6,24 @@ ExactTarget Fuel SDK for Ruby
 ## Overview ##
 The Fuel SDK for Ruby provides easy access to ExactTarget's Fuel API Family services, including a collection of REST APIs and a SOAP API. These APIs provide access to ExactTarget functionality via common collection types such as array/hash.
 
+## New Features in Version .9 ##
+- **Streamlined Folder Support**: All objects that support folders within the UI now have a standardized property called folderId.
+- **Interaction Support**: Now supports Import and Email::SendDefinition objects .
+- **Profile Attribute Support**: Added the ability to manage profile attributes through the ProfileAttribute object.
+- **Support for single request to Add/Update**:A single request can be made which will create the object if one doesn't already or update one if it does.  This works for Subscriber, DataExtension::Row, and List objects using the Put method.
+- **Tracking Events Batching Support**: By default, all tracking event types will only pull new data since the last time a request was made using the same filter.  If you would like to override this functionality to pull all data, simply set the GetSinceLastBatch property to false.
+- **Automatic Asset Organization for Hub Apps**: Applications that authenticate by providing a JWT will automatically have all created assets placed into a folder based on the HubExchange app's name. 
+- **Greater Flexibility for Authentication**:Yaml config file is no longer required in order to define the authentication parameters.  They are now required inputs when instantiating the Client class so they can be stored anywhere.
+ 
+## Migrating from old version ##
+- FuelSDK is now a Gem. All references to require 'ET_Client.rb' will need to be replaced with a reference to the fuelsdk gem.
+- Config.yaml is no longer used.  ClientID/ClientSecret will now need to be passed when instantiating the Client class.
+- Previous versions of the Fuel SDK exposed objects with the prefix "ET_". For backwards compatibility you can still access objects this way.
+Subscriber can be accessed using FuelSDK::Subscriber or ET_Subscriber.  
+
 ## Requirements ##
-Ruby Version 1.9.3
+- Ruby Version 1.9.3
+- Savon 2.2.0 
 
 ## Getting Started ##
 Add this line to your application's Gemfile:
@@ -18,9 +34,6 @@ gem 'fuelsdk'
 
 If you have not registered your application or you need to lookup your Application Key or Application Signature values, please go to App Center at [Code@: ExactTarget's Developer Community](http://code.exacttarget.com/appcenter "Code@ App Center").
 
-## Backwards Compatibility ##
-Previous versions of the Fuel SDK exposed objects with the prefix "ET_". For backwards compatibility you can still access objects this way.
-Subscriber can be accessed FuelSDK::Subscriber or ET_Subscriber.
 
 ## Example Request ##
 
@@ -74,6 +87,20 @@ Print out the results for viewing
 
 The Client class takes care of many of the required steps when accessing ExactTarget's API, including retrieving appropriate access tokens, handling token state for managing refresh, and determining the appropriate endpoints for API requests.  In order to leverage the advantages this class provides, use a single instance of this class for an entire session.  Do not instantiate a new Client object for each request made.
 
+Client class accepts multiple parameters
+
+**Parameters** - Allows for passing authentication information for use with SSO with a JWT or for passing ClientID/ClientSecret:
+
+Example passing ClientID/ClientSecret: 
+> myclient = FuelSDK::Client.new({'client' => {'id' => 'exampleID','secret' => 'exampleSecret'}})
+
+Example passing ClientID/ClientSecret/AppSignature/JWT: 
+> myclient = FuelSDK::Client.new({'client' => {'id' => 'exampleID','secret' => 'exampleSecret', 'signature'=>'examplesig'}, 'jwt'=>'exampleJWT'})
+
+**Debug** - If 2nd parameter for debug is set to true, all API requests that the Fuel SDK is making behind the scenes will be logged.  This option should only be set to true in order to troubleshoot during the development process and should never be used in a production scenario.
+> myclient = FuelSDK::Client.new auth, true <br> 
+
+
 ## Responses ##
 All methods on Fuel SDK objects return a generic object that follows the same structure, regardless of the type of call.  This object contains a common set of properties used to display details about the request.
 
@@ -86,22 +113,6 @@ All methods on Fuel SDK objects return a generic object that follows the same st
 
 ## Samples ##
 Find more sample files that illustrate using all of the available functions for ExactTarget objects exposed through the API in the samples directory.
-
-Sample List:
-
- - [BounceEvent](https://github.com/ExactTarget/FuelSDK-Ruby/blob/master/samples/sample-bounceevent.rb)
- - [Campaign](https://github.com/ExactTarget/FuelSDK-Ruby/blob/master/samples/sample-campaign.rb)
- - [ClickEvent](https://github.com/ExactTarget/FuelSDK-Ruby/blob/master/samples/sample-clickevent.rb)
- - [ContentArea](https://github.com/ExactTarget/FuelSDK-Ruby/blob/master/samples/sample-contentarea.rb)
- - [DataExtension](https://github.com/ExactTarget/FuelSDK-Ruby/blob/master/samples/sample-dataextension.rb)
- - [Email](https://github.com/ExactTarget/FuelSDK-Ruby/blob/master/samples/sample-email.rb)
- - [List](https://github.com/ExactTarget/FuelSDK-Ruby/blob/master/samples/sample-list.rb)
- - [List > Subscriber](https://github.com/ExactTarget/FuelSDK-Ruby/blob/master/samples/sample-list.subscriber.rb)
- - [OpenEvent](https://github.com/ExactTarget/FuelSDK-Ruby/blob/master/samples/sample-openevent.rb)
- - [SentEvent](https://github.com/ExactTarget/FuelSDK-Ruby/blob/master/samples/sample-sentevent.rb)
- - [Subscriber](https://github.com/ExactTarget/FuelSDK-Ruby/blob/master/samples/sample-subscriber.rb)
- - [TriggeredSend](https://github.com/ExactTarget/FuelSDK-Ruby/blob/master/samples/sample-triggeredsend.rb)
- - [UnsubEvent](https://github.com/ExactTarget/FuelSDK-Ruby/blob/master/samples/sample-unsubevent.rb)
 
 
 
