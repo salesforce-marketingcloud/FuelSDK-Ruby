@@ -106,8 +106,11 @@ module FuelSDK
       alias authStub= client= # backward compatibility
 
       def properties
-        #@properties = [@properties].compact unless @properties.kind_of? Array
-        @properties
+         if @properties.kind_of? Array
+            @properties           
+         else
+            [@properties].compact
+         end 
       end
 	  
 	  #Backwards compatibility 
@@ -537,36 +540,31 @@ module FuelSDK
     private
 
       def munge_fields d
-        # maybe one day will make it smart enough to zip properties and fields if count is same?
-        if d.kind_of? Array and d.count > 1 and (fields and !fields.empty?)
-          # we could map the field to all DataExtensions, but lets make user be explicit.
-          # if they are going to use fields attribute properties should
-          # be a single DataExtension Defined in a Hash
-          raise 'Unable to handle muliple DataExtension definitions and a field definition'
-        end
-
-		if d.kind_of? Array
-			d.each do |de|
+		  # maybe one day will make it smart enough to zip properties and fields if count is same?
+		  if d.kind_of? Array and d.count > 1 and (fields and !fields.empty?)
+			  # we could map the field to all DataExtensions, but lets make user be explicit.
+			  # if they are going to use fields attribute properties should
+			  # be a single DataExtension Defined in a Hash
+			  raise 'Unable to handle muliple DataExtension definitions and a field definition'
+		  end
+		  
+		  d.each do |de|
+			  
 			  if (explicit_fields(de) and (de['columns'] || de['fields'] || has_fields)) or
-				(de['columns'] and (de['fields'] || has_fields)) or
-				(de['fields'] and has_fields)
-				raise 'Fields are defined in too many ways. Please only define once.' # ahhh what, to do...
+				  (de['columns'] and (de['fields'] || has_fields)) or
+				  (de['fields'] and has_fields)
+				  raise 'Fields are defined in too many ways. Please only define once.' # ahhh what, to do...
 			  end
-
+			  
 			  # let users who chose, to define fields explicitly within the hash definition
 			  next if explicit_fields de
-
+			  
 			  de['Fields'] = {'Field' => de['columns'] || de['fields'] || fields}
 			  # sanitize
-
+			  de.delete 'columns'
+			  de.delete 'fields'
 			  raise 'DataExtension needs atleast one field.' unless de['Fields']['Field']
-			end
-		else 
-			self.properties['Fields'] = {'Field' => self.properties['columns'] || self.properties['fields'] || fields}
-			raise 'DataExtension needs atleast one field.' unless self.properties['Fields']['Field']
-			self.properties.delete 'columns'
-			self.properties.delete 'fields'
-		end 
+		  end
       end
 
       def explicit_fields h

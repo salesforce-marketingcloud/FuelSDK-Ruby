@@ -144,9 +144,11 @@ describe FuelSDK::DataExtension do
 
   describe '#post' do
     subject {
-      object.stub_chain(:client, :soap_post) do |id, properties|
-        [id, properties]
-      end
+		object.stub_chain(:client,:soap_post) do |id, properties|
+			[id, properties]
+		end
+		object.stub_chain(:client,:package_name).and_return(nil)
+		object.stub_chain(:client,:package_folders).and_return(nil)
 
       object
     }

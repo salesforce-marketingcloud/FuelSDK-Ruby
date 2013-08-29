@@ -198,12 +198,15 @@ module FuelSDK
     private
 
       def soap_cud action, object_type, properties
+		
+=begin
         # get a list of attributes so we can seperate
         # them from standard object properties
-        #type_attrs = soap_describe(object_type).editable	
+        type_attrs = soap_describe(object_type).editable	
 
-=begin
+=end
         properties = [properties] unless properties.kind_of? Array
+=begin		
         properties.each do |p|
           formated_attrs = []
           p.each do |k, v|
@@ -216,6 +219,7 @@ module FuelSDK
           (p['Attributes'] ||= []).concat formated_attrs unless formated_attrs.empty?
         end
 =end
+
         message = {
           'Objects' => properties,
           :attributes! => { 'Objects' => { 'xsi:type' => ('tns:' + object_type) } }

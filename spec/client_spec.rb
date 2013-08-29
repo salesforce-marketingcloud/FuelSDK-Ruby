@@ -83,9 +83,12 @@ describe FuelSDK::Client do
       'request' => {
         'user'=> {
           'oauthToken' => 123456789,
-          'expiresIn' => DateTime.new(2001, 01, 01),
+          'expiresIn' => 3600,
           'internalOauthToken' => 987654321,
           'refreshToken' => 101010101010
+        },
+        'application'=> {
+          'package' => 'JustTesting'
         }
       }
      }
