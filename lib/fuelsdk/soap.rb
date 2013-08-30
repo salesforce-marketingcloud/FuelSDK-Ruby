@@ -137,14 +137,12 @@ module FuelSDK
      message = {}
      message['Action'] = action
      message['Configurations'] = {}
-     if properties.is_a? Array then
-       message['Configurations']['Configuration'] = []
-       properties.each do |configItem|
-         message['Configurations']['Configuration'] << configItem
-       end
-     else 
-       message['Configurations'] = {'Configuration' => properties}
-     end 
+
+     message['Configurations']['Configuration'] = []
+     properties.each do |configItem|
+       message['Configurations']['Configuration'] << configItem
+     end
+
      message['Configurations'][:attributes!] = { 'Configuration' => { 'xsi:type' => ('tns:' + object_type) }}
      
      soap_request :configure, message

@@ -112,11 +112,6 @@ module FuelSDK
             [@properties].compact
          end 
       end
-	  
-	  #Backwards compatibility 
-	  def props
-		@properties
-	  end 
 
       def id
         self.class.id
