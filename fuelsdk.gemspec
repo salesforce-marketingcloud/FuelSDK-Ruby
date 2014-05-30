@@ -4,7 +4,7 @@ $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
 require 'fuelsdk/version'
 
 Gem::Specification.new do |spec|
-  spec.name          = "fuelsdk"
+  spec.name          = "fuelsdk-sc"
   spec.version       = FuelSDK::VERSION
   spec.authors       = ["MichaelAllenClark", "barberj"]
   spec.email         = []
@@ -25,6 +25,6 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency "guard-rspec"
 
   spec.add_dependency "savon", "2.2.0"
-  spec.add_dependency "json", "~> 1.7.0"
+  spec.add_dependency "json", "~> 1.8.1"
   spec.add_dependency "jwt", "~> 0.1.6"
 end
