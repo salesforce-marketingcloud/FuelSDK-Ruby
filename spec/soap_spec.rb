@@ -137,4 +137,25 @@ describe FuelSDK::Soap do
       end
     end
   end
+
+  describe '#add_nested_attributes_to_each_object' do
+    let(:message) {{
+      'Objects' => [
+        {'key1' => 'value1', 'key2' => 'value2'},
+        {'key3' => 'value3', 'key4' => 'value4'}
+      ],
+      attributes!: { 'Objects' => { 'key0' => 'value0'} }
+    }}
+
+    it 'adds nested attributes defined in \'attributes!\' to each object' do
+      expect(subject.send(:add_nested_attributes_to_each_object, message)).to eq({
+        'Objects' =>
+          [
+            { 'key1' => 'value1', 'key2' => 'value2', :@key0 => 'value0' },
+            { 'key3' => 'value3', 'key4' => 'value4', :@key0 => 'value0' }
+          ],
+        :attributes! => { 'Objects' => { 'key0' => 'value0' }}
+      })
+    end
+  end
 end
