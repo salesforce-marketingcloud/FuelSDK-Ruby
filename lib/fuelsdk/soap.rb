@@ -226,6 +226,8 @@ module FuelSDK
       end
 
       def soap_request action, message
+        message = add_nested_attributes_to_each_object(message)
+
         response = action.eql?(:describe) ? DescribeResponse : SoapResponse
         retried = false
         begin
@@ -240,5 +242,19 @@ module FuelSDK
         raise if rsp.nil?
         response.new rsp, self
       end
+
+      def add_nested_attributes_to_each_object(message)
+        if attributes = message[:attributes!]
+          attributes.keys.each do |object_name|
+            attributes[object_name].each do |k,v|
+              message[object_name].each_with_index do |object,i|
+                message[object_name][i]["@#{k}".to_sym] = v
+              end
+            end
+          end
+        end
+        message
+      end
+
   end
 end
