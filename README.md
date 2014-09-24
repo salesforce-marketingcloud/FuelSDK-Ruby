@@ -26,10 +26,16 @@ Subscriber can be accessed using FuelSDK::Subscriber or ET_Subscriber.
 - Savon 2.2.0 
 
 ## Getting Started ##
-Add this line to your application's Gemfile:
+Build the gem from the source
 
 ```ruby
-gem 'fuelsdk'
+gem build fuelsdk.gemspec
+```
+
+Install the newly built gem
+
+```ruby
+gem install fuelsdk-0.0.5.gem
 ```
 
 If you have not registered your application or you need to lookup your Application Key or Application Signature values, please go to App Center at [Code@: ExactTarget's Developer Community](http://code.exacttarget.com/appcenter "Code@ App Center").
