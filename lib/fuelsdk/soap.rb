@@ -255,7 +255,7 @@ module FuelSDK
             end
           end
         end
-        obj.each{ |k, v| add_attributes_inline(v) } if obj.respond_to?(:each)
+        obj.each{ |k, v| add_attributes_inline(v) } if obj.is_a?(Hash)
       end
 
   end
