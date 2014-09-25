@@ -138,24 +138,54 @@ describe FuelSDK::Soap do
     end
   end
 
-  describe '#add_nested_attributes_to_each_object' do
-    let(:message) {{
-      'Objects' => [
-        {'key1' => 'value1', 'key2' => 'value2'},
-        {'key3' => 'value3', 'key4' => 'value4'}
-      ],
-      attributes!: { 'Objects' => { 'key0' => 'value0'} }
-    }}
+  describe '#add_attributes_inline' do
+    context 'when the message has an array of objects with attributes' do
+      let(:message) {{
+        'objects' => [
+          {'key1' => 'value1', 'key2' => 'value2'},
+          {'key3' => 'value3', 'key4' => 'value4'}
+        ],
+        attributes!: { 'objects' => { 'key0' => 'value0', 'keyX' => 'valueX' } }
+      }}
 
-    it 'adds nested attributes defined in \'attributes!\' to each object' do
-      expect(subject.send(:add_nested_attributes_to_each_object, message)).to eq({
-        'Objects' =>
-          [
-            { 'key1' => 'value1', 'key2' => 'value2', :@key0 => 'value0' },
-            { 'key3' => 'value3', 'key4' => 'value4', :@key0 => 'value0' }
-          ],
-        :attributes! => { 'Objects' => { 'key0' => 'value0' }}
-      })
+      it 'adds attributes inline defined in \'attributes!\' to each object' do
+        expect(subject.send(:add_attributes_inline, message)).to eq({
+          'objects' => [
+              { 'key1' => 'value1', 'key2' => 'value2', '@key0' => 'value0', '@keyX' => 'valueX' },
+              { 'key3' => 'value3', 'key4' => 'value4', '@key0' => 'value0', '@keyX' => 'valueX' }
+            ],
+          :attributes! => { 'objects' => { 'key0' => 'value0', 'keyX' => 'valueX' } }
+        })
+      end
+    end
+
+    context 'when the message has nested objects with attributes' do
+      let(:message) {{
+        'parent' => {
+          'child1' => {
+            'key1' => 'value2',
+            'child3' => { 'value5' => 'value6' },
+            :attributes! => { 'child3' => { 'keyX' => 'valueX' } }
+          },
+          'child2' => { 'key3' => 'value4' },
+          :attributes! => { 'child1' => { 'key0' => 'value0' } }
+        }
+      }}
+
+      it 'adds attributes inline defined in \'attributes!\' to each object' do
+        expect(subject.send(:add_attributes_inline, message)).to eq({
+          'parent' => {
+            'child1' => {
+              'key1' => 'value2',
+              '@key0' => 'value0',
+              'child3' => { 'value5' => 'value6', '@keyX' => 'valueX' },
+              :attributes! => { 'child3' => { 'keyX' => 'valueX' } }
+            },
+            'child2' => { 'key3' => 'value4' },
+            :attributes! => { 'child1' => { 'key0' => 'value0' } }
+          }
+        })
+      end
     end
   end
 end

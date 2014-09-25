@@ -226,7 +226,7 @@ module FuelSDK
       end
 
       def soap_request action, message
-        message = add_nested_attributes_to_each_object(message)
+        add_attributes_inline(message)
 
         response = action.eql?(:describe) ? DescribeResponse : SoapResponse
         retried = false
@@ -243,17 +243,19 @@ module FuelSDK
         response.new rsp, self
       end
 
-      def add_nested_attributes_to_each_object(message)
-        if attributes = message[:attributes!]
-          attributes.keys.each do |object_name|
-            attributes[object_name].each do |k,v|
-              message[object_name].each_with_index do |object,i|
-                message[object_name][i]["@#{k}".to_sym] = v
+      def add_attributes_inline(obj)
+        if obj.is_a?(Hash) && attrs=obj[:attributes!]
+          attrs.each do |k, v|
+            v.each do |k2, v2|
+              if obj[k].is_a?(Array)
+                obj[k].each{ |o| o["@#{k2}"] = v2 }
+              elsif obj[k].is_a?(Hash)
+                obj[k]["@#{k2}"] = v2
               end
             end
           end
         end
-        message
+        obj.each{ |k, v| add_attributes_inline(v) } if obj.is_a?(Hash)
       end
 
   end
