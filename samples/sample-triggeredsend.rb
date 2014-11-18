@@ -100,8 +100,7 @@ begin
 	p '>>> Send an email with TriggeredSend'
 	sendTrig = FuelSDK::TriggeredSend.new
 	sendTrig.authStub = stubObj
-	sendTrig.props = {"CustomerKey" => NameOfTestTS}
-	sendTrig.subscribers = [{"EmailAddress"=>"testing@bh.exacttarget.com", "SubscriberKey" => "testing@bh.exacttarget.com"}]
+	sendTrig.props = [{"CustomerKey" => NameOfTestTS, "Subscribers" => {"EmailAddress"=>"testing@bh.exacttarget.com", "SubscriberKey" => "testing@bh.exacttarget.com"}}]
 	sendResponse = sendTrig.send
 	p 'Send Status: ' + sendResponse.status.to_s
 	p 'Code: ' + sendResponse.code.to_s
