@@ -326,6 +326,11 @@ module FuelSDK
     include Objects::Soap::Read
   end
 
+  class Send < Objects::Base 
+    attr_accessor :get_since_last_batch  
+    include Objects::Soap::Read  
+  end  
+
   class SentEvent < Objects::Base
 	attr_accessor :get_since_last_batch
     include Objects::Soap::Read
