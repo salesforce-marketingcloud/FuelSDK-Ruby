@@ -4,13 +4,13 @@ require 'pry'
 
 begin
 	stubObj = ET_Client.new auth
-	
+
 	# Specify a name for the data extension that will be used for testing
 	# Note: Name and CustomerKey will be the same value
 	# WARNING: Data Extension will be deleted so don't use the name of a
 	# production data extension
 	NameOfDE = "ThisWillBeDeleted-Testz"
-	
+
 	# Get all of the DataExtensions in an Account
 	p '>>> Get all of the DataExtensions in an Account'
 	de = ET_DataExtension.new
@@ -171,29 +171,31 @@ begin
 =begin
 	# Retrieve lots of rows with more?
 	p '>>> Retrieve lots of rows with more?'
-	row = ET_DataExtension::Row.new()
+	row          = ET_DataExtension::Row.new()
 	row.authStub = stubObj
-	row.Name = "zipstolong"
-	row.props = ["zip","latitude","longitude"]
-	getResponse = row.get
+	row.Name     = "zipstolong"
+	row.props    = ["zip", "latitude", "longitude"]
+	getResponse  = row.get
+
 	p 'Retrieve Status: ' + getResponse.status.to_s
-	p 'Code: ' + getResponse.code.to_s
-	p 'Message: ' + getResponse.message.to_s
-	p 'MoreResults: ' + getResponse.more?.to_s
-	p 'RequestID: ' + getResponse.request_id.to_s
-	p 'Results Length: ' + getResponse.results.length.to_s
-	#p 'Results: ' + getResponse.results.to_s
+	p 'Code: '            + getResponse.code.to_s
+	p 'Message: '         + getResponse.message.to_s
+	p 'MoreResults: '     + getResponse.more?.to_s
+	p 'RequestID: '       + getResponse.request_id.to_s
+	p 'Results Length: '  + getResponse.results.length.to_s
+	#p 'Results: '        + getResponse.results.to_s
   raise 'Failure retrieving data extension rows' unless getResponse.success?
 
 	while getResponse.more? do
 		p '>>> Continue Retrieve lots of rows with more?'
-		getResponse = row.getMoreResults
+
+		getResponse = row.continue
 		p 'Retrieve Status: ' + getResponse.status.to_s
-		p 'Code: ' + getResponse.code.to_s
-		p 'Message: ' + getResponse.message.to_s
-		p 'MoreResults: ' + getResponse.more?.to_s
-		p 'RequestID: ' + getResponse.request_id.to_s
-		p 'Results Length: ' + getResponse.results.length.to_s
+		p 'Code: '            + getResponse.code.to_s
+		p 'Message: '         + getResponse.message.to_s
+		p 'MoreResults: '     + getResponse.more?.to_s
+		p 'RequestID: '       + getResponse.request_id.to_s
+		p 'Results Length: '  + getResponse.results.length.to_s
 	end
 =end
 
