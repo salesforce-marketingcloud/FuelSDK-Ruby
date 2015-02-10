@@ -245,7 +245,7 @@ module FuelSDK
 			import.properties["CustomerKey"] = SecureRandom.uuid
 			import.properties["Description"] = "SDK Generated Import"
 			import.properties["AllowErrors"] = "true"
-			import.properties["DestinationObject"] = {"ObjectID"=>dataExtensionCustomerKey}
+			import.properties["DestinationObject"] = {"CustomerKey"=>dataExtensionCustomerKey}
 			import.properties["FieldMappingType"] = "InferFromColumnHeadings"
 			import.properties["FileSpec"] = fileName
 			import.properties["FileType"] = "CSV"
