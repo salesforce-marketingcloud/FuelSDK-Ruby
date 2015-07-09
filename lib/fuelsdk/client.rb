@@ -106,8 +106,8 @@ module FuelSDK
 			self.jwt = params['jwt'] if params['jwt']
 			self.refresh_token = params['refresh_token'] if params['refresh_token']
 
-			self.wsdl = params["defaultwsdl"]
-			self.authurl = params["authenticationurl"]
+			self.wsdl = params["defaultwsdl"] if params['defaultwsdl']
+			self.authurl = params["authenticationurl"] if params['authenticationurl']
 		end
 
 		def refresh force=false
