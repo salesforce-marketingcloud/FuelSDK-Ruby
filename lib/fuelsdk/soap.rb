@@ -131,7 +131,7 @@ module FuelSDK
 		end
 
 		def wsdl
-			@wsdl ||= 'https://webservice.exacttarget.com/etframework.wsdl'
+			@wsdl ||= 'https://webservice.test.exacttarget.com/Service.asmx?wsdl'
 		end
 
 		def soap_client
