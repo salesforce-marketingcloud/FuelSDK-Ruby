@@ -131,11 +131,11 @@ module FuelSDK
 		end
 
 		def wsdl
-			@wsdl
+			@wsdl ||= "https://webservice.exacttarget.com/etframework.wsdl"
 		end
 
 		def authurl
-			@authurl
+			@authurl ||= "https://auth.exacttargetapis.com/v1/requestToken"
 		end
 
 		def soap_client
