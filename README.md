@@ -46,8 +46,13 @@ If you have not registered your application or you need to lookup your Applicati
 Add a require statement to reference the Fuel SDK's functionality:
 > require 'fuelsdk'
 
-Next, create an instance of the Client class:
-> myClient = FuelSDK::Client.new {'client' => { 'id' => CLIENTID, 'secret' => SECRET }}
+Next, create an instance of the Client class depending on your environment:
+
+For a Sandbox environment
+> myClient = FuelSDK::Client.new {'client' => { 'id' => CLIENTID, 'secret' => SECRET }, "defaultwsdl" => "https://webservice.test.exacttarget.com/etframework.wsdl", "authenticationurl" => "https://auth-test.exacttargetapis.com/v1/requestToken"}
+
+For a Production environment
+> myClient = FuelSDK::Client.new {'client' => { 'id' => CLIENTID, 'secret' => SECRET }, "defaultwsdl" => "https://webservice.exacttarget.com/etframework.wsdl", "authenticationurl" => "https://auth.exacttargetapis.com/v1/requestToken"}
 
 Create an instance of the object type we want to work with:
 > list = FuelSDK::List.new

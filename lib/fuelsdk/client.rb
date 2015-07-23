@@ -77,7 +77,7 @@ module FuelSDK
 
 	class Client
 	attr_accessor :debug, :access_token, :auth_token, :internal_token, :refresh_token,
-		:id, :secret, :signature, :package_name, :package_folders, :parent_folders, :auth_token_expiration
+		:id, :secret, :signature, :authurl, :package_name, :package_folders, :parent_folders, :auth_token_expiration
 
 	include FuelSDK::Soap
 	include FuelSDK::Rest
@@ -106,7 +106,8 @@ module FuelSDK
 			self.jwt = params['jwt'] if params['jwt']
 			self.refresh_token = params['refresh_token'] if params['refresh_token']
 
-			self.wsdl = params["defaultwsdl"] if params["defaultwsdl"]
+			self.wsdl = params["defaultwsdl"] if params['defaultwsdl']
+			self.authurl = params["authenticationurl"] if params['authenticationurl']
 		end
 
 		def refresh force=false
@@ -126,7 +127,7 @@ module FuelSDK
 					h['content_type'] = 'application/json'
 					h['params'] = {'legacy' => 1}
 				end
-				response = post("https://auth.exacttargetapis.com/v1/requestToken", options)
+				response = post(authurl, options)
 				raise "Unable to refresh token: #{response['message']}" unless response.has_key?('accessToken')
 
 				self.access_token = response['accessToken']
