@@ -13,12 +13,12 @@ describe FuelSDK::Client do
 
     it 'with debug=true' do
       client = FuelSDK::Client.new({}, true)
-      expect(client.debug).to be_true
+      expect(client.debug).to eq(true)
     end
 
     it 'with debug=false' do
       client = FuelSDK::Client.new({}, false)
-      expect(client.debug).to be_false
+      expect(client.debug).to eq(false)
     end
 
     it 'creates SoapClient' do
@@ -70,9 +70,9 @@ describe FuelSDK::Client do
     end
 
     it 'debug' do
-      expect(client.debug).to be_false
+      expect(client.debug).to eq(false)
       client.debug = true
-      expect(client.debug).to be_true
+      expect(client.debug).to eq(true)
     end
   end
 
