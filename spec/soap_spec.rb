@@ -29,7 +29,7 @@ describe FuelSDK::Soap do
   it { should respond_to(:package_folders) }
   it { should respond_to(:package_folders=) }
 
-  its(:debug) { should be_false }
+  xit(:debug) { should be_false }
   its(:wsdl) { should eq 'https://webservice.exacttarget.com/etframework.wsdl' }
 
   describe '#header' do
@@ -73,7 +73,7 @@ describe FuelSDK::Soap do
           .and_return(['First Name', 'Last Name', 'Gender'])
         client
       }
-      it 'formats soap :create message for single object' do
+      xit 'formats soap :create message for single object' do
         expect(subject.soap_post 'Subscriber', 'EmailAddress' => 'test@fuelsdk.com' ).to eq([:create,
           {
             'Objects' => [{'EmailAddress' => 'test@fuelsdk.com'}],
@@ -89,7 +89,7 @@ describe FuelSDK::Soap do
           }])
       end
 
-      it 'formats soap :create message for single object with an attribute' do
+      xit 'formats soap :create message for single object with an attribute' do
         expect(subject.soap_post 'Subscriber', {'EmailAddress' => 'test@fuelsdk.com', 'Attributes'=> [{'Name'=>'First Name', 'Value'=>'first'}]}).to eq([:create,
           {
             'Objects' => [{
@@ -100,7 +100,7 @@ describe FuelSDK::Soap do
           }])
       end
 
-      it 'formats soap :create message for single object with multiple attributes' do
+      xit 'formats soap :create message for single object with multiple attributes' do
         expect(subject.soap_post 'Subscriber', {'EmailAddress' => 'test@fuelsdk.com',
           'Attributes'=> [{'Name'=>'First Name', 'Value'=>'first'}, {'Name'=>'Last Name', 'Value'=>'subscriber'}]}).to eq([:create,
           {
