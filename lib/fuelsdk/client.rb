@@ -176,10 +176,10 @@ module FuelSDK
 			
 			return sendResponse
 		end
-		def SendEmailToList(emailID, listID, sendClassficationCustomerKey)
+		def SendEmailToList(emailID, listID, sendClassificationCustomerKey)
 			email = ET_Email::SendDefinition.new 
 			email.properties = {"Name"=>SecureRandom.uuid, "CustomerKey"=>SecureRandom.uuid, "Description"=>"Created with RubySDK"} 
-			email.properties["SendClassification"] = {"CustomerKey"=>sendClassficationCustomerKey}
+			email.properties["SendClassification"] = {"CustomerKey"=>sendClassificationCustomerKey}
 			email.properties["SendDefinitionList"] = {"List"=> {"ID"=>listID}, "DataSourceTypeID"=>"List"}
 			email.properties["Email"] = {"ID"=>emailID}
 			email.authStub = self
@@ -197,10 +197,10 @@ module FuelSDK
 			end 
 		end 
 			
-		def SendEmailToDataExtension(emailID, sendableDataExtensionCustomerKey, sendClassficationCustomerKey)
+		def SendEmailToDataExtension(emailID, sendableDataExtensionCustomerKey, sendClassificationCustomerKey)
 			email = ET_Email::SendDefinition.new 
 			email.properties = {"Name"=>SecureRandom.uuid, "CustomerKey"=>SecureRandom.uuid, "Description"=>"Created with RubySDK"} 
-			email.properties["SendClassification"] = {"CustomerKey"=> sendClassficationCustomerKey}
+			email.properties["SendClassification"] = {"CustomerKey"=> sendClassificationCustomerKey}
 			email.properties["SendDefinitionList"] = {"CustomerKey"=> sendableDataExtensionCustomerKey, "DataSourceTypeID"=>"CustomObject"}
 			email.properties["Email"] = {"ID"=>emailID}
 			email.authStub = self
