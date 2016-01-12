@@ -98,11 +98,12 @@ module FuelSDK
 			self.debug = debug
 			client_config = params['client']
 			if client_config
-			self.id = client_config["id"]
-			self.secret = client_config["secret"]
-			self.signature = client_config["signature"]
+        self.id = client_config["id"]
+        self.secret = client_config["secret"]
+        self.signature = client_config["signature"]
 			end
 
+      self.request_token_url = params['request_token_url'] ? params['request_token_url'] : 'https://auth.exacttargetapis.com/v1/requestToken'
 			self.jwt = params['jwt'] if params['jwt']
 			self.refresh_token = params['refresh_token'] if params['refresh_token']
 
@@ -126,7 +127,7 @@ module FuelSDK
 					h['content_type'] = 'application/json'
 					h['params'] = {'legacy' => 1}
 				end
-				response = post("https://auth.exacttargetapis.com/v1/requestToken", options)
+				response = post(request_token_url, options)
 				raise "Unable to refresh token: #{response['message']}" unless response.has_key?('accessToken')
 
 				self.access_token = response['accessToken']

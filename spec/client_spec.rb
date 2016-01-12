@@ -21,6 +21,16 @@ describe FuelSDK::Client do
       expect(client.debug).to be_false
     end
 
+    it 'sets the request_token url to parameter if it exists' do
+      client = FuelSDK::Client.new({'request_token_url' => 'fake/url'}, false)
+      expect(client.request_token_url).to eq 'fake/url'
+    end
+
+    it 'sets the request_token url to a default if it does not exist' do
+      client = FuelSDK::Client.new({}, false)
+      expect(client.request_token_url).to eq 'https://auth.exacttargetapis.com/v1/requestToken'
+    end
+
     it 'creates SoapClient' do
       client = FuelSDK::Client.new
       expect(client).to be_kind_of FuelSDK::Soap
