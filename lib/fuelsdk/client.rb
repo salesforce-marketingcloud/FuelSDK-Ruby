@@ -77,7 +77,7 @@ module FuelSDK
 
 	class Client
 	attr_accessor :debug, :access_token, :auth_token, :internal_token, :refresh_token,
-		:id, :secret, :signature, :package_name, :package_folders, :parent_folders, :auth_token_expiration
+		:id, :secret, :signature, :package_name, :package_folders, :parent_folders, :auth_token_expiration, :request_token_url
 
 	include FuelSDK::Soap
 	include FuelSDK::Rest
@@ -98,11 +98,12 @@ module FuelSDK
 			self.debug = debug
 			client_config = params['client']
 			if client_config
-			self.id = client_config["id"]
-			self.secret = client_config["secret"]
-			self.signature = client_config["signature"]
+        self.id = client_config["id"]
+        self.secret = client_config["secret"]
+        self.signature = client_config["signature"]
 			end
 
+      self.request_token_url = params['request_token_url'] ? params['request_token_url'] : 'https://auth.exacttargetapis.com/v1/requestToken'
 			self.jwt = params['jwt'] if params['jwt']
 			self.refresh_token = params['refresh_token'] if params['refresh_token']
 
@@ -126,7 +127,7 @@ module FuelSDK
 					h['content_type'] = 'application/json'
 					h['params'] = {'legacy' => 1}
 				end
-				response = post("https://auth.exacttargetapis.com/v1/requestToken", options)
+				response = post(request_token_url, options)
 				raise "Unable to refresh token: #{response['message']}" unless response.has_key?('accessToken')
 
 				self.access_token = response['accessToken']
@@ -175,10 +176,10 @@ module FuelSDK
 			
 			return sendResponse
 		end
-		def SendEmailToList(emailID, listID, sendClassficationCustomerKey)
+		def SendEmailToList(emailID, listID, sendClassificationCustomerKey)
 			email = ET_Email::SendDefinition.new 
 			email.properties = {"Name"=>SecureRandom.uuid, "CustomerKey"=>SecureRandom.uuid, "Description"=>"Created with RubySDK"} 
-			email.properties["SendClassification"] = {"CustomerKey"=>sendClassficationCustomerKey}
+			email.properties["SendClassification"] = {"CustomerKey"=>sendClassificationCustomerKey}
 			email.properties["SendDefinitionList"] = {"List"=> {"ID"=>listID}, "DataSourceTypeID"=>"List"}
 			email.properties["Email"] = {"ID"=>emailID}
 			email.authStub = self
@@ -196,10 +197,10 @@ module FuelSDK
 			end 
 		end 
 			
-		def SendEmailToDataExtension(emailID, sendableDataExtensionCustomerKey, sendClassficationCustomerKey)
+		def SendEmailToDataExtension(emailID, sendableDataExtensionCustomerKey, sendClassificationCustomerKey)
 			email = ET_Email::SendDefinition.new 
 			email.properties = {"Name"=>SecureRandom.uuid, "CustomerKey"=>SecureRandom.uuid, "Description"=>"Created with RubySDK"} 
-			email.properties["SendClassification"] = {"CustomerKey"=> sendClassficationCustomerKey}
+			email.properties["SendClassification"] = {"CustomerKey"=> sendClassificationCustomerKey}
 			email.properties["SendDefinitionList"] = {"CustomerKey"=> sendableDataExtensionCustomerKey, "DataSourceTypeID"=>"CustomObject"}
 			email.properties["Email"] = {"ID"=>emailID}
 			email.authStub = self
