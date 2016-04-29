@@ -3,38 +3,38 @@ Copyright (c) 2013 ExactTarget, Inc.
 
 All rights reserved.
 
-Redistribution and use in source and binary forms, with or without modification, are permitted provided that the 
+Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
 
 following conditions are met:
 
-1. Redistributions of source code must retain the above copyright notice, this list of conditions and the 
+1. Redistributions of source code must retain the above copyright notice, this list of conditions and the
 
 following disclaimer.
 
-2. Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the 
+2. Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the
 
 following disclaimer in the documentation and/or other materials provided with the distribution.
 
-3. Neither the name of the copyright holder nor the names of its contributors may be used to endorse or promote 
+3. Neither the name of the copyright holder nor the names of its contributors may be used to endorse or promote
 
 products derived from this software without specific prior written permission.
 
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, 
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES,
 
-INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE 
+INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
 
-DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, 
+DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
 
-SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR 
+SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
 
-SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, 
+SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
 
-WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE 
+WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
 
 USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-=end 
-
+=end
+require 'pry'
 require 'securerandom'
 module MarketingCloudSDK
 	class Response
@@ -42,7 +42,7 @@ module MarketingCloudSDK
 		# You will see in the code some of these
 		# items are being updated via back doors and such.
 		attr_reader :code, :message, :results, :request_id, :body, :raw
-		
+
 		# some defaults
 		def success
 			@success ||= false
@@ -84,7 +84,7 @@ module MarketingCloudSDK
 
 		def jwt= encoded_jwt
 			raise 'Require app signature to decode JWT' unless self.signature
-			decoded_jwt = JWT.decode(encoded_jwt, self.signature, true)
+			decoded_jwt = JWT.decode(encoded_jwt, self.signature, true).first
 
 			self.auth_token = decoded_jwt['request']['user']['oauthToken']
 			self.internal_token = decoded_jwt['request']['user']['internalOauthToken']
@@ -135,7 +135,7 @@ module MarketingCloudSDK
 				self.auth_token_expiration = Time.new + response['expiresIn']
 				self.refresh_token = response['refreshToken'] if response.has_key?("refreshToken")
 				return true
-				else 
+				else
 				return false
 				end
 			end
@@ -150,7 +150,7 @@ module MarketingCloudSDK
 			s.client = self
 			lists = ids.collect{|id| {'ID' => id}}
 			s.properties = {"EmailAddress" => email, "Lists" => lists}
-			p s.properties 
+			p s.properties
 			s.properties['SubscriberKey'] = subscriber_key if subscriber_key
 
 			# Try to add the subscriber
@@ -170,55 +170,55 @@ module MarketingCloudSDK
 		def SendTriggeredSends(arrayOfTriggeredRecords)
 			sendTS = ET_TriggeredSend.new
 			sendTS.authStub = self
-			
+
 			sendTS.properties = arrayOfTriggeredRecords
 			sendResponse = sendTS.send
-			
+
 			return sendResponse
 		end
 		def SendEmailToList(emailID, listID, sendClassificationCustomerKey)
-			email = ET_Email::SendDefinition.new 
-			email.properties = {"Name"=>SecureRandom.uuid, "CustomerKey"=>SecureRandom.uuid, "Description"=>"Created with RubySDK"} 
+			email = ET_Email::SendDefinition.new
+			email.properties = {"Name"=>SecureRandom.uuid, "CustomerKey"=>SecureRandom.uuid, "Description"=>"Created with RubySDK"}
 			email.properties["SendClassification"] = {"CustomerKey"=>sendClassificationCustomerKey}
 			email.properties["SendDefinitionList"] = {"List"=> {"ID"=>listID}, "DataSourceTypeID"=>"List"}
 			email.properties["Email"] = {"ID"=>emailID}
 			email.authStub = self
 			result = email.post
-			if result.status then 
-				sendresult = email.send 
-				if sendresult.status then 
+			if result.status then
+				sendresult = email.send
+				if sendresult.status then
 					deleteresult = email.delete
 					return sendresult
-				else 
+				else
 					raise "Unable to send using send definition due to: #{result.results[0][:status_message]}"
-				end 
+				end
 			else
 				raise "Unable to create send definition due to: #{result.results[0][:status_message]}"
-			end 
-		end 
-			
+			end
+		end
+
 		def SendEmailToDataExtension(emailID, sendableDataExtensionCustomerKey, sendClassificationCustomerKey)
-			email = ET_Email::SendDefinition.new 
-			email.properties = {"Name"=>SecureRandom.uuid, "CustomerKey"=>SecureRandom.uuid, "Description"=>"Created with RubySDK"} 
+			email = ET_Email::SendDefinition.new
+			email.properties = {"Name"=>SecureRandom.uuid, "CustomerKey"=>SecureRandom.uuid, "Description"=>"Created with RubySDK"}
 			email.properties["SendClassification"] = {"CustomerKey"=> sendClassificationCustomerKey}
 			email.properties["SendDefinitionList"] = {"CustomerKey"=> sendableDataExtensionCustomerKey, "DataSourceTypeID"=>"CustomObject"}
 			email.properties["Email"] = {"ID"=>emailID}
 			email.authStub = self
 			result = email.post
-			if result.status then 
-				sendresult = email.send 
-				if sendresult.status then 
+			if result.status then
+				sendresult = email.send
+				if sendresult.status then
 					deleteresult = email.delete
 					return sendresult
-				else 
+				else
 					raise "Unable to send using send definition due to: #{result.results[0][:status_message]}"
-				end 
+				end
 			else
 				raise "Unable to create send definition due to: #{result.results[0][:status_message]}"
-			end 
+			end
 		end
 		def CreateAndStartListImport(listId,fileName)
-			import = ET_Import.new 
+			import = ET_Import.new
 			import.authStub = self
 			import.properties = {"Name"=> "SDK Generated Import #{DateTime.now.to_s}"}
 			import.properties["CustomerKey"] = SecureRandom.uuid
@@ -231,16 +231,16 @@ module MarketingCloudSDK
 			import.properties["RetrieveFileTransferLocation"] = {"CustomerKey"=>"ExactTarget Enhanced FTP"}
 			import.properties["UpdateType"] = "AddAndUpdate"
 			result = import.post
-			
-			if result.status then 
-				return import.start 
+
+			if result.status then
+				return import.start
 			else
 				raise "Unable to create import definition due to: #{result.results[0][:status_message]}"
-			end 
-		end 
-			
+			end
+		end
+
 		def CreateAndStartDataExtensionImport(dataExtensionCustomerKey, fileName, overwrite)
-			import = ET_Import.new 
+			import = ET_Import.new
 			import.authStub = self
 			import.properties = {"Name"=> "SDK Generated Import #{DateTime.now.to_s}"}
 			import.properties["CustomerKey"] = SecureRandom.uuid
@@ -253,30 +253,30 @@ module MarketingCloudSDK
 			import.properties["RetrieveFileTransferLocation"] = {"CustomerKey"=>"ExactTarget Enhanced FTP"}
 			if overwrite then
 				import.properties["UpdateType"] = "Overwrite"
-			else 
+			else
 				import.properties["UpdateType"] = "AddAndUpdate"
-			end 
+			end
 			result = import.post
-			
-			if result.status then 
-				return import.start 
+
+			if result.status then
+				return import.start
 			else
 				raise "Unable to create import definition due to: #{result.results[0][:status_message]}"
-			end 
-		end 
-			
+			end
+		end
+
 		def CreateProfileAttributes(allAttributes)
-			attrs = ET_ProfileAttribute.new 
+			attrs = ET_ProfileAttribute.new
 			attrs.authStub = self
 			attrs.properties = allAttributes
 			return attrs.post
 		end
-		
+
 		def CreateContentAreas(arrayOfContentAreas)
 			postC = ET_ContentArea.new
 			postC.authStub = self
 			postC.properties = arrayOfContentAreas
-			sendResponse = postC.post			
+			sendResponse = postC.post
 			return sendResponse
 		end
 	end

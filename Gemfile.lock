@@ -78,6 +78,7 @@ GEM
     win32console (1.3.2-x86-mingw32)
 
 PLATFORMS
+  ruby
   x86-mingw32
 
 DEPENDENCIES
