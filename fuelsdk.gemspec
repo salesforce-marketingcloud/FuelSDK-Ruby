@@ -20,11 +20,11 @@ Gem::Specification.new do |spec|
 
 	spec.add_development_dependency "bundler", "~> 1.3"
 	spec.add_development_dependency 'rake', '~> 0'
-	spec.add_development_dependency "rspec", '~> 0'
+	spec.add_development_dependency "rspec", '~> 2'
 	spec.add_development_dependency "guard", '~> 0'
 	spec.add_development_dependency "guard-rspec", '~> 0'
 
 	spec.add_dependency "savon", "2.2.0"
-	spec.add_dependency "json", "~> 1.7"
-	spec.add_dependency "jwt", "~> 0.1.6"
+  spec.add_dependency "json", "~> 1", ">= 1.7"
+  spec.add_dependency "jwt", "~> 0.1", ">= 0.1.6"
 end
