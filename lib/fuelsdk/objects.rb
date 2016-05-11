@@ -373,7 +373,7 @@ module FuelSDK
 	class TriggeredSend < Objects::Base
 		include Objects::Soap::Read
 		include Objects::Soap::CUD
-		attr_accessor :folder_id, :subscribers
+		attr_accessor :folder_id, :subscribers, :attributes
 		def id
 			'TriggeredSendDefinition'
 		end
@@ -390,11 +390,11 @@ module FuelSDK
 			if self.properties.is_a? Array then
 				tscall = []
 				self.properties.each{ |p|
-					tscall.push({"TriggeredSendDefinition" => {"CustomerKey" => p["CustomerKey"]}, "Subscribers" => p["Subscribers"]})
+					tscall.push({"TriggeredSendDefinition" => {"CustomerKey" => p["CustomerKey"]}, "Subscribers" => p["Subscribers"], "Attributes" => p["Attributes"]})
 				}
 			else
-				tscall = {"TriggeredSendDefinition" => self.properties, "Subscribers" => @subscribers}
-			end
+				tscall = {"TriggeredSendDefinition" => self.properties, "Subscribers" => @subscribers, "Attributes" => @attributes }
+      end
 			client.soap_post 'TriggeredSend', tscall
 		end
 	end
