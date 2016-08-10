@@ -41,7 +41,6 @@ require 'json'
 module FuelSDK
 
   class HTTPResponse < FuelSDK::Response
-
     def initialize raw, client, request
       super raw, client
       @request = request
@@ -80,7 +79,6 @@ module FuelSDK
   end
 
   module HTTPRequest
-
     request_methods = ['get', 'post', 'patch', 'delete']
     request_methods.each do |method|
       class_eval <<-EOT, __FILE__, __LINE__ + 1
@@ -100,7 +98,6 @@ module FuelSDK
 
       def request(method, url, options={})
         uri = generate_uri url, options['params']
-
         http = Net::HTTP.new(uri.host, uri.port)
         http.use_ssl = true
 
@@ -108,8 +105,8 @@ module FuelSDK
         _request = method.new uri.request_uri
         _request.body = data.to_json if data
         _request.content_type = options['content_type'] if options['content_type']
+        _request.add_field('User_Agent', 'FuelSDK-Ruby')
         response = http.request(_request)
-
         HTTPResponse.new(response, self, :url => url, :options => options)
       end
   end
