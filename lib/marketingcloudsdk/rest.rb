@@ -34,10 +34,10 @@ WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWIS
 USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =end
 
-module FuelSDK
+module MarketingCloudSDK
   module Rest
 
-    include FuelSDK::Targeting
+    include MarketingCloudSDK::Targeting
 
     def rest_client
       self

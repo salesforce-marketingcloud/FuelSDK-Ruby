@@ -34,6 +34,41 @@ WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWIS
 USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =end
 
-module FuelSDK
-  VERSION = "0.0.6"
+require "marketingcloudsdk/version"
+
+require 'rubygems'
+require 'date'
+require 'jwt'
+
+module MarketingCloudSDK
+  require 'marketingcloudsdk/utils'
+  autoload :HTTPRequest, 'marketingcloudsdk/http_request'
+  autoload :Targeting, 'marketingcloudsdk/targeting'
+  autoload :Soap, 'marketingcloudsdk/soap'
+  autoload :Rest, 'marketingcloudsdk/rest'
+  require 'marketingcloudsdk/client'
+  require 'marketingcloudsdk/objects'
 end
+
+# backwards compatability
+ET_Client = MarketingCloudSDK::Client
+ET_BounceEvent = MarketingCloudSDK::BounceEvent
+ET_ClickEvent = MarketingCloudSDK::ClickEvent
+ET_ContentArea = MarketingCloudSDK::ContentArea
+ET_DataExtension = MarketingCloudSDK::DataExtension
+ET_DataFolder = MarketingCloudSDK::DataFolder
+ET_Folder = MarketingCloudSDK::Folder
+ET_Email = MarketingCloudSDK::Email
+ET_List = MarketingCloudSDK::List
+ET_OpenEvent = MarketingCloudSDK::OpenEvent
+ET_SentEvent = MarketingCloudSDK::SentEvent
+ET_Subscriber = MarketingCloudSDK::Subscriber
+ET_UnsubEvent = MarketingCloudSDK::UnsubEvent
+ET_TriggeredSend = MarketingCloudSDK::TriggeredSend
+ET_Campaign = MarketingCloudSDK::Campaign
+ET_Get = MarketingCloudSDK::Get
+ET_Post = MarketingCloudSDK::Post
+ET_Delete = MarketingCloudSDK::Delete
+ET_Patch = MarketingCloudSDK::Patch
+ET_ProfileAttribute = MarketingCloudSDK::ProfileAttribute
+ET_Import = MarketingCloudSDK::Import
