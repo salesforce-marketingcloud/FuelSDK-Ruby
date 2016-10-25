@@ -36,7 +36,7 @@ USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =end 
 
 require 'securerandom'
-module FuelSDK
+module MarketingCloudSDK
 	class Response
 		# not doing accessor so user, can't update these values from response.
 		# You will see in the code some of these
@@ -79,8 +79,8 @@ module FuelSDK
 	attr_accessor :debug, :access_token, :auth_token, :internal_token, :refresh_token,
 		:id, :secret, :signature, :package_name, :package_folders, :parent_folders, :auth_token_expiration, :request_token_url
 
-	include FuelSDK::Soap
-	include FuelSDK::Rest
+	include MarketingCloudSDK::Soap
+	include MarketingCloudSDK::Rest
 
 		def jwt= encoded_jwt
 			raise 'Require app signature to decode JWT' unless self.signature
@@ -146,7 +146,7 @@ module FuelSDK
 		end
 
 		def AddSubscriberToList(email, ids, subscriber_key = nil)
-			s = FuelSDK::Subscriber.new
+			s = MarketingCloudSDK::Subscriber.new
 			s.client = self
 			lists = ids.collect{|id| {'ID' => id}}
 			s.properties = {"EmailAddress" => email, "Lists" => lists}
@@ -162,7 +162,7 @@ module FuelSDK
 		end
 
 		def CreateDataExtensions(definitions)
-			de = FuelSDK::DataExtension.new
+			de = MarketingCloudSDK::DataExtension.new
 			de.client = self
 			de.properties = definitions
 			de.post

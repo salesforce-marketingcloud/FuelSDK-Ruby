@@ -1,9 +1,9 @@
 require 'spec_helper.rb'
 require 'objects_helper_spec.rb'
 
-describe FuelSDK::Objects::Base do
+describe MarketingCloudSDK::Objects::Base do
 
-  let(:object) { FuelSDK::Objects::Base.new }
+  let(:object) { MarketingCloudSDK::Objects::Base.new }
   subject{ object }
 
   describe '#properties' do
@@ -24,116 +24,116 @@ describe FuelSDK::Objects::Base do
 
 end
 
-describe FuelSDK::BounceEvent do
+describe MarketingCloudSDK::BounceEvent do
 
-  let(:object) { FuelSDK::BounceEvent.new }
+  let(:object) { MarketingCloudSDK::BounceEvent.new }
   subject{ object }
 
   it_behaves_like 'Soap Read Only Object'
   its(:id){ should eq 'BounceEvent' }
 end
 
-describe FuelSDK::ClickEvent do
+describe MarketingCloudSDK::ClickEvent do
 
-  let(:object) { FuelSDK::ClickEvent.new }
+  let(:object) { MarketingCloudSDK::ClickEvent.new }
   subject{ object }
 
   it_behaves_like 'Soap Read Only Object'
   its(:id){ should eq 'ClickEvent' }
 end
 
-describe FuelSDK::ContentArea do
+describe MarketingCloudSDK::ContentArea do
 
-  let(:object) { FuelSDK::ContentArea.new }
+  let(:object) { MarketingCloudSDK::ContentArea.new }
   subject{ object }
 
   it_behaves_like 'Soap Object'
   its(:id){ should eq 'ContentArea' }
 end
 
-describe FuelSDK::DataFolder do
+describe MarketingCloudSDK::DataFolder do
 
-  let(:object) { FuelSDK::DataFolder.new }
+  let(:object) { MarketingCloudSDK::DataFolder.new }
   subject{ object }
 
   it_behaves_like 'Soap Object'
   its(:id){ should eq 'DataFolder' }
 end
 
-describe FuelSDK::Folder do
+describe MarketingCloudSDK::Folder do
 
-  let(:object) { FuelSDK::Folder.new }
+  let(:object) { MarketingCloudSDK::Folder.new }
   subject{ object }
 
   it_behaves_like 'Soap Object'
   its(:id){ should eq 'DataFolder' }
 end
 
-describe FuelSDK::Email do
+describe MarketingCloudSDK::Email do
 
-  let(:object) { FuelSDK::Email.new }
+  let(:object) { MarketingCloudSDK::Email.new }
   subject{ object }
 
   it_behaves_like 'Soap Object'
   its(:id){ should eq 'Email' }
 end
 
-describe FuelSDK::List do
+describe MarketingCloudSDK::List do
 
-  let(:object) { FuelSDK::List.new }
+  let(:object) { MarketingCloudSDK::List.new }
   subject{ object }
 
   it_behaves_like 'Soap Object'
   its(:id){ should eq 'List' }
 end
 
-describe FuelSDK::List::Subscriber do
+describe MarketingCloudSDK::List::Subscriber do
 
-  let(:object) { FuelSDK::List::Subscriber.new }
+  let(:object) { MarketingCloudSDK::List::Subscriber.new }
   subject{ object }
 
   it_behaves_like 'Soap Read Only Object'
   its(:id){ should eq 'ListSubscriber' }
 end
 
-describe FuelSDK::OpenEvent do
+describe MarketingCloudSDK::OpenEvent do
 
-  let(:object) { FuelSDK::OpenEvent.new }
+  let(:object) { MarketingCloudSDK::OpenEvent.new }
   subject{ object }
 
   it_behaves_like 'Soap Read Only Object'
   its(:id){ should eq 'OpenEvent' }
 end
 
-describe FuelSDK::SentEvent do
+describe MarketingCloudSDK::SentEvent do
 
-  let(:object) { FuelSDK::SentEvent.new }
+  let(:object) { MarketingCloudSDK::SentEvent.new }
   subject{ object }
 
   it_behaves_like 'Soap Read Only Object'
   its(:id){ should eq 'SentEvent' }
 end
 
-describe FuelSDK::Subscriber do
+describe MarketingCloudSDK::Subscriber do
 
-  let(:object) { FuelSDK::Subscriber.new }
+  let(:object) { MarketingCloudSDK::Subscriber.new }
   subject{ object }
 
   it_behaves_like 'Soap Object'
   its(:id){ should eq 'Subscriber' }
 end
 
-describe FuelSDK::DataExtension::Column do
+describe MarketingCloudSDK::DataExtension::Column do
 
-  let(:object) { FuelSDK::DataExtension::Column.new }
+  let(:object) { MarketingCloudSDK::DataExtension::Column.new }
   subject{ object }
 
   it_behaves_like 'Soap Read Only Object'
   its(:id){ should eq 'DataExtensionField' }
 end
 
-describe FuelSDK::DataExtension do
-  let(:object) { FuelSDK::DataExtension.new }
+describe MarketingCloudSDK::DataExtension do
+  let(:object) { MarketingCloudSDK::DataExtension.new }
   subject{ object }
 
   it_behaves_like 'Soap Object'
@@ -331,8 +331,8 @@ describe FuelSDK::DataExtension do
   end
 end
 
-describe FuelSDK::DataExtension::Row do
-  let(:object) { FuelSDK::DataExtension::Row.new }
+describe MarketingCloudSDK::DataExtension::Row do
+  let(:object) { MarketingCloudSDK::DataExtension::Row.new }
   subject{ object }
 
   it_behaves_like 'Soap Object'
@@ -375,7 +375,7 @@ describe FuelSDK::DataExtension::Row do
     end
 
     it 'updates missing' do
-      rsp = mock(FuelSDK::SoapResponse)
+      rsp = mock(MarketingCloudSDK::SoapResponse)
       rsp.stub(:results).and_return([{:name => 'Products', :customer_key => 'ProductsKey'}])
       rsp.stub(:success?).and_return true
 
@@ -444,7 +444,7 @@ describe FuelSDK::DataExtension::Row do
     it 'uses name to get customer key for inseration' do
       subject.name = 'Subscribers'
 
-      rsp = mock(FuelSDK::SoapResponse)
+      rsp = mock(MarketingCloudSDK::SoapResponse)
       rsp.stub(:results).and_return([{:name => 'Products', :customer_key => 'ProductsKey'}])
       rsp.stub(:success?).and_return true
 

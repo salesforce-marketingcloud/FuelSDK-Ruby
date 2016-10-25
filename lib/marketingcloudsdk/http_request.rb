@@ -38,9 +38,9 @@ require 'open-uri'
 require 'net/https'
 require 'json'
 
-module FuelSDK
+module MarketingCloudSDK
 
-  class HTTPResponse < FuelSDK::Response
+  class HTTPResponse < MarketingCloudSDK::Response
     def initialize raw, client, request
       super raw, client
       @request = request

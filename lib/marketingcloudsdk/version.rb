@@ -34,14 +34,6 @@ WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWIS
 USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =end
 
-module FuelSDK
-  module_function
-    def format_name_value_pairs attributes
-      attrs = []
-      attributes.each do |name, value|
-        attrs.push 'Name' => name, 'Value' => value
-      end
-
-      attrs
-    end
+module MarketingCloudSDK
+  VERSION = "1.0.0"
 end

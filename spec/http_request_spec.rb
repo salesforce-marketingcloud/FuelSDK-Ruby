@@ -1,7 +1,7 @@
 require 'spec_helper'
 
-describe FuelSDK::HTTPRequest do
-  let(:client) { Class.new.new.extend FuelSDK::HTTPRequest }
+describe MarketingCloudSDK::HTTPRequest do
+  let(:client) { Class.new.new.extend MarketingCloudSDK::HTTPRequest }
   subject { client }
   it { should respond_to(:get) }
   it { should respond_to(:post) }

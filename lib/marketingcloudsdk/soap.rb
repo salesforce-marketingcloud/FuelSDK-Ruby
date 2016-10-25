@@ -35,9 +35,9 @@ USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =end
 
 require 'savon'
-module FuelSDK
+module MarketingCloudSDK
 	
-	class SoapResponse < FuelSDK::Response
+	class SoapResponse < MarketingCloudSDK::Response
 
 		def continue
 			rsp = nil
@@ -116,7 +116,7 @@ module FuelSDK
 	module Soap
 		attr_accessor :wsdl, :debug#, :internal_token
 
-		include FuelSDK::Targeting
+		include MarketingCloudSDK::Targeting
 
 		def header
 			raise 'Require legacy token for soap header' unless internal_token
@@ -249,7 +249,7 @@ module FuelSDK
 			#     p.each do |k, v|
 			#       if type_attrs.include? k
 			#         p.delete k
-			#         attrs = FuelSDK.format_name_value_pairs k => v
+			#         attrs = MarketingCloudSDK.format_name_value_pairs k => v
 			#         formated_attrs.concat attrs
 			#       end
 			#     end

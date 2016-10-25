@@ -34,25 +34,14 @@ WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWIS
 USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =end
 
-module FuelSDK::Targeting
-  attr_accessor :access_token
-  attr_reader :endpoint
+module MarketingCloudSDK
+  module_function
+    def format_name_value_pairs attributes
+      attrs = []
+      attributes.each do |name, value|
+        attrs.push 'Name' => name, 'Value' => value
+      end
 
-  include FuelSDK::HTTPRequest
-
-  def endpoint
-    unless @endpoint
-      determine_stack
-    end
-    @endpoint
-  end
-
-  protected
-    def determine_stack
-      options = {'params' => {'access_token' => self.access_token}}
-      response = get("https://www.exacttargetapis.com/platform/v1/endpoints/soap", options)
-      @endpoint = response['url']
-    rescue => e
-      raise 'Unable to determine stack using: ' + e.message
+      attrs
     end
 end

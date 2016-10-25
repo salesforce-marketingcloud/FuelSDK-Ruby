@@ -1,8 +1,8 @@
 require 'spec_helper'
 
-describe FuelSDK::Soap do
+describe MarketingCloudSDK::Soap do
 
-  let(:client) { FuelSDK::Client.new }
+  let(:client) { MarketingCloudSDK::Client.new }
 
   subject { client }
 

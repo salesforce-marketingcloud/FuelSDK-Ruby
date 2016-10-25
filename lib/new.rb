@@ -34,7 +34,7 @@ WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWIS
 USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =end
 
-require "fuelsdk/version"
+require "marketingcloudsdk/version"
 
 require 'rubygems'
 require 'open-uri'
@@ -49,7 +49,7 @@ def indifferent_access key, hash
   hash[key.to_sym] || hash[key.to_s]
 end
 
-module FuelSDK
+module MarketingCloudSDK
 
   class Soap
     def client
