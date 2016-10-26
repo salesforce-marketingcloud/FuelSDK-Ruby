@@ -1,8 +1,8 @@
-require 'fuelsdk'
+require 'marketingcloudsdk'
 require_relative 'sample_helper' # contains auth with credentials
 
 begin
-  stubObj = FuelSDK::Client.new auth
+  stubObj = MarketingCloudSDK::Client.new auth
 
   # NOTE: These examples only work in accounts where the SubscriberKey functionality is not enabled
   #       SubscriberKey will need to be included in the props if that feature is enabled
@@ -11,7 +11,7 @@ begin
 
   # Create Subscriber
   p '>>> Create Subscriber'
-  postSub = FuelSDK::Subscriber.new
+  postSub = MarketingCloudSDK::Subscriber.new
   postSub.authStub = stubObj
   postSub.props = {"EmailAddress" => SubscriberTestEmail}
   p '>>> Posting'
@@ -26,7 +26,7 @@ begin
 
   # Retrieve newly created Subscriber
   p '>>> Retrieve newly created Subscriber'
-  getSub = FuelSDK::Subscriber.new()
+  getSub = MarketingCloudSDK::Subscriber.new()
   getSub.authStub = stubObj
   getSub.props = ["SubscriberKey", "EmailAddress", "Status"]
   getSub.filter = {'Property' => 'SubscriberKey', 'SimpleOperator' => 'equals', 'Value' => SubscriberTestEmail}
@@ -42,7 +42,7 @@ begin
 
   # Update Subscriber
   p '>>> Update Subscriber'
-  patchSub = FuelSDK::Subscriber.new
+  patchSub = MarketingCloudSDK::Subscriber.new
   patchSub.authStub = stubObj
   patchSub.props = {"EmailAddress" => SubscriberTestEmail, "Status" => "Unsubscribed"}
   patchResponse = patchSub.patch
@@ -56,7 +56,7 @@ begin
 
   # Retrieve Subscriber that should have status unsubscribed now
   p '>>> Retrieve Subscriber that should have status unsubscribed now'
-  getSub = FuelSDK::Subscriber.new()
+  getSub = MarketingCloudSDK::Subscriber.new()
   getSub.authStub = stubObj
   getSub.props = ["SubscriberKey", "EmailAddress", "Status"]
   getSub.filter = {'Property' => 'SubscriberKey','SimpleOperator' => 'equals','Value' => SubscriberTestEmail};
@@ -72,7 +72,7 @@ begin
 
   # Delete Subscriber
   p '>>> Delete Subscriber'
-  deleteSub = FuelSDK::Subscriber.new()
+  deleteSub = MarketingCloudSDK::Subscriber.new()
   deleteSub.authStub = stubObj
   deleteSub.props = {"EmailAddress" => SubscriberTestEmail}
   deleteResponse = deleteSub.delete
@@ -86,7 +86,7 @@ begin
 
   # Retrieve Subscriber to confirm deletion
   p '>>> Retrieve Subscriber to confirm deletion'
-  getSub = FuelSDK::Subscriber.new()
+  getSub = MarketingCloudSDK::Subscriber.new()
   getSub.authStub = stubObj
   getSub.props = ["SubscriberKey", "EmailAddress", "Status"]
   getSub.filter = {'Property' => 'SubscriberKey','SimpleOperator' => 'equals','Value' => SubscriberTestEmail};
@@ -105,7 +105,7 @@ begin
 
   # Retrieve All Subcribers with GetMoreResults
   p '>>> Retrieve All Subcribers with GetMoreResults'
-  getSub = FuelSDK::Subscriber.new()
+  getSub = MarketingCloudSDK::Subscriber.new()
   getSub.authStub = stubObj
   getSub.props = ["SubscriberKey", "EmailAddress", "Status"]
   getResponse = getSub.get
@@ -133,4 +133,3 @@ rescue => e
   p "Caught exception: #{e.message}"
   p e.backtrace
 end
-

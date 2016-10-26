@@ -1,12 +1,12 @@
-require 'fuelsdk'
+require 'marketingcloudsdk'
 require_relative 'sample_helper'
 
 begin
-	stubObj = FuelSDK::Client.new auth
+	stubObj = MarketingCloudSDK::Client.new auth
 
 	# Retrieve All Folder with GetMoreResults
 	p '>>> Retrieve All Folder with GetMoreResults'
-	getFolder = FuelSDK::Folder.new()
+	getFolder = MarketingCloudSDK::Folder.new()
 	getFolder.authStub = stubObj
 	getFolder.props = ["ID", "Client.ID", "ParentFolder.ID", "ParentFolder.CustomerKey", "ParentFolder.ObjectID", "ParentFolder.Name", "ParentFolder.Description", "ParentFolder.ContentType", "ParentFolder.IsActive", "ParentFolder.IsEditable", "ParentFolder.AllowChildren", "Name", "Description", "ContentType", "IsActive", "IsEditable", "AllowChildren", "CreatedDate", "ModifiedDate", "Client.ModifiedBy", "ObjectID", "CustomerKey", "Client.EnterpriseID", "Client.CreatedBy"]
 	getResponse = getFolder.get
@@ -33,7 +33,7 @@ begin
 
 	# Retrieve Specific Folder for Email Folder ParentID
 	p '>>> Retrieve Specific Folder for Email Folder ParentID'
-	getFolder = FuelSDK::Folder.new()
+	getFolder = MarketingCloudSDK::Folder.new()
 	getFolder.authStub = stubObj
 	getFolder.props = ["ID"]
 	getFolder.filter = {'LeftOperand' => {'Property' => 'ParentFolder.ID','SimpleOperator' => 'equals','Value' => '0'}, 'LogicalOperator' => 'AND', 'RightOperand' => {'Property' => 'ContentType','SimpleOperator' => 'equals','Value' => 'EMAIL'}}
@@ -52,7 +52,7 @@ begin
 
 		# Create Folder
 		p '>>> Create Folder'
-		postFolder = FuelSDK::Folder.new
+		postFolder = MarketingCloudSDK::Folder.new
 		postFolder.authStub = stubObj
 		postFolder.props = {"CustomerKey" => NameOfTestFolder, "Name" => NameOfTestFolder, "Description" => NameOfTestFolder, "ContentType"=> "EMAIL", "ParentFolder" => {"ID" => ParentIDForEmail}}
 		postResponse = postFolder.post
@@ -65,7 +65,7 @@ begin
 
 		# Retrieve newly created Folder
 		p '>>> Retrieve newly created Folder'
-		getFolder = FuelSDK::Folder.new()
+		getFolder = MarketingCloudSDK::Folder.new()
 		getFolder.authStub = stubObj
 		getFolder.props = ["ID", "Client.ID", "ParentFolder.ID", "ParentFolder.CustomerKey", "ParentFolder.ObjectID", "ParentFolder.Name", "ParentFolder.Description", "ParentFolder.ContentType", "ParentFolder.IsActive", "ParentFolder.IsEditable", "ParentFolder.AllowChildren", "Name", "Description", "ContentType", "IsActive", "IsEditable", "AllowChildren", "CreatedDate", "ModifiedDate", "Client.ModifiedBy", "ObjectID", "CustomerKey", "Client.EnterpriseID", "Client.CreatedBy"]
 		getFolder.filter = {'Property' => 'CustomerKey','SimpleOperator' => 'equals','Value' => NameOfTestFolder}
@@ -81,7 +81,7 @@ begin
 
 		# Update Folder
 		p '>>> Update Folder'
-		patchFolder = FuelSDK::Folder.new
+		patchFolder = MarketingCloudSDK::Folder.new
 		patchFolder.authStub = stubObj
 		patchFolder.props = {"CustomerKey" => NameOfTestFolder, "Description" => "New Description"}
 		patchResponse = patchFolder.patch
@@ -94,7 +94,7 @@ begin
 
 		# Retrieve updated Folder
 		p '>>> Retrieve updated Folder'
-		getFolder = FuelSDK::Folder.new()
+		getFolder = MarketingCloudSDK::Folder.new()
 		getFolder.authStub = stubObj
 		getFolder.props = ["ID", "Client.ID", "ParentFolder.ID", "ParentFolder.CustomerKey", "ParentFolder.ObjectID", "ParentFolder.Name", "ParentFolder.Description", "ParentFolder.ContentType", "ParentFolder.IsActive", "ParentFolder.IsEditable", "ParentFolder.AllowChildren", "Name", "Description", "ContentType", "IsActive", "IsEditable", "AllowChildren", "CreatedDate", "ModifiedDate", "Client.ModifiedBy", "ObjectID", "CustomerKey", "Client.EnterpriseID", "Client.CreatedBy"]
 		getFolder.filter = {'Property' => 'CustomerKey','SimpleOperator' => 'equals','Value' => NameOfTestFolder}
@@ -109,7 +109,7 @@ begin
 
 		# Delete Folder
 		p '>>> Delete Folder'
-		deleteFolder = FuelSDK::Folder.new
+		deleteFolder = MarketingCloudSDK::Folder.new
 		deleteFolder.authStub = stubObj
 		deleteFolder.props = {"CustomerKey" => NameOfTestFolder, "Name"=>NameOfTestFolder, "Content"=> "<b>Some HTML Content Goes here. NOW WITH NEW CONTENT</b>"}
 		deleteResponse = deleteFolder.delete
@@ -122,7 +122,7 @@ begin
 
 		# Retrieve Folder to confirm deletion
 		p '>>> Retrieve Folder to confirm deletion'
-		getFolder = FuelSDK::Folder.new()
+		getFolder = MarketingCloudSDK::Folder.new()
 		getFolder.authStub = stubObj
 		getFolder.props = ["ID"]
 		getFolder.filter = {'Property' => 'CustomerKey','SimpleOperator' => 'equals','Value' => NameOfTestFolder}

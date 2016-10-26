@@ -1,8 +1,8 @@
-require 'fuelsdk'
+require 'marketingcloudsdk'
 require_relative 'sample_helper'
 
 begin
-	stubObj = FuelSDK::Client.new auth
+	stubObj = MarketingCloudSDK::Client.new auth
 	
 	NewSendDefinitionName = "PHPSDKSendDefinition";
 	SendableDataExtensionCustomerKey = "F6F3871A-D124-499B-BBF5-3EFC0E827A51";
@@ -12,7 +12,7 @@ begin
 
 	# Retrieve All Email::SendDefinition with GetMoreResults
 	p '>>> Retrieve All Email.SendDefinition with GetMoreResults'
-	sendDef = FuelSDK::Email::SendDefinition.new()
+	sendDef = MarketingCloudSDK::Email::SendDefinition.new()
 	sendDef.authStub = stubObj
 	sendDef.props = ["Client.ID", "CreatedDate","ModifiedDate","ObjectID","CustomerKey","Name","CategoryID","Description","SendClassification.CustomerKey","SenderProfile.CustomerKey","SenderProfile.FromName","SenderProfile.FromAddress","DeliveryProfile.CustomerKey","DeliveryProfile.SourceAddressType","DeliveryProfile.PrivateIP","DeliveryProfile.DomainType","DeliveryProfile.PrivateDomain","DeliveryProfile.HeaderSalutationSource","DeliveryProfile.FooterSalutationSource","SuppressTracking","IsSendLogging","Email.ID","BccEmail","AutoBccEmail","TestEmailAddr","EmailSubject","DynamicEmailSubject","IsMultipart","IsWrapped","SendLimit","SendWindowOpen","SendWindowClose","DeduplicateByEmail","ExclusionFilter","Additional"]
 	getResponse = sendDef.get
@@ -37,12 +37,12 @@ begin
 	end
 
 	p '>>> Create New Email.SendDefinition to DataExtension'
-	postSendDefinition = FuelSDK::Email::SendDefinition.new()
+	postSendDefinition = MarketingCloudSDK::Email::SendDefinition.new()
 	postSendDefinition.authStub = stubObj	
 	postSendDefinition.props = {}
 	postSendDefinition.props["Name"] = NewSendDefinitionName
 	postSendDefinition.props["CustomerKey"] = NewSendDefinitionName
-	postSendDefinition.props["Description"]  = "Created with PHPSDK"
+	postSendDefinition.props["Description"]  = "Created with RubySDK"
 	postSendDefinition.props["SendClassification"] = {"CustomerKey"=>SendClassificationCustomerKey}
 	postSendDefinition.props["SendDefinitionList"] = {"CustomerKey"=> SendableDataExtensionCustomerKey, "DataSourceTypeID"=>"CustomObject"}
 	postSendDefinition.props["Email"] = {"ID"=>EmailIDForSendDefinition}
@@ -56,7 +56,7 @@ begin
 	#raise 'Failure Creating SendDefinition' unless postResponse.success?
 
 	p '>>> Delete SendDefinition to DataExtension'
-	deleteSendDefinition = FuelSDK::Email::SendDefinition.new()
+	deleteSendDefinition = MarketingCloudSDK::Email::SendDefinition.new()
 	deleteSendDefinition.authStub = stubObj	
 	deleteSendDefinition.props = {"CustomerKey"=> NewSendDefinitionName}
 	deleteResponse = deleteSendDefinition.delete
@@ -70,7 +70,7 @@ begin
 	
 	
 	p '>>> Create New Email.SendDefinition to List'
-	postSendDefinition = FuelSDK::Email::SendDefinition.new()
+	postSendDefinition = MarketingCloudSDK::Email::SendDefinition.new()
 	postSendDefinition.authStub = stubObj	
 	postSendDefinition.props = {"Name"=>NewSendDefinitionName}
 	postSendDefinition.props["CustomerKey"] = NewSendDefinitionName
@@ -88,7 +88,7 @@ begin
 	raise 'Failure Creating SendDefinition' unless postResponse.success?
 	
 	p '>>> Send SendDefinition to List'
-	sendSendDefinition = FuelSDK::Email::SendDefinition.new()
+	sendSendDefinition = MarketingCloudSDK::Email::SendDefinition.new()
 	sendSendDefinition.authStub = stubObj	
 	sendSendDefinition.props = {"CustomerKey"=> NewSendDefinitionName}
 	sendResponse = sendSendDefinition.send
@@ -115,7 +115,7 @@ begin
 	end
 	
 	p '>>> Delete SendDefinition to List'
-	deleteSendDefinition = FuelSDK::Email::SendDefinition.new()
+	deleteSendDefinition = MarketingCloudSDK::Email::SendDefinition.new()
 	deleteSendDefinition.authStub = stubObj	
 	deleteSendDefinition.props = {"CustomerKey"=> NewSendDefinitionName}
 	deleteResponse = deleteSendDefinition.delete
