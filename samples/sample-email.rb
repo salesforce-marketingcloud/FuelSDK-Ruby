@@ -1,12 +1,12 @@
-require 'fuelsdk'
+require 'marketingcloudsdk'
 require_relative 'sample_helper'
 
 begin
-	stubObj = FuelSDK::Client.new auth
+	stubObj = MarketingCloudSDK::Client.new auth
 
 	# Retrieve All Email with GetMoreResults
 	p '>>> Retrieve All Email with GetMoreResults'
-	getHTMLBody = FuelSDK::Email.new()
+	getHTMLBody = MarketingCloudSDK::Email.new()
 	getHTMLBody.authStub = stubObj
 	getHTMLBody.props = ["ID","PartnerKey","CreatedDate","ModifiedDate","Client.ID","Name","Folder","CategoryID","HTMLBody","TextBody","Subject","IsActive","IsHTMLPaste","ClonedFromID","Status","EmailType","CharacterSet","HasDynamicSubjectLine","ContentCheckStatus","Client.PartnerClientKey","ContentAreas","CustomerKey"]
 	getResponse = getHTMLBody.get
@@ -33,7 +33,7 @@ begin
 
 	# Create Email
 	p '>>> Create Email'
-	postHTMLBody = FuelSDK::Email.new
+	postHTMLBody = MarketingCloudSDK::Email.new
 	postHTMLBody.authStub = stubObj
 	postHTMLBody.props = {"CustomerKey" => NameOfTestEmail, "Name"=>NameOfTestEmail, "Subject" => "Created Using the RubySDK", "HTMLBody"=> "<b>Some HTML Goes here</b>"}
 	postResponse = postHTMLBody.post
@@ -46,7 +46,7 @@ begin
 
 	# Retrieve newly created Email
 	p '>>> Retrieve newly created Email'
-	getHTMLBody = FuelSDK::Email.new()
+	getHTMLBody = MarketingCloudSDK::Email.new()
 	getHTMLBody.authStub = stubObj
 	getHTMLBody.props = ["ID","PartnerKey","CreatedDate","ModifiedDate","Client.ID","Name","Folder","CategoryID","HTMLBody","TextBody","Subject","IsActive","IsHTMLPaste","ClonedFromID","Status","EmailType","CharacterSet","HasDynamicSubjectLine","ContentCheckStatus","Client.PartnerClientKey","ContentAreas","CustomerKey"]
 	getHTMLBody.filter = {'Property' => 'CustomerKey','SimpleOperator' => 'equals','Value' => NameOfTestEmail}
@@ -61,7 +61,7 @@ begin
 
 	# Update Email
 	p '>>> Update Email'
-	patchHTMLBody = FuelSDK::Email.new
+	patchHTMLBody = MarketingCloudSDK::Email.new
 	patchHTMLBody.authStub = stubObj
 	patchHTMLBody.props = {"CustomerKey" => NameOfTestEmail, "Name"=>NameOfTestEmail,  "HTMLBody"=> "<b>Some HTML HTMLBody Goes here. NOW WITH NEW HTMLBody</b>"}
 	patchResponse = patchHTMLBody.patch
@@ -74,7 +74,7 @@ begin
 
 	# Retrieve updated Email
 	p '>>> Retrieve updated Email'
-	getHTMLBody = FuelSDK::Email.new()
+	getHTMLBody = MarketingCloudSDK::Email.new()
 	getHTMLBody.authStub = stubObj
 	getHTMLBody.props = ["ID","PartnerKey","CreatedDate","ModifiedDate","Client.ID","Name","Folder","CategoryID","HTMLBody","TextBody","Subject","IsActive","IsHTMLPaste","ClonedFromID","Status","EmailType","CharacterSet","HasDynamicSubjectLine","ContentCheckStatus","Client.PartnerClientKey","ContentAreas","CustomerKey"]
 	getHTMLBody.filter = {'Property' => 'CustomerKey','SimpleOperator' => 'equals','Value' => NameOfTestEmail}
@@ -89,7 +89,7 @@ begin
 
 	# Delete Email
 	p '>>> Delete Email'
-	deleteHTMLBody = FuelSDK::Email.new
+	deleteHTMLBody = MarketingCloudSDK::Email.new
 	deleteHTMLBody.authStub = stubObj
 	deleteHTMLBody.props = {"CustomerKey" => NameOfTestEmail, "Name"=>NameOfTestEmail, "HTMLBody"=> "<b>Some HTML HTMLBody Goes here. NOW WITH NEW HTMLBody</b>"}
 	deleteResponse = deleteHTMLBody.delete
@@ -102,7 +102,7 @@ begin
 
 	# Retrieve Email to confirm deletion
 	p '>>> Retrieve Email to confirm deletion'
-	getHTMLBody = FuelSDK::Email.new()
+	getHTMLBody = MarketingCloudSDK::Email.new()
 	getHTMLBody.authStub = stubObj
 	getHTMLBody.props = ["ID","PartnerKey","CreatedDate","ModifiedDate","Client.ID","Name","Folder","CategoryID","HTMLBody","TextBody","Subject","IsActive","IsHTMLPaste","ClonedFromID","Status","EmailType","CharacterSet","HasDynamicSubjectLine","ContentCheckStatus","Client.PartnerClientKey","ContentAreas","CustomerKey"]
 	getHTMLBody.filter = {'Property' => 'CustomerKey','SimpleOperator' => 'equals','Value' => NameOfTestEmail}

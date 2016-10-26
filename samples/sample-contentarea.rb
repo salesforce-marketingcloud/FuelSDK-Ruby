@@ -1,12 +1,12 @@
-require 'fuelsdk'
+require 'marketingcloudsdk'
 require_relative 'sample_helper'
 
 begin
-	stubObj = FuelSDK::Client.new auth
+	stubObj = MarketingCloudSDK::Client.new auth
 
 	# Retrieve All ContentArea with GetMoreResults
 	p '>>> Retrieve All ContentArea with GetMoreResults'
-	getContent = FuelSDK::ContentArea.new()
+	getContent = MarketingCloudSDK::ContentArea.new()
 	getContent.authStub = stubObj
 	getContent.props = ["RowObjectID","ObjectID","ID","CustomerKey","Client.ID","ModifiedDate","CreatedDate","CategoryID","Name","Layout","IsDynamicContent","Content","IsSurvey","IsBlank","Key"]
 	getResponse = getContent.get
@@ -33,7 +33,7 @@ begin
 
 	# Create ContentArea
 	p '>>> Create ContentArea'
-	postContent = FuelSDK::ContentArea.new
+	postContent = MarketingCloudSDK::ContentArea.new
 	postContent.authStub = stubObj
 	postContent.props = {"CustomerKey" => NameOfTestContentArea, "Name"=>NameOfTestContentArea, "Content"=> "<b>Some HTML Content Goes here</b>"}
 	postResponse = postContent.post
@@ -46,7 +46,7 @@ begin
 
 	# Retrieve newly created ContentArea
 	p '>>> Retrieve newly created ContentArea'
-	getContent = FuelSDK::ContentArea.new()
+	getContent = MarketingCloudSDK::ContentArea.new()
 	getContent.authStub = stubObj
 	getContent.props = ["RowObjectID","ObjectID","ID","CustomerKey","Client.ID","ModifiedDate","CreatedDate","CategoryID","Name","Layout","IsDynamicContent","Content","IsSurvey","IsBlank","Key"]
 	getContent.filter = {'Property' => 'CustomerKey','SimpleOperator' => 'equals','Value' => NameOfTestContentArea}
@@ -61,7 +61,7 @@ begin
 
 	# Update ContentArea
 	p '>>> Update ContentArea'
-	patchContent = FuelSDK::ContentArea.new
+	patchContent = MarketingCloudSDK::ContentArea.new
 	patchContent.authStub = stubObj
 	patchContent.props = {"CustomerKey" => NameOfTestContentArea, "Name"=>NameOfTestContentArea, "Content"=> "<b>Some HTML Content Goes here. NOW WITH NEW CONTENT</b>"}
 	patchResponse = patchContent.patch
@@ -74,7 +74,7 @@ begin
 
 	# Retrieve updated ContentArea
 	p '>>> Retrieve updated ContentArea'
-	getContent = FuelSDK::ContentArea.new()
+	getContent = MarketingCloudSDK::ContentArea.new()
 	getContent.authStub = stubObj
 	getContent.props = ["RowObjectID","ObjectID","ID","CustomerKey","Client.ID","ModifiedDate","CreatedDate","CategoryID","Name","Layout","IsDynamicContent","Content","IsSurvey","IsBlank","Key"]
 	getContent.filter = {'Property' => 'CustomerKey','SimpleOperator' => 'equals','Value' => NameOfTestContentArea}
@@ -89,7 +89,7 @@ begin
 
 	# Delete ContentArea
 	p '>>> Delete ContentArea'
-	deleteContent = FuelSDK::ContentArea.new
+	deleteContent = MarketingCloudSDK::ContentArea.new
 	deleteContent.authStub = stubObj
 	deleteContent.props = {"CustomerKey" => NameOfTestContentArea, "Name"=>NameOfTestContentArea, "Content"=> "<b>Some HTML Content Goes here. NOW WITH NEW CONTENT</b>"}
 	deleteResponse = deleteContent.delete
@@ -102,7 +102,7 @@ begin
 
 	# Retrieve ContentArea to confirm deletion
 	p '>>> Retrieve ContentArea to confirm deletion'
-	getContent = FuelSDK::ContentArea.new()
+	getContent = MarketingCloudSDK::ContentArea.new()
 	getContent.authStub = stubObj
 	getContent.props = ["RowObjectID","ObjectID","ID","CustomerKey","Client.ID","ModifiedDate","CreatedDate","CategoryID","Name","Layout","IsDynamicContent","Content","IsSurvey","IsBlank","Key"]
 	getContent.filter = {'Property' => 'CustomerKey','SimpleOperator' => 'equals','Value' => NameOfTestContentArea}

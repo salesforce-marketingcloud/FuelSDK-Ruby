@@ -1,4 +1,4 @@
-require 'fuelsdk'
+require 'marketingcloudsdk'
 require_relative 'sample_helper' # contains auth with credentials
 
 begin
@@ -23,31 +23,30 @@ begin
   p "Results: #{postResponse.results.inspect}"
   raise 'Failure Creating List' unless postResponse.success?
   
-  	if postResponse.success? then		
-		newListID = postResponse.results[0][:new_id]
-		p "New ID: #{newListID}"
-		
-		props = {"ID" => newListID, "Description" => "Update!!!"}
-		client = ET_Client.new auth 
-		patchResponse = ET_Patch.new client, 'List', props
-		p "Patch Status: #{patchResponse.status.to_s}"
-		p "Code: #{patchResponse.code.to_s}"
-		p "Message: #{patchResponse.message.to_s}"
-		p "Result Count: #{patchResponse.results.length.to_s}"  
-		p "Results: #{patchResponse.results.inspect}"
-		raise 'Failure Patching List' unless patchResponse.success?
-		
-		
-		props = {"ID" => newListID}
-		client = ET_Client.new auth 
-		deleteResponse = ET_Delete.new client, 'List', props
-		p "Delete Status: #{deleteResponse.status.to_s}"
-		p "Code: #{deleteResponse.code.to_s}"
-		p "Message: #{deleteResponse.message.to_s}"
-		p "Result Count: #{deleteResponse.results.length.to_s}"  
-		p "Results: #{deleteResponse.results.inspect}"
-		raise 'Failure Deleting List' unless deleteResponse.success?
-	end 
+  if postResponse.success? then
+    newListID = postResponse.results[0][:new_id]
+    p "New ID: #{newListID}"
+    
+    props = {"ID" => newListID, "Description" => "Update!!!"}
+    client = ET_Client.new auth
+    patchResponse = ET_Patch.new client, 'List', props
+    p "Patch Status: #{patchResponse.status.to_s}"
+    p "Code: #{patchResponse.code.to_s}"
+    p "Message: #{patchResponse.message.to_s}"
+    p "Result Count: #{patchResponse.results.length.to_s}"
+    p "Results: #{patchResponse.results.inspect}"
+    raise 'Failure Patching List' unless patchResponse.success?
+    
+    props = {"ID" => newListID}
+    client = ET_Client.new auth
+    deleteResponse = ET_Delete.new client, 'List', props
+    p "Delete Status: #{deleteResponse.status.to_s}"
+    p "Code: #{deleteResponse.code.to_s}"
+    p "Message: #{deleteResponse.message.to_s}"
+    p "Result Count: #{deleteResponse.results.length.to_s}"
+    p "Results: #{deleteResponse.results.inspect}"
+    raise 'Failure Deleting List' unless deleteResponse.success?
+  end
 
 rescue => e
   p "Caught exception: #{e.message}"

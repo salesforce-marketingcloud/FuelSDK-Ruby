@@ -1,15 +1,15 @@
-require 'fuelsdk'
+require 'marketingcloudsdk'
 require_relative 'sample_helper'
 
 begin
-	stubObj = FuelSDK::Client.new auth
+	stubObj = MarketingCloudSDK::Client.new auth
 
 	## Modify the date below to reduce the number of results returned from the request
 	## Setting this too far in the past could result in a very large response size
 	retrieveDate = '2013-01-15T13:00:00.000'
 
 	p '>>> Retrieve Filtered UnsubEvents with GetMoreResults'
-	getUnsubEvent = FuelSDK::UnsubEvent.new()
+	getUnsubEvent = MarketingCloudSDK::UnsubEvent.new()
 	getUnsubEvent.authStub = stubObj
 	getUnsubEvent.props = ["SendID","SubscriberKey","EventDate",
   "Client.ID","EventType","BatchID","TriggeredSendDefinitionObjectID","PartnerKey"]
@@ -40,7 +40,7 @@ begin
 	#  The following request could potentially bring back large amounts of data if run against a production account
 =begin
 	p '>>> Retrieve All UnsubEvents with GetMoreResults'
-	getUnsubEvent = FuelSDK::UnsubEvent.new()
+	getUnsubEvent = MarketingCloudSDK::UnsubEvent.new()
 	getUnsubEvent.authStub = stubObj
 	getUnsubEvent.props = ["SendID","SubscriberKey","EventDate","Client.ID","EventType","BatchID","TriggeredSendDefinitionObjectID","PartnerKey"]
 	getResponse = getUnsubEvent.get
