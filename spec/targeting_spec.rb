@@ -6,7 +6,9 @@ describe MarketingCloudSDK::Targeting do
 
   it { should respond_to(:endpoint) }
   it { should_not respond_to(:endpoint=) }
-  it { should respond_to(:determine_stack) }
+  it 'should respond to determine_stack' do
+    expect(subject.respond_to?(:determine_stack, true)).to be_true
+  end
   it { should respond_to(:get) }
   it { should respond_to(:post) }
   it { should respond_to(:patch) }
