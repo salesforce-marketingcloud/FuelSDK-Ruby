@@ -190,8 +190,10 @@ module MarketingCloudSDK
 
           self.determineStack
 
-          @authObj = {'oAuth' => {'oAuthToken' => @internalAuthToken}}
-          @authObj[:attributes!] = { 'oAuth' => { 'xmlns' => 'http://exacttarget.com' }}
+          @authObj = {'oAuth' => {
+            :@xmlns => 'http://exacttarget.com',
+            'oAuthToken' => @internalAuthToken
+          }}
 
           myWSDL = File.read(@path + '/ExactTargetWSDL.xml')
           @auth = Savon.client(
@@ -257,8 +259,10 @@ module MarketingCloudSDK
             self.determineStack
           end
 
-          @authObj = {'oAuth' => {'oAuthToken' => @internalAuthToken}}
-          @authObj[:attributes!] = { 'oAuth' => { 'xmlns' => 'http://exacttarget.com' }}
+          @authObj = {'oAuth' => {
+            :@xmlns => 'http://exacttarget.com',
+            'oAuthToken' => @internalAuthToken
+          }}
 
           myWSDL = File.read(@path + '/ExactTargetWSDL.xml')
           @auth = Savon.client(
@@ -362,24 +366,20 @@ module MarketingCloudSDK
   end
 
   class ET_Post < ET_Constructor
-    def initialize(authStub, objType, props = nil)
+    def initialize(authStub, objType, props = {})
       @results = []
 
       begin
         authStub.refreshToken
         if props.is_a? Array then
-          obj = {
-            'Objects' => [],
-            :attributes! => { 'Objects' => { 'xsi:type' => ('tns:' + objType) } }
-          }
+          obj = { 'Objects' => [] }
           props.each{ |p|
+            p[':@xsi:type'] = 'tns:' + objType
             obj['Objects'] << p
           }
         else
-          obj = {
-            'Objects' => props,
-            :attributes! => { 'Objects' => { 'xsi:type' => ('tns:' + objType) } }
-          }
+          obj = { 'Objects' => props }
+          obj['Objects']['@xsi:type'] = 'tns:' + objType
         end
 
         response = authStub.auth.call(:create, :message => obj)
@@ -410,18 +410,14 @@ module MarketingCloudSDK
       begin
         authStub.refreshToken
         if props.is_a? Array then
-          obj = {
-            'Objects' => [],
-            :attributes! => { 'Objects' => { 'xsi:type' => ('tns:' + objType) } }
-          }
+          obj = { 'Objects' => [] }
           props.each{ |p|
+            p[':@xsi:type'] = 'tns:' + objType
             obj['Objects'] << p
           }
         else
-          obj = {
-            'Objects' => props,
-            :attributes! => { 'Objects' => { 'xsi:type' => ('tns:' + objType) } }
-          }
+          obj = { 'Objects' => props }
+          obj['Objects']['@xsi:type'] = 'tns:' + objType
         end
 
         response = authStub.auth.call(:delete, :message => obj)
@@ -447,18 +443,14 @@ module MarketingCloudSDK
       begin
         authStub.refreshToken
         if props.is_a? Array then
-          obj = {
-            'Objects' => [],
-            :attributes! => { 'Objects' => { 'xsi:type' => ('tns:' + objType) } }
-          }
+          obj = { 'Objects' => [] }
           props.each{ |p|
+            p[':@xsi:type'] = 'tns:' + objType
             obj['Objects'] << p
            }
         else
-          obj = {
-            'Objects' => props,
-            :attributes! => { 'Objects' => { 'xsi:type' => ('tns:' + objType) } }
-          }
+          obj = { 'Objects' => props }
+          obj['Objects']['@xsi:type'] = 'tns:' + objType
         end
 
         response = authStub.auth.call(:update, :message => obj)
@@ -537,11 +529,12 @@ module MarketingCloudSDK
       if filter then
         if filter.has_key?('LogicalOperator') then
           obj['Filter'] = filter
-          obj[:attributes!] = { 'Filter' => { 'xsi:type' => 'tns:ComplexFilterPart' }}
-          obj['Filter'][:attributes!] = { 'LeftOperand' => { 'xsi:type' => 'tns:SimpleFilterPart' }, 'RightOperand' => { 'xsi:type' => 'tns:SimpleFilterPart' }}
+          obj['Filter'][:'@xsi:type'] = 'tns:ComplexFilterPart'
+          obj['Filter']['LeftOperand'][:'@xsi:type'] = 'tns:SimpleFilterPart'
+          obj['Filter']['RightOperand'][:'@xsi:type'] = 'tns:SimpleFilterPart'
         else
           obj['Filter'] = filter
-          obj[:attributes!] = { 'Filter' => { 'xsi:type' => 'tns:SimpleFilterPart' } }
+          obj['Filter'][:'@xsi:type'] = 'tns:SimpleFilterPart'
         end
       end
 
