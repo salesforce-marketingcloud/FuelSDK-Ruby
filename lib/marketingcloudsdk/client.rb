@@ -76,8 +76,11 @@ module MarketingCloudSDK
 	end
 
 	class Client
+	TIMEOUT = 180
+
 	attr_accessor :debug, :access_token, :auth_token, :internal_token, :refresh_token,
-		:id, :secret, :signature, :package_name, :package_folders, :parent_folders, :auth_token_expiration, :request_token_url
+		:id, :secret, :signature, :package_name, :package_folders, :parent_folders,
+		:auth_token_expiration, :request_token_url, :open_timeout, :read_timeout
 
 	include MarketingCloudSDK::Soap
 	include MarketingCloudSDK::Rest
@@ -96,11 +99,15 @@ module MarketingCloudSDK
 		def initialize(params={}, debug=false)
 			@refresh_mutex = Mutex.new
 			self.debug = debug
+			self.open_timeout = TIMEOUT
+			self.read_timeout = TIMEOUT
 			client_config = params['client']
 			if client_config
         self.id = client_config["id"]
         self.secret = client_config["secret"]
         self.signature = client_config["signature"]
+        self.open_timeout = client_config["open_timeout"]
+        self.read_timeout = client_config["read_timeout"]
 			end
 
       self.request_token_url = params['request_token_url'] ? params['request_token_url'] : 'https://auth.exacttargetapis.com/v1/requestToken'

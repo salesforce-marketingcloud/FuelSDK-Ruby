@@ -185,13 +185,13 @@ describe MarketingCloudSDK::DataExtension do
           {
             'Name' => 'Some DE',
             'Fields' => {
-              'Field' => {'Name' => 'A field'}
+              'Field' => [{'Name' => 'A field'}]
             }
           }
         ])
     end
 
-    it 'DataExtension fields can be apart of the DataExtention properties' do
+    it 'DataExtension fields can be a part of the DataExtention properties' do
       subject.properties = {'Name' => 'Some DE', 'Fields' => {'Field' => [{'Name' => 'A field'}]}}
       expect(subject.post).to eq(
         [
@@ -375,7 +375,7 @@ describe MarketingCloudSDK::DataExtension::Row do
     end
 
     it 'updates missing' do
-      rsp = mock(MarketingCloudSDK::SoapResponse)
+      rsp = double(MarketingCloudSDK::SoapResponse)
       rsp.stub(:results).and_return([{:name => 'Products', :customer_key => 'ProductsKey'}])
       rsp.stub(:success?).and_return true
 
@@ -444,7 +444,7 @@ describe MarketingCloudSDK::DataExtension::Row do
     it 'uses name to get customer key for inseration' do
       subject.name = 'Subscribers'
 
-      rsp = mock(MarketingCloudSDK::SoapResponse)
+      rsp = double(MarketingCloudSDK::SoapResponse)
       rsp.stub(:results).and_return([{:name => 'Products', :customer_key => 'ProductsKey'}])
       rsp.stub(:success?).and_return true
 

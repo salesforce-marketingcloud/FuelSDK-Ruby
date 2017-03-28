@@ -36,7 +36,7 @@ USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 require 'savon'
 module MarketingCloudSDK
-	
+
 	class SoapResponse < MarketingCloudSDK::Response
 
 		def continue
@@ -143,8 +143,8 @@ module MarketingCloudSDK
 				wsse_auth: ["*", "*"],
 				raise_errors: false,
 				log: debug,
-				open_timeout:180,
-				read_timeout: 180
+				open_timeout: open_timeout,
+				read_timeout: read_timeout
 			)
 		end
 
