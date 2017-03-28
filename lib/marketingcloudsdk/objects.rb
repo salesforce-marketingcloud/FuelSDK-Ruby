@@ -610,11 +610,11 @@ module MarketingCloudSDK
 					de['Fields'] = {'Field' => de['columns'] || de['fields'] || fields}
 					# sanitize
 
-					raise 'DataExtension needs atleast one field.' unless de['Fields']['Field']
+					raise 'DataExtension needs at least one field.' unless de['Fields']['Field']
 				end
 			else
 				self.properties['Fields'] = {'Field' => self.properties['columns'] || self.properties['fields'] || fields}
-				raise 'DataExtension needs atleast one field.' unless self.properties['Fields']['Field']
+				raise 'DataExtension needs at least one field.' unless self.properties['Fields']['Field']
 				self.properties.delete 'columns'
 				self.properties.delete 'fields'
 			end
