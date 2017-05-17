@@ -84,7 +84,7 @@ module MarketingCloudSDK
 
 		def jwt= encoded_jwt
 			raise 'Require app signature to decode JWT' unless self.signature
-			decoded_jwt = JWT.decode(encoded_jwt, self.signature, true)
+			decoded_jwt = JWT.decode(encoded_jwt, self.signature, true)[0]
 
 			self.auth_token = decoded_jwt['request']['user']['oauthToken']
 			self.internal_token = decoded_jwt['request']['user']['internalOauthToken']
