@@ -84,13 +84,19 @@ module MarketingCloudSDK
 
 		def jwt= encoded_jwt
 			raise 'Require app signature to decode JWT' unless self.signature
-			decoded_jwt = JWT.decode(encoded_jwt, self.signature, true)
+			decoded_jwt = JWT.decode(encoded_jwt, self.signature, true)[0]
 
-			self.auth_token = decoded_jwt['request']['user']['oauthToken']
-			self.internal_token = decoded_jwt['request']['user']['internalOauthToken']
-			self.refresh_token = decoded_jwt['request']['user']['refreshToken']
-			self.auth_token_expiration = Time.new + decoded_jwt['request']['user']['expiresIn']
-			self.package_name = decoded_jwt['request']['application']['package']
+			if decoded_jwt['request']['claimsVersion'] == 2
+				self.refresh_token = decoded_jwt['request']['rest']['refreshToken']
+				self.auth_token_expiration = Time.at(decoded_jwt['exp'])
+				self.package_name = decoded_jwt['request']['application']['package']
+			else
+				self.auth_token = decoded_jwt['request']['user']['oauthToken']
+				self.internal_token = decoded_jwt['request']['user']['internalOauthToken']
+				self.refresh_token = decoded_jwt['request']['user']['refreshToken']
+				self.auth_token_expiration = Time.new + decoded_jwt['request']['user']['expiresIn']
+				self.package_name = decoded_jwt['request']['application']['package']
+			end
 		end
 
 		def initialize(params={}, debug=false)
