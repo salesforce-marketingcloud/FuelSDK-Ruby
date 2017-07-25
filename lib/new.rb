@@ -132,10 +132,10 @@ module MarketingCloudSDK
         header = response.headers
         # Check when the WSDL was last modified
         modifiedTime = Date.parse(header['last-modified'])
-        p = path + '/ExactTargetWSDL.xml'
+        filename = path + '/ExactTargetWSDL.xml'
         # Check if a local file already exists
-        if (File.file?(p) and File.readable?(p) and !File.zero?(p)) then
-          createdTime = File.new(p).mtime.to_date
+        if (File.file?(filename) and File.readable?(filename) and !File.zero?(filename)) then
+          createdTime = File.new(filename).mtime.to_date
 
           # Check if the locally created WSDL older than the production WSDL
           if createdTime < modifiedTime then
@@ -149,7 +149,7 @@ module MarketingCloudSDK
 
         if createIt then
           res = open(@wsdl).read
-          File.open(p, 'w+') { |f|
+          File.open(filename, 'w+') { |f|
             f.write(res)
           }
         end
