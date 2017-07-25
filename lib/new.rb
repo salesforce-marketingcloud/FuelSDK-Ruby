@@ -137,7 +137,7 @@ module MarketingCloudSDK
         if (File.file?(p) and File.readable?(p) and !File.zero?(p)) then
           createdTime = File.new(p).mtime.to_date
 
-          # Check if the locally created WSDL older than the production WSDL
+          # Check if the locally created WSDL is older than the production WSDL
           if createdTime < modifiedTime then
             createIt = true
           else
