@@ -114,7 +114,10 @@ module MarketingCloudSDK
 	end
 
 	module Soap
-		attr_accessor :wsdl, :debug#, :internal_token
+		attr_accessor :debug#, :internal_token
+		attr_writer :wsdl
+
+		DEFAULT_WSDL = 'https://webservice.exacttarget.com/etframework.wsdl'.freeze
 
 		include MarketingCloudSDK::Targeting
 
@@ -131,7 +134,7 @@ module MarketingCloudSDK
 		end
 
 		def wsdl
-			@wsdl ||= 'https://webservice.exacttarget.com/etframework.wsdl'
+			@wsdl || DEFAULT_WSDL
 		end
 
 		def soap_client
