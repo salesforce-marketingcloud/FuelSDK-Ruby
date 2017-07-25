@@ -207,9 +207,6 @@ module MarketingCloudSDK
         else
           self.refreshToken
         end
-
-      rescue
-        raise
       end
 
       if ((@auth.operations.length > 0) and (@status >= 200 and @status <= 400)) then
