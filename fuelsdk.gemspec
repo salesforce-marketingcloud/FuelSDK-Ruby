@@ -26,5 +26,5 @@ Gem::Specification.new do |spec|
 
   spec.add_dependency "savon", "2.2.0"
   spec.add_dependency "json", "~> 1.8.1"
-  spec.add_dependency "jwt", "~> 0.1.6"
+  spec.add_dependency "jwt", "< 2"
 end
