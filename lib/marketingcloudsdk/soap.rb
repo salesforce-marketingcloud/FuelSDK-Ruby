@@ -42,7 +42,7 @@ module MarketingCloudSDK
 		def continue
 			rsp = nil
 			if more?
-				rsp = unpack @client.soap_client.call(:retrieve, :message => {'ContinueRequest' => request_id})
+				rsp = unpack @client.soap_client.call(:retrieve, :message => {'RetrieveRequest' => {'ContinueRequest' => request_id}})
 			else
 				puts 'No more data'
 			end
