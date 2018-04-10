@@ -1,32 +1,32 @@
 FuelSDK-Ruby / MarketingCloudSDK-Ruby
 =====================================
 
-ExactTarget Fuel SDK / SalesforceMarektingCloudSDK for Ruby
+ExactTarget Fuel SDK / SalesforceMarketingCloudSDK for Ruby
 
 ## Overview ##
 The Fuel SDK for Ruby provides easy access to ExactTarget's Fuel API Family services, including a collection of REST APIs and a SOAP API. These APIs provide access to ExactTarget functionality via common collection types such as array/hash.
 
-## Migrationg to version to version 1.0 ##
-- **FuelSDK gem has been renamed to MarketingCloudSDK and will be availbale as marketingcloudsdk on ruby gems.
-  
+## Migrating to version to version 1.0 ##
+- **FuelSDK gem has been renamed to MarketingCloudSDK and will be available as marketingcloudsdk on ruby gems.
+
 ## New Features in Version .9 ##
 - **Streamlined Folder Support**: All objects that support folders within the UI now have a standardized property called folderId.
 - **Interaction Support**: Now supports Import and Email::SendDefinition objects .
 - **Profile Attribute Support**: Added the ability to manage profile attributes through the ProfileAttribute object.
 - **Support for single request to Add/Update**:A single request can be made which will create the object if one doesn't already or update one if it does.  This works for Subscriber, DataExtension::Row, and List objects using the Put method.
 - **Tracking Events Batching Support**: By default, all tracking event types will only pull new data since the last time a request was made using the same filter.  If you would like to override this functionality to pull all data, simply set the GetSinceLastBatch property to false.
-- **Automatic Asset Organization for Hub Apps**: Applications that authenticate by providing a JWT will automatically have all created assets placed into a folder based on the HubExchange app's name. 
+- **Automatic Asset Organization for Hub Apps**: Applications that authenticate by providing a JWT will automatically have all created assets placed into a folder based on the HubExchange app's name.
 - **Greater Flexibility for Authentication**:Yaml config file is no longer required in order to define the authentication parameters.  They are now required inputs when instantiating the Client class so they can be stored anywhere.
- 
+
 ## Migrating from old version ##
-- MarkeitngCloudSDK is now gem, Going forward FuelSDK gem will be available as marketingcloudsdk on ruby gems.
+- MarketingCloudSDK is now gem, Going forward FuelSDK gem will be available as marketingcloudsdk on ruby gems.
 - Config.yaml is no longer used.  ClientID/ClientSecret will now need to be passed when instantiating the Client class.
 - Previous versions of the SalesforceMarketingCloudSDK  exposed objects with the prefix "ET_". For backwards compatibility you can still access objects this way.
-Subscriber can be accessed using MarketingCloudSDK::Subscriber or ET_Subscriber.  
+Subscriber can be accessed using MarketingCloudSDK::Subscriber or ET_Subscriber.
 
 ## Requirements ##
 - Ruby Version 2.2.5
-- Savon 2.2.0 
+- Savon 2.2.0
 
 ## Getting Started ##
 Build the gem from the source
@@ -100,14 +100,14 @@ Client class accepts multiple parameters
 
 **Parameters** - Allows for passing authentication information for use with SSO with a JWT or for passing ClientID/ClientSecret:
 
-Example passing ClientID/ClientSecret: 
+Example passing ClientID/ClientSecret:
 > myclient = MarketingCloudSDK::Client.new({'client' => {'id' => 'exampleID','secret' => 'exampleSecret'}})
 
-Example passing ClientID/ClientSecret/AppSignature/JWT: 
+Example passing ClientID/ClientSecret/AppSignature/JWT:
 > myclient = MarketingCloudSDK::Client.new({'client' => {'id' => 'exampleID','secret' => 'exampleSecret', 'signature'=>'examplesig'}, 'jwt'=>'exampleJWT'})
 
 **Debug** - If 2nd parameter for debug is set to true, all API requests that the Fuel SDK is making behind the scenes will be logged.  This option should only be set to true in order to troubleshoot during the development process and should never be used in a production scenario.
-> myclient = MarketingCloudSDK::Client.new auth, true <br> 
+> myclient = MarketingCloudSDK::Client.new auth, true <br>
 
 
 ## Responses ##
@@ -122,9 +122,3 @@ All methods on MarketingCloud SDK objects return a generic object that follows t
 
 ## Samples ##
 Find more sample files that illustrate using all of the available functions for ExactTarget objects exposed through the API in the samples directory.
-
-
-
-
-
-
