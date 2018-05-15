@@ -27,8 +27,9 @@ module FuelSDK
       def unpack raw
         @code = raw.http.code
         unpack_body raw
-        @success = @message == 'OK'
+        @success = raw.hash[:envelope][:body][:create_response][:results][:status_message] == "Created TriggeredSend"
         @results += (unpack_rslts raw)
+        binding.pry
       end
 
       def unpack_msg raw
@@ -119,10 +120,10 @@ module FuelSDK
             'ObjectType' => object_type
           }
         }
-      } 
+      }
       soap_request :describe, message
     end
-  
+
     def soap_perform object_type, action, properties
       message = {}
       message['Action'] = action
@@ -131,8 +132,8 @@ module FuelSDK
 
       soap_request :perform, message
     end
-    
-    
+
+
     def soap_configure  object_type, action, properties
      message = {}
      message['Action'] = action
@@ -144,7 +145,7 @@ module FuelSDK
      end
 
      message['Configurations'][:attributes!] = { 'Configuration' => { 'xsi:type' => ('tns:' + object_type) }}
-     
+
      soap_request :configure, message
     end
 
@@ -196,15 +197,15 @@ module FuelSDK
     private
 
       def soap_cud action, object_type, properties
-		
+
 =begin
         # get a list of attributes so we can seperate
         # them from standard object properties
-        type_attrs = soap_describe(object_type).editable	
+        type_attrs = soap_describe(object_type).editable
 
 =end
         properties = [properties] unless properties.kind_of? Array
-=begin		
+=begin
         properties.each do |p|
           formated_attrs = []
           p.each do |k, v|
