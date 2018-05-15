@@ -29,7 +29,6 @@ module FuelSDK
         unpack_body raw
         @success = raw.hash[:envelope][:body][:create_response][:results][:status_message] == "Created TriggeredSend"
         @results += (unpack_rslts raw)
-        binding.pry
       end
 
       def unpack_msg raw
