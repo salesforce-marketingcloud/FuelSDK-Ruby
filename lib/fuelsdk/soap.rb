@@ -27,7 +27,7 @@ module FuelSDK
       def unpack raw
         @code = raw.http.code
         unpack_body raw
-        @success = raw.hash[:envelope][:body][:create_response][:results][:status_message] == "Created TriggeredSend"
+        @success = @message == 'OK'
         @results += (unpack_rslts raw)
       end
 
