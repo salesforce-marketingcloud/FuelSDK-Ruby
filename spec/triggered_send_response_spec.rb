@@ -3,7 +3,13 @@ require 'spec_helper.rb'
 describe FuelSDK::TriggeredSendResponse do
 
   def build_raw(message)
-    { :envelope => { :body => { :create_response => { :results => { :status_message => message } } } } }
+    data = { :envelope => { :body => { :create_response => { :results => { :status_message => message } } } } }
+    double('raw', hash: data)
+  end
+
+  def build_empty_raw
+    data = { :envelope => { :body => {} }}
+    double('raw', hash: data)
   end
 
   let(:inner_response) { double('FuelSDK::Response') }
@@ -12,12 +18,11 @@ describe FuelSDK::TriggeredSendResponse do
   context '#success' do
     it 'returns false if the SOAP request was not successful' do
       expect(inner_response).to receive(:success).and_return(false)
-      expect(inner_response).to receive(:raw).and_return(nil)
       expect(subject.success).to be false
     end
 
     it 'returns false if the SOAP request was successful but the raw response did not include a CreateResponse' do
-      raw = { :envelope => { :body => {} } }
+      raw = build_empty_raw
       expect(inner_response).to receive(:raw).and_return(raw)
       expect(inner_response).to receive(:success).and_return(true)
       expect(subject.success).to be false

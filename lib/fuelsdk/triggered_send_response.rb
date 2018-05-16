@@ -1,3 +1,13 @@
+#== Description
+#
+# This class was added in order to properly check whether a request to ET was
+# successful or not. By default FuelSDK was checking only the HTTP status which
+# was leading to false positives (a.k.a. not sending any emails without knowing)
+#
+#== Responsibilities
+#
+# Delegate to the original response class and modify the conditions of `success`
+
 module FuelSDK
   class TriggeredSendResponse < SimpleDelegator
 
@@ -6,9 +16,13 @@ module FuelSDK
     end
 
     def success
-      triggered_send_successful = __getobj__.raw.hash[:envelope][:body][:create_response][:results][:status_message] == "Created TriggeredSend"
+      return false if !__getobj__.success
 
-      __getobj__.success && triggered_send_successful
+      raw_hash = __getobj__.raw.hash
+      envelope = raw_hash[:envelope]
+      body = envelope[:body]
+      create_response = body[:create_response]
+      create_response.nil? ? false : create_response[:results][:status_message] == "Created TriggeredSend"
     end
 
     # these match the aliases in FuelSDK::Response
