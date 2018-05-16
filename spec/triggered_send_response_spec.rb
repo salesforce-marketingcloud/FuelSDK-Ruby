@@ -2,27 +2,41 @@ require 'spec_helper.rb'
 
 describe FuelSDK::TriggeredSendResponse do
 
-  let(:raw_response) { double('FuelSDK::Response') }
-  subject { described_class.new(raw_response) }
-
-  context '#success?' do
-    it 'returns false if the SOAP request was not successful' do
-      expect(raw_response).to receive(:success).and_return(false)
-      expect(subject.success).to be false
-    end
-
-    it 'returns false if the TriggeredSend was not created' do
-      expect(raw_response).to receive(:success).and_return(true)
-      expect(subject.success).to be false
-    end
-
-    it 'returns true if the SOAP request was not successful and TriggeredSend was created' do
-      expect(raw_response).to receive(:success).and_return(true)
-      expect(subject.success).to be true
-    end
+  def build_raw(message)
+    { :envelope => { :body => { :create_response => { :results => { :status_message => message } } } } }
   end
 
+  let(:inner_response) { double('FuelSDK::Response') }
+  subject { described_class.new(inner_response) }
+
   context '#success' do
+    it 'returns false if the SOAP request was not successful' do
+      expect(inner_response).to receive(:success).and_return(false)
+      expect(inner_response).to receive(:raw).and_return(nil)
+      expect(subject.success).to be false
+    end
+
+    it 'returns false if the SOAP request was successful but the raw response did not include a CreateResponse' do
+      raw = { :envelope => { :body => {} } }
+      expect(inner_response).to receive(:raw).and_return(raw)
+      expect(inner_response).to receive(:success).and_return(true)
+      expect(subject.success).to be false
+    end
+
+    it 'returns false if the SOAP request was successful but the TriggeredSend was not created' do
+      raw = build_raw 'Incorrect Status Message'
+      expect(inner_response).to receive(:raw).and_return(raw)
+      expect(inner_response).to receive(:success).and_return(true)
+      expect(subject.success).to be false
+    end
+
+    it 'returns true if the SOAP request was successful and TriggeredSend was created' do
+      raw = build_raw 'Created TriggeredSend'
+      expect(inner_response).to receive(:raw).and_return(raw)
+      expect(inner_response).to receive(:success).and_return(true)
+      expect(subject.success).to be true
+    end
+
     it 'has an alias of success?' do
       expect(subject.method(:success)).to eq(subject.method(:success?))
     end
@@ -32,10 +46,9 @@ describe FuelSDK::TriggeredSendResponse do
     end
   end
 
-  context '#code' do
+  context 'is a delegator' do
     it 'delegates to the FuelSDK::Response' do
-      expect(raw_response).to receive(:code)
-      subject.code
+      expect(subject.__getobj__).to eq inner_response
     end
   end
 end

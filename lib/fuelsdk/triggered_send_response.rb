@@ -6,10 +6,9 @@ module FuelSDK
     end
 
     def success
-      __getobj__.success
+      triggered_send_successful = __getobj__.raw.hash[:envelope][:body][:create_response][:results][:status_message] == "Created TriggeredSend"
 
-      # TODO: use @results from raw_response - has already been unpacked
-      # @success = raw.hash[:envelope][:body][:create_response][:results][:status_message] == "Created TriggeredSend"
+      __getobj__.success && triggered_send_successful
     end
 
     # these match the aliases in FuelSDK::Response
