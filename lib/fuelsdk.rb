@@ -12,6 +12,7 @@ module FuelSDK
   autoload :Rest, 'fuelsdk/rest'
   require 'fuelsdk/client'
   require 'fuelsdk/objects'
+  require 'fuelsdk/triggered_send_response'
 end
 
 # backwards compatability
