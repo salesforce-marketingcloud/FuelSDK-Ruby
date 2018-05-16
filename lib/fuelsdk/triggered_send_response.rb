@@ -22,7 +22,8 @@ module FuelSDK
       envelope = raw_hash[:envelope]
       body = envelope[:body]
       create_response = body[:create_response]
-      create_response.nil? ? false : create_response[:results][:status_message] == "Created TriggeredSend"
+      results = create_response[:results]
+      results.nil? ? false : results[:status_message] == "Created TriggeredSend"
     end
 
     # these match the aliases in FuelSDK::Response

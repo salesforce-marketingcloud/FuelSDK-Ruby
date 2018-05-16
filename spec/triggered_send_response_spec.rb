@@ -8,7 +8,7 @@ describe FuelSDK::TriggeredSendResponse do
   end
 
   def build_empty_raw
-    data = { :envelope => { :body => {} }}
+    data = { :envelope => { :body => { :create_response => {}}}}
     double('raw', hash: data)
   end
 
@@ -21,7 +21,7 @@ describe FuelSDK::TriggeredSendResponse do
       expect(subject.success).to be false
     end
 
-    it 'returns false if the SOAP request was successful but the raw response did not include a CreateResponse' do
+    it 'returns false if the SOAP request was successful but the raw response did not include a Results' do
       raw = build_empty_raw
       expect(inner_response).to receive(:raw).and_return(raw)
       expect(inner_response).to receive(:success).and_return(true)
@@ -40,6 +40,13 @@ describe FuelSDK::TriggeredSendResponse do
       expect(inner_response).to receive(:raw).and_return(raw)
       expect(inner_response).to receive(:success).and_return(true)
       expect(subject.success).to be true
+    end
+
+    it 'returns false if the SOAP request was successful but the status message wasnt "Created TriggeredSend"' do
+      raw = build_raw 'banana'
+      expect(inner_response).to receive(:raw).and_return(raw)
+      expect(inner_response).to receive(:success).and_return(true)
+      expect(subject.success).to be false
     end
 
     it 'has an alias of success?' do
