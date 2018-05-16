@@ -95,6 +95,7 @@ DEPENDENCIES
   fuelsdk!
   guard
   guard-rspec
+  pry
   rake
   rspec
 
