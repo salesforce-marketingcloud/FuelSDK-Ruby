@@ -32,9 +32,10 @@ describe FuelSDK::TriggeredSendResponse do
     end
   end
 
-  context '#some other method (needs to quack)' do
+  context '#code' do
     it 'delegates to the FuelSDK::Response' do
-      fail('Not implemented')
+      expect(raw_response).to receive(:code)
+      subject.code
     end
   end
 end

@@ -20,7 +20,7 @@ describe FuelSDK::TriggeredSend do
       allow(client).to receive(:soap_post).with('TriggeredSend', []).and_return mock_response
       response = subject.send
       expect(response).to be_instance_of(FuelSDK::TriggeredSendResponse)
-      expect(response.raw_response).to eq mock_response
+      expect(response.__getobj__).to eq mock_response
     end
   end
 end
