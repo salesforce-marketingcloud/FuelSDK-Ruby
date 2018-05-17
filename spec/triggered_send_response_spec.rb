@@ -13,54 +13,54 @@ describe FuelSDK::TriggeredSendResponse do
   end
 
   let(:inner_response) { double('FuelSDK::Response') }
-  subject { described_class.new(inner_response) }
+  let(:triggered_send_response) { described_class.new(inner_response) }
 
   context '#success' do
     it 'returns false if the SOAP request was not successful' do
       expect(inner_response).to receive(:success).and_return(false)
-      expect(subject.success).to be false
+      expect(triggered_send_response.success).to be false
     end
 
     it 'returns false if the SOAP request was successful but the raw response did not include a Results' do
       raw = build_empty_raw
       expect(inner_response).to receive(:raw).and_return(raw)
       expect(inner_response).to receive(:success).and_return(true)
-      expect(subject.success).to be false
+      expect(triggered_send_response.success).to be false
     end
 
     it 'returns false if the SOAP request was successful but the TriggeredSend was not created' do
       raw = build_raw 'Incorrect Status Message'
       expect(inner_response).to receive(:raw).and_return(raw)
       expect(inner_response).to receive(:success).and_return(true)
-      expect(subject.success).to be false
+      expect(triggered_send_response.success).to be false
     end
 
     it 'returns true if the SOAP request was successful and TriggeredSend was created' do
       raw = build_raw 'Created TriggeredSend'
       expect(inner_response).to receive(:raw).and_return(raw)
       expect(inner_response).to receive(:success).and_return(true)
-      expect(subject.success).to be true
+      expect(triggered_send_response.success).to be true
     end
 
     it 'returns false if the SOAP request was successful but the status message wasnt "Created TriggeredSend"' do
       raw = build_raw 'banana'
       expect(inner_response).to receive(:raw).and_return(raw)
       expect(inner_response).to receive(:success).and_return(true)
-      expect(subject.success).to be false
+      expect(triggered_send_response.success).to be false
     end
 
     it 'has an alias of success?' do
-      expect(subject.method(:success)).to eq(subject.method(:success?))
+      expect(triggered_send_response.method(:success)).to eq(triggered_send_response.method(:success?))
     end
 
     it 'has an alias of status' do
-      expect(subject.method(:success)).to eq(subject.method(:success?))
+      expect(triggered_send_response.method(:success)).to eq(triggered_send_response.method(:success?))
     end
   end
 
   context 'is a delegator' do
     it 'delegates to the FuelSDK::Response' do
-      expect(subject.__getobj__).to eq inner_response
+      expect(triggered_send_response.__getobj__).to eq inner_response
     end
   end
 end
