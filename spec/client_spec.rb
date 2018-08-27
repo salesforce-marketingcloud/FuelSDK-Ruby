@@ -5,10 +5,13 @@ describe MarketingCloudSDK::Client do
   context 'initialized' do
 
     it 'with client parameters' do
-      client = MarketingCloudSDK::Client.new 'client' => { 'id' => '1234', 'secret' => 'ssssh', 'signature' => 'hancock' }
+      client = MarketingCloudSDK::Client.new 'client' => {'id' => '1234', 'secret' => 'ssssh', 'signature' => 'hancock',
+                                                          'base_api_url' => 'http://getapis', 'request_token_url' => 'http://authapi'}
       expect(client.secret).to eq 'ssssh'
       expect(client.id).to eq '1234'
       expect(client.signature).to eq 'hancock'
+      expect(client.base_api_url).to eq 'http://getapis'
+      expect(client.request_token_url).to eq 'http://authapi'
     end
 
     it 'with debug=true' do
@@ -24,6 +27,11 @@ describe MarketingCloudSDK::Client do
     it 'sets the request_token url to parameter if it exists' do
       client = MarketingCloudSDK::Client.new({'request_token_url' => 'fake/url'}, false)
       expect(client.request_token_url).to eq 'fake/url'
+    end
+
+    it 'sets the base_api_url url to a default if it does not exist' do
+      client = MarketingCloudSDK::Client.new({}, false)
+      expect(client.base_api_url).to eq 'https://www.exacttargetapis.com'
     end
 
     it 'sets the request_token url to a default if it does not exist' do

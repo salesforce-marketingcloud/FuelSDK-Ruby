@@ -102,8 +102,13 @@ module MarketingCloudSDK
         self.id = client_config["id"]
         self.secret = client_config["secret"]
         self.signature = client_config["signature"]
-				self.base_api_url = client_config['base_api_url'] ? client_config['base_api_url'] : 'https://www.exacttargetapis.com'
-				self.request_token_url = client_config['request_token_url'] ? client_config['request_token_url'] : 'https://auth.exacttargetapis.com/v1/requestToken'
+				self.base_api_url = client_config["base_api_url"] ? client_config["base_api_url"] : 'https://www.exacttargetapis.com'
+				self.request_token_url = client_config["request_token_url"] ? client_config["request_token_url"] : 'https://auth.exacttargetapis.com/v1/requestToken'
+			end
+
+			# Set a default value in case no 'client' params is sent
+			if (!self.base_api_url)
+				self.base_api_url =  'https://www.exacttargetapis.com'
 			end
 
 			# Leaving this for backwards compatibility
