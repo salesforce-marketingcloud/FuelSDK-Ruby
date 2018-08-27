@@ -107,7 +107,10 @@ module MarketingCloudSDK
 			end
 
 			# Leaving this for backwards compatibility
-      self.request_token_url = params['request_token_url'] ? params['request_token_url'] : self.request_token_url
+			if (!self.request_token_url)
+				self.request_token_url =  params['request_token_url'] ? params['request_token_url'] : 'https://auth.exacttargetapis.com/v1/requestToken'
+			end
+
 			self.jwt = params['jwt'] if params['jwt']
 			self.refresh_token = params['refresh_token'] if params['refresh_token']
 
