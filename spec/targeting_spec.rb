@@ -29,7 +29,7 @@ describe MarketingCloudSDK::Targeting do
 
   describe '#endpoint' do
     let(:client) { c = Class.new.new.extend(MarketingCloudSDK::Targeting)
-      c.stub(:base_api_url).and_return('https://www.exacttargetapis.com')
+      c.stub(:base_api_url).and_return('bogus url')
       c.stub(:get).and_return({'url' => 'S#.authentication.target'})
       c
     }
