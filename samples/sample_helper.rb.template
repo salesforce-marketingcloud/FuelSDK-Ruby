@@ -2,7 +2,9 @@ def auth
   {
     'client' => {
       'id' => YOURID,
-      'secret' => YOURSERET
+      'secret' => YOURSERET,
+      'base_api_url' => 'https://www.exacttargetapis.com',
+      'request_token_url' => 'https://auth.exacttargetapis.com/v1/requestToken'
     }
   }
 end
