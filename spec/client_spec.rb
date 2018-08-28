@@ -16,12 +16,12 @@ describe MarketingCloudSDK::Client do
 
     it 'with debug=true' do
       client = MarketingCloudSDK::Client.new({}, true)
-      expect(client.debug).to be_true
+      expect(client.debug).to be true
     end
 
     it 'with debug=false' do
       client = MarketingCloudSDK::Client.new({}, false)
-      expect(client.debug).to be_false
+      expect(client.debug).to be false
     end
 
     it 'sets the request_token url to parameter if it exists' do
@@ -88,9 +88,9 @@ describe MarketingCloudSDK::Client do
     end
 
     it 'debug' do
-      expect(client.debug).to be_false
+      expect(client.debug).to be false
       client.debug = true
-      expect(client.debug).to be_true
+      expect(client.debug).to be true
     end
   end
 

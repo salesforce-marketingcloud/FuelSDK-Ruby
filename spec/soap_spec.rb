@@ -29,7 +29,7 @@ describe MarketingCloudSDK::Soap do
   it { should respond_to(:package_folders) }
   it { should respond_to(:package_folders=) }
 
-  its(:debug) { should be_false }
+  its(:debug) { should be false }
   its(:wsdl) { should eq 'https://webservice.exacttarget.com/etframework.wsdl' }
 
   describe '#header' do
