@@ -49,13 +49,13 @@ module MarketingCloudSDK
     def continue
       rsp = nil
       if more?
-       @request['options']['page'] = @results['page'].to_i + 1
-       rsp = unpack @client.rest_get(@request['url'], @request['options'])
+       @request[:options]['page'] = @results['page'].to_i + 1
+       rsp = unpack @client.rest_get(@request[:url], @request[:options])
       else
         puts 'No more data'
       end
 
-      rsp
+      self
     end
 
     def [] key

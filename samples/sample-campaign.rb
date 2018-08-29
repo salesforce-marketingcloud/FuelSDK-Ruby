@@ -39,12 +39,14 @@ begin
 
 	while getResponse.more? do
 		p '>>> Continue Retrieve all Campaigns with GetMoreResults'
-		getResponse = getCamp.continue
+		getResponse = getResponse.continue
 		p 'Retrieve Status: ' + getResponse.status.to_s
 		p 'Code: ' + getResponse.code.to_s
 		p 'Message: ' + getResponse.message.to_s
 		p 'MoreResults: ' + getResponse.more?.to_s
-		p 'Results(Items) Length: ' + getResponse.results['items'].length.to_s
+    if !getResponse.results['items'].nil?
+      p 'Results(Items) Length: ' + getResponse.results['items'].length.to_s
+    end
 	end
 
 	# Create a new Campaign
@@ -176,7 +178,7 @@ begin
   p '-----------------------------'
 
   raise 'Failure retrieving campaign asset' unless getResponse.success?
-  raise 'Failure retrieving campaign asset' unless getResponse.results['totalCount'] == 0
+  raise 'Failure retrieving campaign asset' unless getResponse.results['count'] == 0
 
 rescue => e
   p "Caught exception: #{e.message}"
