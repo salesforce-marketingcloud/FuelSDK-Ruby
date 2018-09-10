@@ -1,12 +1,30 @@
 require 'spec_helper.rb'
 
+def auth_params
+  {'client' => {
+      'id' => '1234',
+      'secret' => 'ssssh',
+      'signature' => 'hancock',
+      'base_api_url' => 'http://getapis',
+      'request_token_url' => 'http://authapi'}
+  }
+end
+
+
+def instance_params
+  {'client' => {
+      'base_api_url' => 'http://getapis',
+      'request_token_url' => 'http://authapi'}
+  }
+end
+
 describe MarketingCloudSDK::Client do
 
   context 'initialized' do
 
     it 'with client parameters' do
-      client = MarketingCloudSDK::Client.new 'client' => {'id' => '1234', 'secret' => 'ssssh', 'signature' => 'hancock',
-                                                          'base_api_url' => 'http://getapis', 'request_token_url' => 'http://authapi'}
+      client = MarketingCloudSDK::Client.new auth_params
+
       expect(client.secret).to eq 'ssssh'
       expect(client.id).to eq '1234'
       expect(client.signature).to eq 'hancock'
@@ -15,48 +33,49 @@ describe MarketingCloudSDK::Client do
     end
 
     it 'with debug=true' do
-      client = MarketingCloudSDK::Client.new({}, true)
+      client = MarketingCloudSDK::Client.new(auth_params, true)
       expect(client.debug).to be true
     end
 
     it 'with debug=false' do
-      client = MarketingCloudSDK::Client.new({}, false)
+      client = MarketingCloudSDK::Client.new(auth_params, false)
       expect(client.debug).to be false
     end
 
-    it 'sets the request_token url to parameter if it exists' do
-      client = MarketingCloudSDK::Client.new({'request_token_url' => 'fake/url'}, false)
-      expect(client.request_token_url).to eq 'fake/url'
+    it 'should throw an error is base_api_url is not set' do
+      cloned_params = auth_params.clone
+      cloned_params['client'].delete('base_api_url')
+      expect { client = MarketingCloudSDK::Client.new(cloned_params, false) }.
+          to raise_error(ArgumentError, 'client.base_api_url is missing from argument')
     end
 
-    it 'sets the base_api_url url to a default if it does not exist' do
-      client = MarketingCloudSDK::Client.new({}, false)
-      expect(client.base_api_url).to eq 'https://www.exacttargetapis.com'
-    end
-
-    it 'sets the request_token url to a default if it does not exist' do
-      client = MarketingCloudSDK::Client.new({}, false)
-      expect(client.request_token_url).to eq 'https://auth.exacttargetapis.com/v1/requestToken'
+    it 'should throw an error is request_token_url is not set' do
+      cloned_params = auth_params.clone
+      cloned_params['client'].delete('request_token_url')
+      expect { client = MarketingCloudSDK::Client.new(cloned_params, false) }.
+          to raise_error(ArgumentError, 'client.request_token_url is missing from argument')
     end
 
     it 'creates SoapClient' do
-      client = MarketingCloudSDK::Client.new
+      client = MarketingCloudSDK::Client.new auth_params
       expect(client).to be_kind_of MarketingCloudSDK::Soap
     end
 
     it '#wsdl defaults to https://webservice.exacttarget.com/etframework.wsdl' do
-      client = MarketingCloudSDK::Client.new
+      client = MarketingCloudSDK::Client.new auth_params
       expect(client.wsdl).to eq 'https://webservice.exacttarget.com/etframework.wsdl'
     end
 
     it 'creates RestClient' do
-      client = MarketingCloudSDK::Client.new
+      client = MarketingCloudSDK::Client.new auth_params
       expect(client).to be_kind_of MarketingCloudSDK::Rest
     end
 
     describe 'with a wsdl' do
+      with_wsdl_params = auth_params.clone
+      with_wsdl_params['defaultwsdl'] = 'somewsdl'
 
-      let(:client) { MarketingCloudSDK::Client.new 'defaultwsdl' => 'somewsdl' }
+      let(:client) { MarketingCloudSDK::Client.new with_wsdl_params }
 
       it'creates a SoapClient' do
         expect(client).to be_kind_of MarketingCloudSDK::Soap
@@ -70,7 +89,7 @@ describe MarketingCloudSDK::Client do
 
   context 'instance can set' do
 
-    let(:client) { MarketingCloudSDK::Client.new }
+    let(:client) { MarketingCloudSDK::Client.new instance_params}
 
     it 'client id' do
       client.id = 123
@@ -121,7 +140,7 @@ describe MarketingCloudSDK::Client do
     }
 
     it 'raises an exception when signature is missing' do
-      expect { MarketingCloudSDK::Client.new.jwt = encoded }.to raise_exception 'Require app signature to decode JWT'
+      expect { MarketingCloudSDK::Client.new(instance_params).jwt = encoded }.to raise_exception 'Require app signature to decode JWT'
     end
 
     describe 'decodes JWT' do
@@ -135,7 +154,9 @@ describe MarketingCloudSDK::Client do
       }
 
       let(:client) {
-        MarketingCloudSDK::Client.new 'client' => { 'id' => '1234', 'secret' => 'ssssh', 'signature' => sig }
+        cloned_params = auth_params.clone
+        cloned_params['client']['signature'] = sig
+        MarketingCloudSDK::Client.new cloned_params
       }
 
       it 'making auth token available to client' do
@@ -156,7 +177,7 @@ describe MarketingCloudSDK::Client do
   end
 
   describe '#refresh_token' do
-    let(:client) { MarketingCloudSDK::Client.new }
+    let(:client) { MarketingCloudSDK::Client.new auth_params}
 
     it 'defaults to nil' do
       expect(client.refresh_token).to be_nil
@@ -170,7 +191,7 @@ describe MarketingCloudSDK::Client do
 
   describe '#refresh' do
 
-    let(:client) { MarketingCloudSDK::Client.new }
+    let(:client) { MarketingCloudSDK::Client.new instance_params}
 
     context 'raises an exception' do
 
@@ -208,7 +229,7 @@ describe MarketingCloudSDK::Client do
 
   describe 'includes HTTPRequest' do
 
-    subject { MarketingCloudSDK::Client.new }
+    subject { MarketingCloudSDK::Client.new auth_params}
 
     it { should respond_to(:get) }
     it { should respond_to(:post) }

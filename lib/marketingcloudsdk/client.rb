@@ -102,18 +102,22 @@ module MarketingCloudSDK
         self.id = client_config["id"]
         self.secret = client_config["secret"]
         self.signature = client_config["signature"]
-				self.base_api_url = client_config["base_api_url"] ? client_config["base_api_url"] : 'https://www.exacttargetapis.com'
-				self.request_token_url = client_config["request_token_url"] ? client_config["request_token_url"] : 'https://auth.exacttargetapis.com/v1/requestToken'
-			end
-
-			# Set a default value in case no 'client' params is sent
-			if (!self.base_api_url)
-				self.base_api_url =  'https://www.exacttargetapis.com'
+				self.base_api_url = client_config["base_api_url"]
+				self.request_token_url = client_config["request_token_url"]
 			end
 
 			# Leaving this for backwards compatibility
-			if (!self.request_token_url)
-				self.request_token_url =  params['request_token_url'] ? params['request_token_url'] : 'https://auth.exacttargetapis.com/v1/requestToken'
+			if !self.request_token_url
+				self.request_token_url =  params['request_token_url']
+			end
+
+			# Check for required fields
+			if !self.base_api_url
+				raise(ArgumentError, 'client.base_api_url is missing from argument')
+			end
+
+			if !self.request_token_url
+				raise(ArgumentError, 'client.request_token_url is missing from argument')
 			end
 
 			self.jwt = params['jwt'] if params['jwt']
