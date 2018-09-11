@@ -1,6 +1,6 @@
 require 'spec_helper'
 describe MarketingCloudSDK::Rest do
-  let(:client) { MarketingCloudSDK::Client.new }
+  let(:client) { MarketingCloudSDK::Client.new 'client' => {'base_api_url' => 'apiurl', 'request_token_url' => 'tokenurl'}}
 
   subject { client }
   it { should respond_to(:rest_get) }
