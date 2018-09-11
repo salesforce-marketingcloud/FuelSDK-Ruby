@@ -49,7 +49,7 @@ module MarketingCloudSDK::Targeting
 
   protected
     def determine_stack
-      options = {'params' => {'access_token' => self.access_token}}
+      options = {'access_token' => self.access_token}
       response = get(self.base_api_url +  "/platform/v1/endpoints/soap", options)
       @endpoint = response['url']
     rescue => e
