@@ -18,7 +18,7 @@ describe MarketingCloudSDK::Targeting do
       c.stub(:base_api_url).and_return('https://www.exacttargetapis.com')
       c.stub(:access_token).and_return('open_sesame')
       c.stub(:get)
-        .with('https://www.exacttargetapis.com/platform/v1/endpoints/soap',{'params'=>{'access_token'=>'open_sesame'}})
+        .with('https://www.exacttargetapis.com/platform/v1/endpoints/soap',{'access_token'=>'open_sesame'})
         .and_return({'url' => 'S#.authentication.target'})
       c
     }
