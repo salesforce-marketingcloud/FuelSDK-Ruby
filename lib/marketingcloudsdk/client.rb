@@ -87,11 +87,11 @@ module MarketingCloudSDK
 			raise 'Require app signature to decode JWT' unless self.signature
 			decoded_jwt = JWT.decode(encoded_jwt, self.signature, true)
 
-			self.auth_token = decoded_jwt[0]["request"]["user"]["oauthToken"]
-			self.internal_token = decoded_jwt[0]['request']['user']['internalOauthToken']
-			self.refresh_token = decoded_jwt[0]['request']['user']['refreshToken']
-			self.auth_token_expiration = Time.new + decoded_jwt[0]['request']['user']['expiresIn']
-			self.package_name = decoded_jwt[0]['request']['application']['package']
+			self.auth_token = decoded_jwt['request']['user']['oauthToken']
+			self.internal_token = decoded_jwt['request']['user']['internalOauthToken']
+			self.refresh_token = decoded_jwt['request']['user']['refreshToken']
+			self.auth_token_expiration = Time.new + decoded_jwt['request']['user']['expiresIn']
+			self.package_name = decoded_jwt['request']['application']['package']
 		end
 
 		def initialize(params={}, debug=false)
