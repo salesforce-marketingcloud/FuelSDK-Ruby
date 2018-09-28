@@ -144,7 +144,9 @@ module MarketingCloudSDK
 				raise_errors: false,
 				log: debug,
 				open_timeout:180,
-				read_timeout: 180
+				read_timeout: 180,
+				ssl_verify_mode: :none,
+				proxy: 'http://127.0.0.1:8888'
 			)
 		end
 
