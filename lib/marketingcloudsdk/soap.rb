@@ -144,7 +144,8 @@ module MarketingCloudSDK
 				raise_errors: false,
 				log: debug,
 				open_timeout:180,
-				read_timeout: 180
+				read_timeout: 180,
+				headers: {'User-Agent' => 'FuelSDK-Ruby'}
 			)
 		end
 

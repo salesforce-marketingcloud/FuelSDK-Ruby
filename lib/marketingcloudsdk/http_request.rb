@@ -103,7 +103,7 @@ module MarketingCloudSDK
       _request = method.new uri.request_uri
       _request.body = data.to_json if data
       _request.content_type = options['content_type'] if options['content_type']
-      _request.add_field('User_Agent', 'FuelSDK-Ruby')
+      _request.add_field('User-Agent', 'FuelSDK-Ruby')
 
       # Add Authorization header if we have an access token
       if options['access_token']
