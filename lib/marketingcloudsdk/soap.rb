@@ -114,15 +114,15 @@ module MarketingCloudSDK
 	end
 
 	module Soap
-		attr_accessor :wsdl, :debug#, :internal_token
+		attr_accessor :wsdl, :debug
 
 		include MarketingCloudSDK::Targeting
 
 		def header
-			raise 'Require legacy token for soap header' unless internal_token
+			raise 'Require access token for soap header' unless access_token
 			{
-				'oAuth' => {'oAuthToken' => internal_token},
-				:attributes! => { 'oAuth' => { 'xmlns' => 'http://exacttarget.com' }}
+				:fueloauth => access_token,
+				:attributes! => { :fueloauth => { :xmlns => 'http://exacttarget.com' }}
 			}
 		end
 
@@ -140,7 +140,6 @@ module MarketingCloudSDK
 				soap_header: header,
 				wsdl: wsdl,
 				endpoint: endpoint,
-				wsse_auth: ["*", "*"],
 				raise_errors: false,
 				log: debug,
 				open_timeout:180,
