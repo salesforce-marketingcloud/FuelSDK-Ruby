@@ -78,7 +78,7 @@ module MarketingCloudSDK
 	class Client
 	attr_accessor :debug, :access_token, :auth_token, :internal_token, :refresh_token,
 		:id, :secret, :signature, :base_api_url, :package_name, :package_folders, :parent_folders, :auth_token_expiration,
-		:request_token_url
+		:request_token_url, :soap_endpoint
 
 	include MarketingCloudSDK::Soap
 	include MarketingCloudSDK::Rest
@@ -104,6 +104,7 @@ module MarketingCloudSDK
         self.signature = client_config["signature"]
 				self.base_api_url = client_config["base_api_url"] ? client_config["base_api_url"] : 'https://www.exacttargetapis.com'
 				self.request_token_url = client_config["request_token_url"] ? client_config["request_token_url"] : 'https://auth.exacttargetapis.com/v1/requestToken'
+				self.soap_endpoint = client_config["soap_endpoint"]
 			end
 
 			# Set a default value in case no 'client' params is sent

@@ -36,7 +36,7 @@ USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 module MarketingCloudSDK::Targeting
   attr_accessor :access_token
-  attr_reader :endpoint
+  attr_reader :endpoint, :soap_endpoint
 
   include MarketingCloudSDK::HTTPRequest
 
@@ -49,10 +49,15 @@ module MarketingCloudSDK::Targeting
 
   protected
     def determine_stack
+      if self.soap_endpoint
+        @endpoint = self.soap_endpoint
+        return
+      end
+
       options = {'access_token' => self.access_token}
       response = get(self.base_api_url +  "/platform/v1/endpoints/soap", options)
       @endpoint = response['url']
     rescue => e
-      raise 'Unable to determine stack using: ' + e.message
+      @endpoint = 'https://webservice.exacttarget.com/Service.asmx'
     end
 end

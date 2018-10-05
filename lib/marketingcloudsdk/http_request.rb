@@ -37,6 +37,7 @@ USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 require 'open-uri'
 require 'net/https'
 require 'json'
+require 'openssl'
 
 module MarketingCloudSDK
 
