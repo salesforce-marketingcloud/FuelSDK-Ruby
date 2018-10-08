@@ -17,13 +17,16 @@ describe MarketingCloudSDK::Targeting do
     let(:client) { c = Class.new.new.extend(MarketingCloudSDK::Targeting)
       c.stub(:base_api_url).and_return('https://www.exacttargetapis.com')
       c.stub(:access_token).and_return('open_sesame')
+      c.stub(:get_soap_endpoint_from_file).and_return(nil)
+      c.stub(:set_soap_endpoint_to_file).and_return(nil)
       c.stub(:get)
         .with('https://www.exacttargetapis.com/platform/v1/endpoints/soap',{'access_token'=>'open_sesame'})
         .and_return({'url' => 'S#.authentication.target'})
       c
     }
     it 'sets @endpoint' do
-      expect(client.send(:determine_stack)).to eq 'S#.authentication.target'
+      client.send(:determine_stack)
+      expect(client.endpoint).to eq 'S#.authentication.target'
     end
   end
 

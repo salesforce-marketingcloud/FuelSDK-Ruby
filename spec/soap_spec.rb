@@ -33,19 +33,17 @@ describe MarketingCloudSDK::Soap do
   its(:wsdl) { should eq 'https://webservice.exacttarget.com/etframework.wsdl' }
 
   describe '#header' do
-    it 'raises an exception when internal_token is missing' do
-      expect { client.header }.to raise_exception 'Require legacy token for soap header'
+    it 'raises an exception when access_token is missing' do
+      expect { client.header }.to raise_exception 'Require access token for soap header'
     end
 
     it 'returns header hash' do
-      client.internal_token = 'innerspace'
+      client.access_token = 'innerspace'
       expect(client.header).to eq(
-        {
-          'oAuth' => { 'oAuthToken' => 'innerspace' },
-          :attributes! => {
-            'oAuth' => { 'xmlns' => 'http://exacttarget.com' }
-          }
-        }
+       {
+           :fueloauth => 'innerspace',
+           :attributes! => { :fueloauth => { :xmlns => 'http://exacttarget.com' }}
+       }
       )
     end
   end
