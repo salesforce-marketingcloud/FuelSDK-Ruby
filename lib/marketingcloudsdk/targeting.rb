@@ -48,7 +48,7 @@ module MarketingCloudSDK::Targeting
 
   def endpoint
     unless @endpoint
-      determine_stack
+      get_soap_endpoint
     end
     @endpoint
   end
@@ -67,7 +67,7 @@ module MarketingCloudSDK::Targeting
   def set_soap_endpoint_to_file url
     data_hash = {
         'url' => url,
-        'timestamp' => Time.new.to_f + (15 * 60)
+        'timestamp' => Time.new.to_f + (10 * 60)
     }
 
     File.open(cache_file, 'w') do |f|
@@ -76,7 +76,7 @@ module MarketingCloudSDK::Targeting
   end
 
   protected
-    def determine_stack
+    def get_soap_endpoint
       if self.soap_endpoint
         @endpoint = self.soap_endpoint
         return

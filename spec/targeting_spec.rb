@@ -6,14 +6,14 @@ describe MarketingCloudSDK::Targeting do
 
   it { should respond_to(:endpoint) }
   it { should_not respond_to(:endpoint=) }
-  it { should_not respond_to(:determine_stack) }
+  it { should_not respond_to(:get_soap_endpoint) }
   it { should respond_to(:get) }
   it { should respond_to(:post) }
   it { should respond_to(:patch) }
   it { should respond_to(:delete) }
   it { should respond_to(:access_token) }
 
-  describe '#determine_stack' do
+  describe '#get_soap_endpoint' do
     let(:client) { c = Class.new.new.extend(MarketingCloudSDK::Targeting)
       c.stub(:base_api_url).and_return('https://www.exacttargetapis.com')
       c.stub(:access_token).and_return('open_sesame')
@@ -25,7 +25,7 @@ describe MarketingCloudSDK::Targeting do
       c
     }
     it 'sets @endpoint' do
-      client.send(:determine_stack)
+      client.send(:get_soap_endpoint)
       expect(client.endpoint).to eq 'S#.authentication.target'
     end
   end
@@ -37,7 +37,7 @@ describe MarketingCloudSDK::Targeting do
       c
     }
 
-    it 'calls determine_stack to find target' do
+    it 'calls get_soap_endpoint to find target' do
       expect(client.endpoint).to eq 'S#.authentication.target'
     end
   end
