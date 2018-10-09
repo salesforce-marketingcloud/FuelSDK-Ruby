@@ -107,16 +107,13 @@ Example passing ClientID/ClientSecret:
 Example passing ClientID/ClientSecret/AppSignature/JWT: 
 > myclient = MarketingCloudSDK::Client.new({'client' => {'id' => 'exampleID','secret' => 'exampleSecret', 'signature'=>'examplesig'}, 'jwt'=>'exampleJWT'})
 
-Example passing ClientID/ClientSecret/BaseAPIUrl/ReqTokenAuthUrl
-> myclient = MarketingCloudSDK::Client.new('client' => {'id' => 'exampleID', 'secret' => 'exampleSecret', 'base_api_url' => 'http://getapis', 'request_token_url' => 'http://authapi'})
-
-Example passing ClientID/ClientSecret/Soap Endpoint
-> myclient = MarketingCloudSDK::Client.new('client' => {'id' => 'exampleID', 'secret' => 'exampleSecret', 'soap_endpoint' => 'http://soapendpoint'})
+Example passing ClientID/ClientSecret/BaseAPIUrl/ReqTokenAuthUrl/Soap Endpoint
+> myclient = MarketingCloudSDK::Client.new('client' => {'id' => 'exampleID', 'secret' => 'exampleSecret', 'base_api_url' => 'http://getapis', 'request_token_url' => 'http://authapi', 'soap_endpoint' => 'http://soapendpoint'})
 
 **Note** - The following defaults apply if the following parameters are omitted:
 - base_api_url: https://www.exacttargetapis.com
 - request_token_url: https://auth.exacttargetapis.com/v1/requestToken
-- soap_endpoint: It is calculated by calling the `/platform/v1/endpoints/soap` endpoint. If the HTTP call fails, it will default to https://webservice.exacttarget.com/Service.asmx
+- soap_endpoint: https://webservice.exacttarget.com/Service.asmx
 
 **Debug** - If 2nd parameter for debug is set to true, all API requests that the Fuel SDK is making behind the scenes will be logged.  This option should only be set to true in order to troubleshoot during the development process and should never be used in a production scenario.
 > myclient = MarketingCloudSDK::Client.new auth, true <br> 
