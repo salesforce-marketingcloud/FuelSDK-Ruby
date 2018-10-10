@@ -24,3 +24,4 @@ config.yaml
 samples/sample_helper.rb
 .DS_STORE
 gengem.bat
+.idea
