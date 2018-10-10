@@ -39,7 +39,7 @@ describe MarketingCloudSDK::HTTPRequest do
       params = {'access_token' => 'token'}
       Net::HTTP.any_instance.stub(:request)
       get = double("get")
-      get.should_receive(:add_field).with('User_Agent', 'FuelSDK-Ruby')
+      get.should_receive(:add_field).with('User-Agent', 'FuelSDK-Ruby')
       get.should_receive(:add_field).with('Authorization', 'Bearer ' + params['access_token'])
       net = double(Net::HTTP::Get)
       net.stub(:new).with(any_args()).and_return(get)
