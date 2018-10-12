@@ -76,7 +76,7 @@ module MarketingCloudSDK
 	end
 
 	class Client
-	attr_accessor :debug, :access_token, :auth_token, :refresh_token,
+	attr_accessor :debug, :access_token, :auth_token, :internal_token, :refresh_token,
 		:id, :secret, :signature, :base_api_url, :package_name, :package_folders, :parent_folders, :auth_token_expiration,
 		:request_token_url, :soap_endpoint
 
@@ -88,6 +88,7 @@ module MarketingCloudSDK
 			decoded_jwt = JWT.decode(encoded_jwt, self.signature, true)
 
 			self.auth_token = decoded_jwt['request']['user']['oauthToken']
+			self.internal_token = decoded_jwt['request']['user']['internalOauthToken']
 			self.refresh_token = decoded_jwt['request']['user']['refreshToken']
 			self.auth_token_expiration = Time.new + decoded_jwt['request']['user']['expiresIn']
 			self.package_name = decoded_jwt['request']['application']['package']
@@ -137,11 +138,13 @@ module MarketingCloudSDK
 				options = Hash.new.tap do |h|
 					h['data'] = payload
 					h['content_type'] = 'application/json'
+					h['params'] = {'legacy' => 1}
 				end
 				response = post(request_token_url, options)
 				raise "Unable to refresh token: #{response['message']}" unless response.has_key?('accessToken')
 
 				self.access_token = response['accessToken']
+				self.internal_token = response['legacyToken']
 				self.auth_token_expiration = Time.new + response['expiresIn']
 				self.refresh_token = response['refreshToken'] if response.has_key?("refreshToken")
 				return true
