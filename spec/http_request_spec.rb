@@ -1,4 +1,5 @@
 require 'spec_helper'
+require 'marketingcloudsdk/version'
 
 describe MarketingCloudSDK::HTTPRequest do
   let(:client) { Class.new.new.extend MarketingCloudSDK::HTTPRequest }
@@ -39,7 +40,7 @@ describe MarketingCloudSDK::HTTPRequest do
       params = {'access_token' => 'token'}
       Net::HTTP.any_instance.stub(:request)
       get = double("get")
-      get.should_receive(:add_field).with('User-Agent', 'FuelSDK-Ruby')
+      get.should_receive(:add_field).with('User-Agent', 'FuelSDK-Ruby-v' + MarketingCloudSDK::VERSION)
       get.should_receive(:add_field).with('Authorization', 'Bearer ' + params['access_token'])
       net = double(Net::HTTP::Get)
       net.stub(:new).with(any_args()).and_return(get)
@@ -50,7 +51,7 @@ describe MarketingCloudSDK::HTTPRequest do
       params = {}
       Net::HTTP.any_instance.stub(:request)
       get = double("get")
-      get.should_receive(:add_field).with('User-Agent', 'FuelSDK-Ruby')
+      get.should_receive(:add_field).with('User-Agent', 'FuelSDK-Ruby-v' + MarketingCloudSDK::VERSION)
       get.should_not_receive(:add_field).with('Authorization', any_args())
       net = double(Net::HTTP::Get)
       net.stub(:new).with(any_args()).and_return(get)

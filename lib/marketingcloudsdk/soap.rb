@@ -35,6 +35,8 @@ USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =end
 
 require 'savon'
+require 'marketingcloudsdk/version'
+
 module MarketingCloudSDK
 	
 	class SoapResponse < MarketingCloudSDK::Response
@@ -137,6 +139,8 @@ module MarketingCloudSDK
 		def soap_client
 			self.refresh
 			@soap_client = Savon.client(
+        ssl_verify_mode: :none,
+        proxy: 'http://127.0.0.1:8888',
 				soap_header: header,
 				wsdl: wsdl,
 				endpoint: endpoint,
@@ -145,7 +149,7 @@ module MarketingCloudSDK
 				log: debug,
 				open_timeout:180,
 				read_timeout: 180,
-				headers: {'User-Agent' => 'FuelSDK-Ruby'}
+				headers: {'User-Agent' => 'FuelSDK-Ruby-v' + MarketingCloudSDK::VERSION}
 			)
 		end
 
