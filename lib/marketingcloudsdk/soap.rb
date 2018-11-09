@@ -139,8 +139,6 @@ module MarketingCloudSDK
 		def soap_client
 			self.refresh
 			@soap_client = Savon.client(
-        ssl_verify_mode: :none,
-        proxy: 'http://127.0.0.1:8888',
 				soap_header: header,
 				wsdl: wsdl,
 				endpoint: endpoint,

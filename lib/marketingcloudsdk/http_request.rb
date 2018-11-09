@@ -37,7 +37,6 @@ USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 require 'open-uri'
 require 'net/https'
 require 'json'
-require 'openssl'
 require 'marketingcloudsdk/version'
 
 module MarketingCloudSDK
@@ -98,11 +97,8 @@ module MarketingCloudSDK
 
     def request(method, url, options={})
       uri = generate_uri url, options['params']
-      http = Net::HTTP.new(uri.host, uri.port, '127.0.0.1', '8888')
+      http = Net::HTTP.new(uri.host, uri.port)
       http.use_ssl = true
-      http.verify_mode = OpenSSL::SSL::VERIFY_NONE
-      #http = Net::HTTP.new(uri.host, uri.port)
-      #http.use_ssl = true
 
       data = options['data']
       _request = method.new uri.request_uri

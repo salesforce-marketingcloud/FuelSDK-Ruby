@@ -102,8 +102,8 @@ module MarketingCloudSDK
         self.id = client_config["id"]
         self.secret = client_config["secret"]
         self.signature = client_config["signature"]
-				self.base_api_url = client_config["base_api_url"] ? client_config["base_api_url"] : 'https://www.exacttargetapis.com'
-				self.request_token_url = client_config["request_token_url"] ? client_config["request_token_url"] : 'https://auth.exacttargetapis.com/v1/requestToken'
+				self.base_api_url = !(client_config["base_api_url"].to_s.strip.empty?) ? client_config["base_api_url"] : 'https://www.exacttargetapis.com'
+				self.request_token_url = !(client_config["request_token_url"].to_s.strip.empty?) ? client_config["request_token_url"] : 'https://auth.exacttargetapis.com/v1/requestToken'
 				self.soap_endpoint = client_config["soap_endpoint"]
 			end
 
