@@ -77,7 +77,8 @@ module MarketingCloudSDK
 
 	class Client
 	attr_accessor :debug, :access_token, :auth_token, :internal_token, :refresh_token,
-		:id, :secret, :signature, :package_name, :package_folders, :parent_folders, :auth_token_expiration, :request_token_url
+		:id, :secret, :signature, :base_api_url, :package_name, :package_folders, :parent_folders, :auth_token_expiration,
+		:request_token_url, :soap_endpoint
 
 	include MarketingCloudSDK::Soap
 	include MarketingCloudSDK::Rest
@@ -101,9 +102,21 @@ module MarketingCloudSDK
         self.id = client_config["id"]
         self.secret = client_config["secret"]
         self.signature = client_config["signature"]
+				self.base_api_url = !(client_config["base_api_url"].to_s.strip.empty?) ? client_config["base_api_url"] : 'https://www.exacttargetapis.com'
+				self.request_token_url = !(client_config["request_token_url"].to_s.strip.empty?) ? client_config["request_token_url"] : 'https://auth.exacttargetapis.com/v1/requestToken'
+				self.soap_endpoint = client_config["soap_endpoint"]
 			end
 
-      self.request_token_url = params['request_token_url'] ? params['request_token_url'] : 'https://auth.exacttargetapis.com/v1/requestToken'
+			# Set a default value in case no 'client' params is sent
+			if (!self.base_api_url)
+				self.base_api_url =  'https://www.exacttargetapis.com'
+			end
+
+			# Leaving this for backwards compatibility
+			if (!self.request_token_url)
+				self.request_token_url =  params['request_token_url'] ? params['request_token_url'] : 'https://auth.exacttargetapis.com/v1/requestToken'
+			end
+
 			self.jwt = params['jwt'] if params['jwt']
 			self.refresh_token = params['refresh_token'] if params['refresh_token']
 

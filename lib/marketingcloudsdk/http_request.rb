@@ -37,6 +37,7 @@ USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 require 'open-uri'
 require 'net/https'
 require 'json'
+require 'marketingcloudsdk/version'
 
 module MarketingCloudSDK
 
@@ -88,26 +89,30 @@ module MarketingCloudSDK
       EOT
     end
 
-    private
+    def generate_uri(url, params=nil)
+      uri = URI.parse(url)
+      uri.query = URI.encode_www_form(params) if params
+      uri
+    end
 
-      def generate_uri(url, params=nil)
-        uri = URI.parse(url)
-        uri.query = URI.encode_www_form(params) if params
-        uri
+    def request(method, url, options={})
+      uri = generate_uri url, options['params']
+      http = Net::HTTP.new(uri.host, uri.port)
+      http.use_ssl = true
+
+      data = options['data']
+      _request = method.new uri.request_uri
+      _request.body = data.to_json if data
+      _request.content_type = options['content_type'] if options['content_type']
+      _request.add_field('User-Agent', 'FuelSDK-Ruby-v' + MarketingCloudSDK::VERSION)
+
+      # Add Authorization header if we have an access token
+      if options['access_token']
+        _request.add_field('Authorization', 'Bearer ' + options['access_token'])
       end
 
-      def request(method, url, options={})
-        uri = generate_uri url, options['params']
-        http = Net::HTTP.new(uri.host, uri.port)
-        http.use_ssl = true
-
-        data = options['data']
-        _request = method.new uri.request_uri
-        _request.body = data.to_json if data
-        _request.content_type = options['content_type'] if options['content_type']
-        _request.add_field('User_Agent', 'FuelSDK-Ruby')
-        response = http.request(_request)
-        HTTPResponse.new(response, self, :url => url, :options => options)
-      end
+      response = http.request(_request)
+      HTTPResponse.new(response, self, :url => url, :options => options)
+    end
   end
 end

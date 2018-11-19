@@ -35,6 +35,8 @@ USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =end
 
 require 'savon'
+require 'marketingcloudsdk/version'
+
 module MarketingCloudSDK
 	
 	class SoapResponse < MarketingCloudSDK::Response
@@ -144,7 +146,8 @@ module MarketingCloudSDK
 				raise_errors: false,
 				log: debug,
 				open_timeout:180,
-				read_timeout: 180
+				read_timeout: 180,
+				headers: {'User-Agent' => 'FuelSDK-Ruby-v' + MarketingCloudSDK::VERSION}
 			)
 		end
 
