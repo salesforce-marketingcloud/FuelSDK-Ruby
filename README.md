@@ -7,7 +7,8 @@ ExactTarget Fuel SDK / SalesforceMarektingCloudSDK for Ruby
 The Fuel SDK for Ruby provides easy access to ExactTarget's Fuel API Family services, including a collection of REST APIs and a SOAP API. These APIs provide access to ExactTarget functionality via common collection types such as array/hash.
 
 ## New Features in Version 1.1.0 ##
-- **Added support for your tenant's endpoints - [More Details](https://developer.salesforce.com/docs/atlas.en-us.mc-apis.meta/mc-apis/your-subdomain-tenant-specific-endpoints.htm) :**
+- **Added support for your tenant's endpoints - [More Details](https://developer.salesforce.com/docs/atlas.en-us.mc-apis.meta/mc-apis/your-subdomain-tenant-specific-endpoints.htm) **
+- **MarketingCloudSDK gem will be available as sfmc-fuelsdk-ruby on ruby gems.
 
 ## Migrationg to version to version 1.0 ##
 - **FuelSDK gem has been renamed to MarketingCloudSDK and will be availbale as marketingcloudsdk on ruby gems.
