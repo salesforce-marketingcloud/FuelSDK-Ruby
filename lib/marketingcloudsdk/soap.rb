@@ -138,7 +138,7 @@ module MarketingCloudSDK
 
 		def soap_client
 			self.refresh
-			@soap_client = Savon.client(
+			@soap_client ||= Savon.client(
 				soap_header: header,
 				wsdl: wsdl,
 				endpoint: endpoint,
