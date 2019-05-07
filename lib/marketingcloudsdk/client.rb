@@ -78,7 +78,7 @@ module MarketingCloudSDK
 	class Client
 	attr_accessor :debug, :access_token, :auth_token, :internal_token, :refresh_token,
 		:id, :secret, :signature, :base_api_url, :package_name, :package_folders, :parent_folders, :auth_token_expiration,
-		:request_token_url, :soap_endpoint
+		:request_token_url, :soap_endpoint, :use_oAuth2_authentication
 
 	include MarketingCloudSDK::Soap
 	include MarketingCloudSDK::Rest
@@ -105,6 +105,7 @@ module MarketingCloudSDK
 				self.base_api_url = !(client_config["base_api_url"].to_s.strip.empty?) ? client_config["base_api_url"] : 'https://www.exacttargetapis.com'
 				self.request_token_url = !(client_config["request_token_url"].to_s.strip.empty?) ? client_config["request_token_url"] : 'https://auth.exacttargetapis.com/v1/requestToken'
 				self.soap_endpoint = client_config["soap_endpoint"]
+				self.use_oAuth2_authentication = client_config["use_oAuth2_authentication"]
 			end
 
 			# Set a default value in case no 'client' params is sent
@@ -121,11 +122,19 @@ module MarketingCloudSDK
 			self.refresh_token = params['refresh_token'] if params['refresh_token']
 
 			self.wsdl = params["defaultwsdl"] if params["defaultwsdl"]
+
+			self.refresh
 		end
 
 		def refresh force=false
 			@refresh_mutex.synchronize do
 				raise 'Require Client Id and Client Secret to refresh tokens' unless (id && secret)
+
+				if (self.use_oAuth2_authentication == 'true')
+					self.refreshWithOAuth2(force)
+					return
+				end
+
 				#If we don't already have a token or the token expires within 5 min(300 seconds)
 				if (self.access_token.nil? || Time.new + 300 > self.auth_token_expiration || force) then
 				payload = Hash.new.tap do |h|
@@ -148,11 +157,41 @@ module MarketingCloudSDK
 				self.auth_token_expiration = Time.new + response['expiresIn']
 				self.refresh_token = response['refreshToken'] if response.has_key?("refreshToken")
 				return true
-				else 
+				else
 				return false
 				end
 			end
 		end
+
+	def refreshWithOAuth2 force=false
+			raise 'Require Client Id and Client Secret to refresh tokens' unless (id && secret)
+			#If we don't already have a token or the token expires within 5 min(300 seconds)
+			if (self.access_token.nil? || Time.new + 300 > self.auth_token_expiration || force) then
+				payload = Hash.new.tap do |h|
+					h['client_id']= id
+					h['client_secret'] = secret
+					h['grant_type'] = 'client_credentials'
+				end
+
+				options = Hash.new.tap do |h|
+					h['data'] = payload
+					h['content_type'] = 'application/json'
+				end
+
+				self.request_token_url += '/v2/token'
+
+				response = post(request_token_url, options)
+				raise "Unable to refresh token: #{response['message']}" unless response.has_key?('access_token')
+
+				self.access_token = response['access_token']
+				self.auth_token_expiration = Time.new + response['expires_in']
+				self.soap_endpoint = response['soap_instance_url'] + 'service.asmx'
+				self.base_api_url = response['rest_instance_url']
+				return true
+			else
+				return false
+			end
+	end
 
 		def refresh!
 			refresh true
@@ -163,7 +202,7 @@ module MarketingCloudSDK
 			s.client = self
 			lists = ids.collect{|id| {'ID' => id}}
 			s.properties = {"EmailAddress" => email, "Lists" => lists}
-			p s.properties 
+			p s.properties
 			s.properties['SubscriberKey'] = subscriber_key if subscriber_key
 
 			# Try to add the subscriber
@@ -183,55 +222,55 @@ module MarketingCloudSDK
 		def SendTriggeredSends(arrayOfTriggeredRecords)
 			sendTS = ET_TriggeredSend.new
 			sendTS.authStub = self
-			
+
 			sendTS.properties = arrayOfTriggeredRecords
 			sendResponse = sendTS.send
-			
+
 			return sendResponse
 		end
 		def SendEmailToList(emailID, listID, sendClassificationCustomerKey)
-			email = ET_Email::SendDefinition.new 
-			email.properties = {"Name"=>SecureRandom.uuid, "CustomerKey"=>SecureRandom.uuid, "Description"=>"Created with RubySDK"} 
+			email = ET_Email::SendDefinition.new
+			email.properties = {"Name"=>SecureRandom.uuid, "CustomerKey"=>SecureRandom.uuid, "Description"=>"Created with RubySDK"}
 			email.properties["SendClassification"] = {"CustomerKey"=>sendClassificationCustomerKey}
 			email.properties["SendDefinitionList"] = {"List"=> {"ID"=>listID}, "DataSourceTypeID"=>"List"}
 			email.properties["Email"] = {"ID"=>emailID}
 			email.authStub = self
 			result = email.post
-			if result.status then 
-				sendresult = email.send 
-				if sendresult.status then 
+			if result.status then
+				sendresult = email.send
+				if sendresult.status then
 					deleteresult = email.delete
 					return sendresult
-				else 
+				else
 					raise "Unable to send using send definition due to: #{result.results[0][:status_message]}"
-				end 
+				end
 			else
 				raise "Unable to create send definition due to: #{result.results[0][:status_message]}"
-			end 
-		end 
-			
+			end
+		end
+
 		def SendEmailToDataExtension(emailID, sendableDataExtensionCustomerKey, sendClassificationCustomerKey)
-			email = ET_Email::SendDefinition.new 
-			email.properties = {"Name"=>SecureRandom.uuid, "CustomerKey"=>SecureRandom.uuid, "Description"=>"Created with RubySDK"} 
+			email = ET_Email::SendDefinition.new
+			email.properties = {"Name"=>SecureRandom.uuid, "CustomerKey"=>SecureRandom.uuid, "Description"=>"Created with RubySDK"}
 			email.properties["SendClassification"] = {"CustomerKey"=> sendClassificationCustomerKey}
 			email.properties["SendDefinitionList"] = {"CustomerKey"=> sendableDataExtensionCustomerKey, "DataSourceTypeID"=>"CustomObject"}
 			email.properties["Email"] = {"ID"=>emailID}
 			email.authStub = self
 			result = email.post
-			if result.status then 
-				sendresult = email.send 
-				if sendresult.status then 
+			if result.status then
+				sendresult = email.send
+				if sendresult.status then
 					deleteresult = email.delete
 					return sendresult
-				else 
+				else
 					raise "Unable to send using send definition due to: #{result.results[0][:status_message]}"
-				end 
+				end
 			else
 				raise "Unable to create send definition due to: #{result.results[0][:status_message]}"
-			end 
+			end
 		end
 		def CreateAndStartListImport(listId,fileName)
-			import = ET_Import.new 
+			import = ET_Import.new
 			import.authStub = self
 			import.properties = {"Name"=> "SDK Generated Import #{DateTime.now.to_s}"}
 			import.properties["CustomerKey"] = SecureRandom.uuid
@@ -244,16 +283,16 @@ module MarketingCloudSDK
 			import.properties["RetrieveFileTransferLocation"] = {"CustomerKey"=>"ExactTarget Enhanced FTP"}
 			import.properties["UpdateType"] = "AddAndUpdate"
 			result = import.post
-			
-			if result.status then 
-				return import.start 
+
+			if result.status then
+				return import.start
 			else
 				raise "Unable to create import definition due to: #{result.results[0][:status_message]}"
-			end 
-		end 
-			
+			end
+		end
+
 		def CreateAndStartDataExtensionImport(dataExtensionCustomerKey, fileName, overwrite)
-			import = ET_Import.new 
+			import = ET_Import.new
 			import.authStub = self
 			import.properties = {"Name"=> "SDK Generated Import #{DateTime.now.to_s}"}
 			import.properties["CustomerKey"] = SecureRandom.uuid
@@ -266,25 +305,25 @@ module MarketingCloudSDK
 			import.properties["RetrieveFileTransferLocation"] = {"CustomerKey"=>"ExactTarget Enhanced FTP"}
 			if overwrite then
 				import.properties["UpdateType"] = "Overwrite"
-			else 
+			else
 				import.properties["UpdateType"] = "AddAndUpdate"
-			end 
+			end
 			result = import.post
-			
-			if result.status then 
-				return import.start 
+
+			if result.status then
+				return import.start
 			else
 				raise "Unable to create import definition due to: #{result.results[0][:status_message]}"
-			end 
-		end 
-			
+			end
+		end
+
 		def CreateProfileAttributes(allAttributes)
-			attrs = ET_ProfileAttribute.new 
+			attrs = ET_ProfileAttribute.new
 			attrs.authStub = self
 			attrs.properties = allAttributes
 			return attrs.post
 		end
-		
+
 		def CreateContentAreas(arrayOfContentAreas)
 			postC = ET_ContentArea.new
 			postC.authStub = self
