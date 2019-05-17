@@ -132,7 +132,7 @@ module MarketingCloudSDK
 			@refresh_mutex.synchronize do
 				raise 'Require Client Id and Client Secret to refresh tokens' unless (id && secret)
 
-				if (self.use_oAuth2_authentication == 'true')
+				if (self.use_oAuth2_authentication == true)
 					self.refreshWithOAuth2(force)
 					return
 				end

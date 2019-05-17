@@ -121,7 +121,7 @@ module MarketingCloudSDK
 		include MarketingCloudSDK::Targeting
 
 		def header
-			if use_oAuth2_authentication == 'true' then
+			if use_oAuth2_authentication == true then
 				{
 						'fueloauth' => {'fueloauth' => access_token},
 						:attributes! => { 'fueloauth'=>{ 'xmlns' => 'http://exacttarget.com' }}
@@ -158,7 +158,7 @@ module MarketingCloudSDK
 					headers: {'User-Agent' => 'FuelSDK-Ruby-v' + MarketingCloudSDK::VERSION}
 			}
 
-			if use_oAuth2_authentication == 'true' then
+			if use_oAuth2_authentication == true then
 				soap_client_options.delete(:wsse_auth)
 			end
 
