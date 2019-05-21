@@ -103,7 +103,7 @@ module MarketingCloudSDK
         self.secret = client_config["secret"]
         self.signature = client_config["signature"]
 				self.base_api_url = !(client_config["base_api_url"].to_s.strip.empty?) ? client_config["base_api_url"] : 'https://www.exacttargetapis.com'
-				self.request_token_url = !(client_config["request_token_url"].to_s.strip.empty?) ? client_config["request_token_url"] : 'https://auth.exacttargetapis.com/v1/requestToken'
+				self.request_token_url = client_config["request_token_url"]
 				self.soap_endpoint = client_config["soap_endpoint"]
 				self.use_oAuth2_authentication = client_config["use_oAuth2_authentication"]
 				self.account_id = client_config["account_id"]
@@ -115,9 +115,12 @@ module MarketingCloudSDK
 				self.base_api_url =  'https://www.exacttargetapis.com'
 			end
 
-			# Leaving this for backwards compatibility
-			if (!self.request_token_url)
-				self.request_token_url =  params['request_token_url'] ? params['request_token_url'] : 'https://auth.exacttargetapis.com/v1/requestToken'
+			if (self.request_token_url.to_s.strip.empty?)
+				if(use_oAuth2_authentication == true)
+					raise 'request_token_url (Auth TSE) is mandatory when using OAuth2 authentication'
+				else
+					self.request_token_url =  'https://auth.exacttargetapis.com/v1/requestToken'
+				end
 			end
 
 			self.jwt = params['jwt'] if params['jwt']
