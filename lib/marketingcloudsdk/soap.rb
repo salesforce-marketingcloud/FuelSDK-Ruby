@@ -121,11 +121,18 @@ module MarketingCloudSDK
 		include MarketingCloudSDK::Targeting
 
 		def header
-			raise 'Require legacy token for soap header' unless internal_token
-			{
-				'oAuth' => {'oAuthToken' => internal_token},
-				:attributes! => { 'oAuth' => { 'xmlns' => 'http://exacttarget.com' }}
-			}
+			if use_oAuth2_authentication == true then
+				{
+						'fueloauth' => {'fueloauth' => access_token},
+						:attributes! => { 'fueloauth'=>{ 'xmlns' => 'http://exacttarget.com' }}
+				}
+			else
+				raise 'Require legacy token for soap header' unless internal_token
+				{
+						'oAuth' => {'oAuthToken' => internal_token},
+						:attributes! => { 'oAuth' => { 'xmlns' => 'http://exacttarget.com' }}
+				}
+			end
 		end
 
 		def debug
@@ -138,17 +145,24 @@ module MarketingCloudSDK
 
 		def soap_client
 			self.refresh
-			@soap_client = Savon.client(
-				soap_header: header,
-				wsdl: wsdl,
-				endpoint: endpoint,
-				wsse_auth: ["*", "*"],
-				raise_errors: false,
-				log: debug,
-				open_timeout:180,
-				read_timeout: 180,
-				headers: {'User-Agent' => 'FuelSDK-Ruby-v' + MarketingCloudSDK::VERSION}
-			)
+
+			soap_client_options = {
+					soap_header: header,
+					wsdl: wsdl,
+					endpoint: endpoint,
+					wsse_auth: ["*", "*"],
+					raise_errors: false,
+					log: debug,
+					open_timeout:180,
+					read_timeout: 180,
+					headers: {'User-Agent' => 'FuelSDK-Ruby-v' + MarketingCloudSDK::VERSION}
+			}
+
+			if use_oAuth2_authentication == true then
+				soap_client_options.delete(:wsse_auth)
+			end
+
+			@soap_client = Savon.client(soap_client_options)
 		end
 
 		def soap_describe object_type
