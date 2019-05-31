@@ -2,4 +2,4 @@
 source "/opt/sb/sb-pipeline.sh"
 set -e
 
-gem_deploy skynet.gemspec
+gem_deploy fuelsdk.gemspec
