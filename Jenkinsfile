@@ -1,4 +1,4 @@
-PROJECT = 'fueksdk'
+PROJECT = 'fuelsdk'
 
 pipeline {
   agent any
