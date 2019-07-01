@@ -65,7 +65,7 @@ gem build marketingcloudsdk.gemspec
 Install the newly built gem
 
 ```ruby
-gem install marketingcloudsdk-1.2.0.gem
+gem install marketingcloudsdk
 ```
 
 If you have not registered your application or you need to lookup your Application Key or Application Signature values, please go to App Center at [Code@: ExactTarget's Developer Community](http://code.exacttarget.com/appcenter "Code@ App Center").
