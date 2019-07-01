@@ -34,25 +34,66 @@ WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWIS
 USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =end
 
+require 'json'
+
 module MarketingCloudSDK::Targeting
   attr_accessor :access_token
-  attr_reader :endpoint
+  attr_reader :endpoint, :soap_endpoint
 
   include MarketingCloudSDK::HTTPRequest
 
+  def cache_file
+    'soap_cache_file.json'
+  end
+
   def endpoint
     unless @endpoint
-      determine_stack
+      get_soap_endpoint
     end
     @endpoint
   end
 
+  def get_soap_endpoint_from_file
+    data_hash = nil
+
+    if File.exist? cache_file
+      file = File.read(cache_file)
+      data_hash = JSON.parse(file)
+    end
+
+    data_hash
+  end
+
+  def set_soap_endpoint_to_file url
+    data_hash = {
+        'url' => url,
+        'timestamp' => Time.new.to_f + (10 * 60)
+    }
+
+    File.open(cache_file, 'w') do |f|
+      f.write(JSON.generate(data_hash))
+    end
+  end
+
   protected
-    def determine_stack
-      options = {'params' => {'access_token' => self.access_token}}
-      response = get("https://www.exacttargetapis.com/platform/v1/endpoints/soap", options)
+    def get_soap_endpoint
+      if self.soap_endpoint
+        @endpoint = self.soap_endpoint
+        return
+      end
+
+      cache_data = get_soap_endpoint_from_file
+
+      if cache_data.nil? === false and not cache_data['url'].nil? and cache_data['timestamp'].to_f > Time.new.to_f
+        @endpoint = cache_data['url']
+        return
+      end
+
+      options = {'access_token' => self.access_token}
+      response = get(self.base_api_url +  "/platform/v1/endpoints/soap", options)
       @endpoint = response['url']
+      set_soap_endpoint_to_file @endpoint
     rescue => e
-      raise 'Unable to determine stack using: ' + e.message
+      @endpoint = 'https://webservice.exacttarget.com/Service.asmx'
     end
 end

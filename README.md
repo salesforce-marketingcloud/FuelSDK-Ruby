@@ -6,6 +6,33 @@ ExactTarget Fuel SDK / SalesforceMarektingCloudSDK for Ruby
 ## Overview ##
 The Fuel SDK for Ruby provides easy access to ExactTarget's Fuel API Family services, including a collection of REST APIs and a SOAP API. These APIs provide access to ExactTarget functionality via common collection types such as array/hash.
 
+
+## New Features in Version 1.2.0 ##
+- **OAuth2 authentication support** - [More Details](https://developer.salesforce.com/docs/atlas.en-us.mc-app-development.meta/mc-app-development/integration-considerations.htm)
+
+    To enable OAuth2 authentication, pass ```use_oAuth2_authentication => true``` in the params argument to the Client's class constructor.
+    
+    Example of instantiating the Client class:
+    
+    ```
+    myclient = MarketingCloudSDK::Client.new({
+        'client' => {
+            'id' => '<CLIENT_ID>',
+            'secret' => '<CLIENT_SECRET>',
+            'request_token_url' => '<AUTH TENANT SPECIFIC ENDPOINT>',
+            'soap_endpoint' => '<SOAP TENANT SPECIFIC ENDPOINT>',
+            'base_api_url' => '<REST TENANT SPECIFIC ENDPOINT>',
+            'use_oAuth2_authentication' => true,
+            'account_id' => <TARGET_ACCOUNT_ID>,
+            'scope' => '<PERMISSION_LIST>'
+            }
+        })
+    ```
+
+## New Features in Version 1.1.0 ##
+- **Added support for your tenant's endpoints - [More Details](https://developer.salesforce.com/docs/atlas.en-us.mc-apis.meta/mc-apis/your-subdomain-tenant-specific-endpoints.htm) **
+- **MarketingCloudSDK gem will be available as sfmc-fuelsdk-ruby on ruby gems.
+
 ## Migrationg to version to version 1.0 ##
 - **FuelSDK gem has been renamed to MarketingCloudSDK and will be availbale as marketingcloudsdk on ruby gems.
   
@@ -98,13 +125,22 @@ The Client class takes care of many of the required steps when accessing ExactTa
 
 Client class accepts multiple parameters
 
-**Parameters** - Allows for passing authentication information for use with SSO with a JWT or for passing ClientID/ClientSecret:
+**Parameters** - Allows for passing authentication information for use with SSO with a JWT or for passing ClientID/ClientSecret. 
+Additionally the API hostname (base_api_url),Authentication URL (request_token_url) and the SOAP endpoint (soap_endpoint) is now configurable:
 
 Example passing ClientID/ClientSecret: 
 > myclient = MarketingCloudSDK::Client.new({'client' => {'id' => 'exampleID','secret' => 'exampleSecret'}})
 
 Example passing ClientID/ClientSecret/AppSignature/JWT: 
 > myclient = MarketingCloudSDK::Client.new({'client' => {'id' => 'exampleID','secret' => 'exampleSecret', 'signature'=>'examplesig'}, 'jwt'=>'exampleJWT'})
+
+Example passing ClientID/ClientSecret/BaseAPIUrl/ReqTokenAuthUrl/Soap Endpoint
+> myclient = MarketingCloudSDK::Client.new('client' => {'id' => 'exampleID', 'secret' => 'exampleSecret', 'base_api_url' => 'http://getapis', 'request_token_url' => 'http://authapi', 'soap_endpoint' => 'http://soapendpoint'})
+
+**Note** - The following defaults apply if the following parameters are omitted:
+- base_api_url: https://www.exacttargetapis.com
+- request_token_url: https://auth.exacttargetapis.com/v1/requestToken
+- soap_endpoint: https://webservice.exacttarget.com/Service.asmx
 
 **Debug** - If 2nd parameter for debug is set to true, all API requests that the Fuel SDK is making behind the scenes will be logged.  This option should only be set to true in order to troubleshoot during the development process and should never be used in a production scenario.
 > myclient = MarketingCloudSDK::Client.new auth, true <br> 
