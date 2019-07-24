@@ -6,6 +6,34 @@ ExactTarget Fuel SDK / SalesforceMarektingCloudSDK for Ruby
 ## Overview ##
 The Fuel SDK for Ruby provides easy access to ExactTarget's Fuel API Family services, including a collection of REST APIs and a SOAP API. These APIs provide access to ExactTarget functionality via common collection types such as array/hash.
 
+## New Features in Version 1.3.0 ##
+- **Added Refresh Token support for OAuth2 authentication**
+- **Added Web/Public App support for OAuth2 authentication**
+
+    More details on Access Tokens for Web/Public Apps can be found [here](https://developer.salesforce.com/docs/atlas.en-us.mc-app-development.meta/mc-app-development/access-token-app.htm)
+
+    Example of instantiating the Client class:
+        
+    ```
+    myclient = MarketingCloudSDK::Client.new({
+        'client' => {
+            'id' => '<CLIENT_ID>',
+            'secret' => '<CLIENT_SECRET>',
+            'request_token_url' => '<AUTH TENANT SPECIFIC ENDPOINT>',
+            'soap_endpoint' => '<SOAP TENANT SPECIFIC ENDPOINT>',
+            'base_api_url' => '<REST TENANT SPECIFIC ENDPOINT>',
+            'use_oAuth2_authentication' => true,
+            'account_id' => <TARGET_ACCOUNT_ID>,
+            'scope' => '<PERMISSION_LIST>',
+            'application_type' => '<APPLICATION_TYPE>',
+            'redirect_URI' => '<REDIRECT_URI_FOR_PUBLIC/WEB_APP>',
+            'authorization_code' => '<AUTHORIZATION_CODE_FOR_PUBLIC/WEB_APP>'
+            }
+        })
+    ```
+
+ * application_type can have one of the following values: `server`, `public`, `web`. The default value of application_type is `server`.
+
 
 ## New Features in Version 1.2.0 ##
 - **OAuth2 authentication support** - [More Details](https://developer.salesforce.com/docs/atlas.en-us.mc-app-development.meta/mc-app-development/integration-considerations.htm)
@@ -65,7 +93,7 @@ gem build marketingcloudsdk.gemspec
 Install the newly built gem
 
 ```ruby
-gem install marketingcloudsdk-1.2.0.gem
+gem install marketingcloudsdk-1.3.0.gem
 ```
 
 If you have not registered your application or you need to lookup your Application Key or Application Signature values, please go to App Center at [Code@: ExactTarget's Developer Community](http://code.exacttarget.com/appcenter "Code@ App Center").
