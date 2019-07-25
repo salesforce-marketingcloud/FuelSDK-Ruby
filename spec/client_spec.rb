@@ -89,21 +89,13 @@ describe(MarketingCloudSDK::Client) do
     it 'with web/public app and null/blank/empty authorization_code or redirect_URI should raise exception' do
       expected_exception = 'authorization_code or redirect_URI is null: For Public/Web Apps, the authorization_code and redirect_URI must be passed when instantiating Client'
 
-      test_stub = get_test_stub
-
       ['web', 'public'].each do |app_type|
         [nil, '   ', ''].each do |exception_raiser|
           ['authorization_code', 'redirect_URI'].each do |under_test_prop|
+            test_stub = get_test_stub
 
             test_stub['client']['application_type'] = app_type
             test_stub['client'][under_test_prop] = exception_raiser
-
-            # Setting a value for the property which is NOT under test so that only the property under test can raise the exception
-            if under_test_prop == 'authorization_code'
-              test_stub['client']['redirect_URI'] = 'redirect_URI'
-            else
-              test_stub['client']['authorization_code'] = 'authorization_code'
-            end
 
             expect { MarketingCloudSDK::Client.new(test_stub) }.to raise_error(expected_exception)
           end
