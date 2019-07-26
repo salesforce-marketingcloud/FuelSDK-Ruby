@@ -86,18 +86,27 @@ describe(MarketingCloudSDK::Client) do
       expect(client.application_type).to eq 'server'
     end
 
-    it 'with web/public app and null/blank/empty authorization_code or redirect_URI should raise exception' do
+    describe 'with web/public app and null/blank/empty authorization_code or redirect_URI should raise exception' do
       expected_exception = 'authorization_code or redirect_URI is null: For Public/Web Apps, the authorization_code and redirect_URI must be passed when instantiating Client'
+
+      exception_raisers = Hash.new.tap do |h|
+        h[nil] = 'nil'
+        h['   '] = 'blank string'
+        h[''] = 'empty string'
+      end
 
       ['web', 'public'].each do |app_type|
         [nil, '   ', ''].each do |exception_raiser|
           ['authorization_code', 'redirect_URI'].each do |under_test_prop|
-            test_stub = get_test_stub
 
-            test_stub['client']['application_type'] = app_type
-            test_stub['client'][under_test_prop] = exception_raiser
+            it "#{app_type} app with #{exception_raisers[exception_raiser]} #{under_test_prop} raises an exception" do
+              test_stub = get_test_stub
 
-            expect { MarketingCloudSDK::Client.new(test_stub) }.to raise_error(expected_exception)
+              test_stub['client']['application_type'] = app_type
+              test_stub['client'][under_test_prop] = exception_raiser
+
+              expect { MarketingCloudSDK::Client.new(test_stub) }.to raise_error(expected_exception)
+            end
           end
         end
       end
