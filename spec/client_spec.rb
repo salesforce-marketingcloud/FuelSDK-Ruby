@@ -45,7 +45,7 @@ describe(MarketingCloudSDK::Client) do
       expect(client.debug).to be false
     end
 
-    it 'with base_api_url set to default value if base_api_url is not set in params and Legacy auth is used' do
+    it 'with base_api_url set to default value if base_api_url is not set' do
       client = MarketingCloudSDK::Client.new(get_test_stub)
 
       expect(client.base_api_url).to eq 'https://www.exacttargetapis.com'
@@ -95,12 +95,13 @@ describe(MarketingCloudSDK::Client) do
         h[''] = 'empty string'
       end
 
+      test_stub = get_test_stub
+
       ['web', 'public'].each do |app_type|
         [nil, '   ', ''].each do |exception_raiser|
           ['authorization_code', 'redirect_URI'].each do |under_test_prop|
 
             it "#{app_type} app with #{exception_raisers[exception_raiser]} #{under_test_prop} raises an exception" do
-              test_stub = get_test_stub
 
               test_stub['client']['application_type'] = app_type
               test_stub['client'][under_test_prop] = exception_raiser
@@ -127,8 +128,14 @@ describe(MarketingCloudSDK::Client) do
       end
     end
 
-    it 'with web/server app and null/blank/empty id or secret should raise exception' do
-      expected_exception = 'Require Client Id and Client Secret to refresh tokens'
+    describe 'with web/server app and null/blank/empty id or secret should raise exception' do
+      expected_exception = 'id and secret must pe passed when instantiating Client'
+
+      exception_raisers = Hash.new.tap do |h|
+        h[nil] = 'nil'
+        h['   '] = 'blank string'
+        h[''] = 'empty string'
+      end
 
       test_stub = get_test_stub
       test_stub['client']['authorization_code'] = 'authorization_code'
@@ -138,10 +145,13 @@ describe(MarketingCloudSDK::Client) do
         [nil, '   ', ''].each do |exception_raiser|
           ['id', 'secret'].each do |under_test_prop|
 
+            it "#{app_type} app with #{exception_raisers[exception_raiser]} #{under_test_prop} raises an exception" do
+
             test_stub['client']['application_type'] = app_type
             test_stub['client'][under_test_prop] = exception_raiser
 
             expect { MarketingCloudSDK::Client.new(test_stub) }.to raise_error(expected_exception)
+            end
           end
         end
       end
@@ -291,7 +301,7 @@ describe(MarketingCloudSDK::Client) do
       allow_any_instance_of(MarketingCloudSDK::Client).to receive(:refresh).and_return(true)
     end
 
-    it 'should have public attributes' do
+    it 'should have public app attributes' do
       test_stub = get_test_stub
       test_stub['client']['application_type'] = 'public'
 
@@ -305,7 +315,7 @@ describe(MarketingCloudSDK::Client) do
       expect('authorization_code').to eq payload['grant_type']
     end
 
-    it 'for public app should not have client secret' do
+    it 'should not have client secret for public app' do
       test_stub = get_test_stub
       test_stub['client']['application_type'] = 'public'
 
@@ -344,7 +354,7 @@ describe(MarketingCloudSDK::Client) do
       expect(client.secret).to eq payload['client_secret']
     end
 
-    it 'for server app should not have code and redirect_uri' do
+    it 'should not have code and redirect_uri for server app' do
       test_stub = get_test_stub
       test_stub['client']['application_type'] = 'server'
 
@@ -371,7 +381,7 @@ describe(MarketingCloudSDK::Client) do
   end
 
   context 'for public and web integrations, access_token and refresh_token' do
-
+  # Test expects a Public/Web App integration config in spec/public_or_web_integration_credentials.rb
     it 'should differ if refresh token is enforced' do
 
       client = MarketingCloudSDK::Client.new(auth)
