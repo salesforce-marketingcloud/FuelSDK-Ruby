@@ -9,7 +9,7 @@ begin
 	retrieveDate = '2011-01-15T13:00:00.000'
 
 	p '>>> Retrieve Filtered BounceEvents with GetMoreResults'
-	getBounceEvent = FuelSDK::BounceEvent.new()
+	getBounceEvent = MarketingCloudSDK::BounceEvent.new()
 	getBounceEvent.authStub = stubObj
 	getBounceEvent.props = ["SendID","SubscriberKey","EventDate","Client.ID","EventType","BatchID","TriggeredSendDefinitionObjectID","PartnerKey"]
 	getBounceEvent.filter = {'Property' => 'EventDate','SimpleOperator' => 'greaterThan','DateValue' => retrieveDate}

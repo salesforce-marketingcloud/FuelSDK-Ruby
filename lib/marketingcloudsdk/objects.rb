@@ -640,7 +640,7 @@ module MarketingCloudSDK
 		end
 
 		def id
-			"https://www.exacttargetapis.com/hub/v1/campaigns/%{id}"
+			self.client.base_api_url + '/hub/v1/campaigns/%{id}'
 		end
 
 		class Asset < Objects::Base
@@ -654,7 +654,7 @@ module MarketingCloudSDK
 			end
 
 			def id
-				'https://www.exacttargetapis.com/hub/v1/campaigns/%{id}/assets/%{assetId}'
+				self.client.base_api_url + '/hub/v1/campaigns/%{id}/assets/%{assetId}'
 			end
 		end
 	end

@@ -7,7 +7,7 @@ RSpec.configure do |config|
   config.mock_with :rspec
 
   # Use color in STDOUT
-  config.color_enabled = true
+  config.color = true
 
   # Use the specified formatter
   config.formatter = :documentation

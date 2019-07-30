@@ -11,6 +11,7 @@ spec/reports
 test/tmp
 test/version_tmp
 tmp
+samples/soap_cache_file.json
 
 # YARD artifacts
 .yardoc
@@ -24,3 +25,4 @@ config.yaml
 samples/sample_helper.rb
 .DS_STORE
 gengem.bat
+.idea

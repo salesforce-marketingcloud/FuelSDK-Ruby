@@ -103,7 +103,12 @@ module MarketingCloudSDK
       def rest_request action, url, options={}
         #Try to refresh the token and if we do then we need to regenerate the header as well.
         self.refresh
-        (options['params'] ||= {}).merge! 'access_token' => access_token
+        (options['params'] ||= {})
+
+        if access_token
+          options['access_token'] = access_token
+        end
+
         rsp = rest_client.send(action, url, options)
         raise 'Unauthorized' if rsp.message == 'Unauthorized'
 
