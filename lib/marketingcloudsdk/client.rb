@@ -143,7 +143,7 @@ module MarketingCloudSDK
 				end
 			else
 				if id.to_s.strip.empty? or secret.to_s.strip.empty?
-					raise 'Require Client Id and Client Secret to refresh tokens'
+					raise 'id and secret must pe passed when instantiating Client'
 				end
 			end
 
