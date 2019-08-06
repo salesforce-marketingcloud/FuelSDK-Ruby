@@ -8,6 +8,7 @@ lib/bundler/man
 pkg
 rdoc
 spec/reports
+spec/public_or_web_integration_credentials.rb
 test/tmp
 test/version_tmp
 tmp

@@ -1,94 +1,208 @@
 require 'spec_helper.rb'
+require 'public_or_web_integration_credentials'
 
-describe MarketingCloudSDK::Client do
+def get_test_stub
+  {'client' => {
+      'use_oAuth2_authentication' => true,
+      'id' => 'id',
+      'secret' => 'secret',
+      'request_token_url' => 'request_token_url',
+      'account_id' => 'account_id',
+      'authorization_code' => 'authorization_code',
+      'redirect_URI' => 'redirect_URI'
+  }}
+end
+
+describe(MarketingCloudSDK::Client) do
 
   context 'initialized' do
 
+    before(:each) do
+      allow_any_instance_of(MarketingCloudSDK::Client).to receive(:refresh).and_return(true)
+    end
+
     it 'with client parameters' do
-      client = MarketingCloudSDK::Client.new 'client' => {'id' => '1234', 'secret' => 'ssssh', 'signature' => 'hancock',
-                                                          'base_api_url' => 'http://getapis', 'request_token_url' => 'http://authapi'}
-      expect(client.secret).to eq 'ssssh'
-      expect(client.id).to eq '1234'
-      expect(client.signature).to eq 'hancock'
-      expect(client.base_api_url).to eq 'http://getapis'
-      expect(client.request_token_url).to eq 'http://authapi'
+      test_stub = get_test_stub
+
+      client = MarketingCloudSDK::Client.new(test_stub)
+
+      expect(client.use_oAuth2_authentication).to be test_stub['client']['use_oAuth2_authentication']
+      expect(client.id).to eq test_stub['client']['id']
+      expect(client.secret).to eq test_stub['client']['secret']
+      expect(client.account_id).to eq test_stub['client']['account_id']
+      expect(client.request_token_url).to eq test_stub['client']['request_token_url']
     end
 
     it 'with debug=true' do
-      client = MarketingCloudSDK::Client.new({}, true)
+      client = MarketingCloudSDK::Client.new(get_test_stub, true)
+
       expect(client.debug).to be true
     end
 
     it 'with debug=false' do
-      client = MarketingCloudSDK::Client.new({}, false)
+      client = MarketingCloudSDK::Client.new(get_test_stub, false)
+
       expect(client.debug).to be false
     end
 
-    it 'sets the request_token url to parameter if it exists' do
-      client = MarketingCloudSDK::Client.new({'request_token_url' => 'fake/url'}, false)
-      expect(client.request_token_url).to eq 'fake/url'
-    end
+    it 'with base_api_url set to default value if base_api_url is not set' do
+      client = MarketingCloudSDK::Client.new(get_test_stub)
 
-    it 'sets the base_api_url url to a default if it does not exist' do
-      client = MarketingCloudSDK::Client.new({}, false)
       expect(client.base_api_url).to eq 'https://www.exacttargetapis.com'
     end
 
-    it 'sets the request_token url to a default if it does not exist' do
-      client = MarketingCloudSDK::Client.new({}, false)
-      expect(client.request_token_url).to eq 'https://auth.exacttargetapis.com/v1/requestToken'
+    it 'with null/blank/empty request_token_url and use_oAuth2_authentication=true should raise exception' do
+      expected_exception = 'request_token_url (Auth TSE) is mandatory when using OAuth2 authentication'
+
+      test_stub = get_test_stub
+
+      [nil, '   ', ''].each do |exception_raiser|
+        test_stub['client']['request_token_url'] = exception_raiser
+        expect { MarketingCloudSDK::Client.new(test_stub) }.to raise_error(expected_exception)
+      end
     end
 
-    it 'creates SoapClient' do
-      client = MarketingCloudSDK::Client.new
+    it 'with SoapClient' do
+      client = MarketingCloudSDK::Client.new(get_test_stub)
+
       expect(client).to be_kind_of MarketingCloudSDK::Soap
     end
 
-    it '#wsdl defaults to https://webservice.exacttarget.com/etframework.wsdl' do
-      client = MarketingCloudSDK::Client.new
+    it 'with RestClient' do
+      client = MarketingCloudSDK::Client.new(get_test_stub)
+
+      expect(client).to be_kind_of MarketingCloudSDK::Rest
+    end
+
+    it 'with wsdl set to default value if  not set in params' do
+      client = MarketingCloudSDK::Client.new(get_test_stub)
+
       expect(client.wsdl).to eq 'https://webservice.exacttarget.com/etframework.wsdl'
     end
 
-    it 'creates RestClient' do
-      client = MarketingCloudSDK::Client.new
-      expect(client).to be_kind_of MarketingCloudSDK::Rest
+    it 'with application_type set to \'server\' if application_type is not set in params' do
+      client = MarketingCloudSDK::Client.new(get_test_stub)
+
+      expect(client.application_type).to eq 'server'
+    end
+
+    describe 'with web/public app and null/blank/empty authorization_code or redirect_URI should raise exception' do
+      expected_exception = 'authorization_code or redirect_URI is null: For Public/Web Apps, the authorization_code and redirect_URI must be passed when instantiating Client'
+
+      exception_raisers = Hash.new.tap do |h|
+        h[nil] = 'nil'
+        h['   '] = 'blank string'
+        h[''] = 'empty string'
+      end
+
+      test_stub = get_test_stub
+
+      ['web', 'public'].each do |app_type|
+        [nil, '   ', ''].each do |exception_raiser|
+          ['authorization_code', 'redirect_URI'].each do |under_test_prop|
+
+            it "#{app_type} app with #{exception_raisers[exception_raiser]} #{under_test_prop} raises an exception" do
+
+              test_stub['client']['application_type'] = app_type
+              test_stub['client'][under_test_prop] = exception_raiser
+
+              expect { MarketingCloudSDK::Client.new(test_stub) }.to raise_error(expected_exception)
+            end
+          end
+        end
+      end
+    end
+
+    it 'with public app and null/blank/empty id should raise exception' do
+      expected_exception = 'id is null: id must be passed when instantiating Client'
+
+      test_stub = get_test_stub
+      test_stub['client']['application_type'] = 'public'
+      test_stub['client']['authorization_code'] = 'authorization_code'
+      test_stub['client']['redirect_URI'] = 'redirect_URI'
+
+      [nil, '   ', ''].each do |exception_raiser|
+        test_stub['client']['id'] = exception_raiser
+
+        expect { MarketingCloudSDK::Client.new(test_stub) }.to raise_error(expected_exception)
+      end
+    end
+
+    describe 'with web/server app and null/blank/empty id or secret should raise exception' do
+      expected_exception = 'id and secret must pe passed when instantiating Client'
+
+      exception_raisers = Hash.new.tap do |h|
+        h[nil] = 'nil'
+        h['   '] = 'blank string'
+        h[''] = 'empty string'
+      end
+
+      test_stub = get_test_stub
+      test_stub['client']['authorization_code'] = 'authorization_code'
+      test_stub['client']['redirect_URI'] = 'redirect_URI'
+
+      ['web', 'server'].each do |app_type|
+        [nil, '   ', ''].each do |exception_raiser|
+          ['id', 'secret'].each do |under_test_prop|
+
+            it "#{app_type} app with #{exception_raisers[exception_raiser]} #{under_test_prop} raises an exception" do
+
+            test_stub['client']['application_type'] = app_type
+            test_stub['client'][under_test_prop] = exception_raiser
+
+            expect { MarketingCloudSDK::Client.new(test_stub) }.to raise_error(expected_exception)
+            end
+          end
+        end
+      end
     end
 
     describe 'with a wsdl' do
 
-      let(:client) { MarketingCloudSDK::Client.new 'defaultwsdl' => 'somewsdl' }
+      test_stub = get_test_stub
+
+      let(:client) { MarketingCloudSDK::Client.new test_stub }
 
       it'creates a SoapClient' do
         expect(client).to be_kind_of MarketingCloudSDK::Soap
       end
 
       it'#wsdl returns default wsdl' do
-        expect(client.wsdl).to eq 'somewsdl'
+        expect(client.wsdl).to eq 'https://webservice.exacttarget.com/etframework.wsdl'
       end
     end
   end
 
   context 'instance can set' do
 
-    let(:client) { MarketingCloudSDK::Client.new }
+    before(:each) do
+      allow_any_instance_of(MarketingCloudSDK::Client).to receive(:refresh).and_return(true)
+    end
+
+    let(:client) { MarketingCloudSDK::Client.new (get_test_stub)}
 
     it 'client id' do
-      client.id = 123
-      expect(client.id).to eq 123
+      client.id = 'some_id'
+
+      expect(client.id).to eq 'some_id'
     end
 
     it 'client secret' do
-      client.secret = 'sssh'
-      expect(client.secret).to eq 'sssh'
+      client.secret = 'some_secret'
+
+      expect(client.secret).to eq 'some_secret'
     end
 
     it 'refresh token' do
-      client.refresh_token = 'refresh'
-      expect(client.refresh_token).to eq 'refresh'
+      client.refresh_token = 'some_refresh_token'
+
+      expect(client.refresh_token).to eq 'some_refresh_token'
     end
 
     it 'debug' do
+      client.debug = false
       expect(client.debug).to be false
+
       client.debug = true
       expect(client.debug).to be true
     end
@@ -97,23 +211,23 @@ describe MarketingCloudSDK::Client do
   describe '#jwt=' do
 
     let(:payload) {
-     {
-      'request' => {
-        'user'=> {
-          'oauthToken' => 123456789,
-          'expiresIn' => 3600,
-          'internalOauthToken' => 987654321,
-          'refreshToken' => 101010101010
-        },
-        'application'=> {
-          'package' => 'JustTesting'
-        }
+      {
+          'request' => {
+              'user'=> {
+                  'oauthToken' => 'oAuthToken',
+                  'expiresIn' => 3600,
+                  'internalOauthToken' => 'internalOauthToken',
+                  'refreshToken' => 'refreshToken'
+              },
+              'application'=> {
+                  'package' => 'JustTesting'
+              }
+          }
       }
-     }
     }
 
     let(:sig){
-      sig = 'hanckock'
+      sig = 'signature'
     }
 
     let(:encoded) {
@@ -121,13 +235,20 @@ describe MarketingCloudSDK::Client do
     }
 
     it 'raises an exception when signature is missing' do
-      expect { MarketingCloudSDK::Client.new.jwt = encoded }.to raise_exception 'Require app signature to decode JWT'
+      test_stub = get_test_stub
+      test_stub['jwt'] = encoded
+
+      expect { MarketingCloudSDK::Client.new test_stub }.to raise_exception 'Require app signature to decode JWT'
     end
 
     describe 'decodes JWT' do
 
+      before(:each) do
+        allow_any_instance_of(MarketingCloudSDK::Client).to receive(:refresh).and_return(true)
+      end
+
       let(:sig){
-        sig = 'hanckock'
+        sig = 'signature'
       }
 
       let(:encoded) {
@@ -135,84 +256,161 @@ describe MarketingCloudSDK::Client do
       }
 
       let(:client) {
-        MarketingCloudSDK::Client.new 'client' => { 'id' => '1234', 'secret' => 'ssssh', 'signature' => sig }
+        test_stub = get_test_stub
+        test_stub['client']['signature'] = sig
+        test_stub['jwt'] = encoded
+
+        MarketingCloudSDK::Client.new test_stub
       }
 
       it 'making auth token available to client' do
-        client.jwt = encoded
-        expect(client.auth_token).to eq 123456789
+        expect(client.auth_token).to eq payload['request']['user']['oauthToken']
       end
 
       it 'making internal token available to client' do
-        client.jwt = encoded
-        expect(client.internal_token).to eq 987654321
+        expect(client.internal_token).to eq payload['request']['user']['internalOauthToken']
       end
 
       it 'making refresh token available to client' do
-        client.jwt = encoded
-        expect(client.refresh_token).to eq 101010101010
+        expect(client.refresh_token).to eq payload['request']['user']['refreshToken']
       end
     end
   end
 
   describe '#refresh_token' do
-    let(:client) { MarketingCloudSDK::Client.new }
+
+    before(:each) do
+      allow_any_instance_of(MarketingCloudSDK::Client).to receive(:refresh).and_return(true)
+    end
+
+    let(:client) { MarketingCloudSDK::Client.new get_test_stub }
 
     it 'defaults to nil' do
       expect(client.refresh_token).to be_nil
     end
 
     it 'can be accessed' do
-      client.refresh_token = '1234567890'
-      expect(client.refresh_token).to eq '1234567890'
+      client.refresh_token = 'refresh_token'
+      expect(client.refresh_token).to eq 'refresh_token'
     end
   end
 
-  describe '#refresh' do
+  context 'authentication payload' do
 
-    let(:client) { MarketingCloudSDK::Client.new }
-
-    context 'raises an exception' do
-
-      it 'when client id and secret are missing' do
-        expect { client.refresh }.to raise_exception 'Require Client Id and Client Secret to refresh tokens'
-      end
-
-      it 'when client id is missing' do
-        client.secret = 1234
-        expect { client.refresh }.to raise_exception 'Require Client Id and Client Secret to refresh tokens'
-      end
-
-      it 'when client secret is missing' do
-        client.id = 1234
-        expect { client.refresh }.to raise_exception 'Require Client Id and Client Secret to refresh tokens'
-      end
+    before(:each) do
+      allow_any_instance_of(MarketingCloudSDK::Client).to receive(:refresh).and_return(true)
     end
 
-    #context 'posts' do
-    #  let(:client) { MarketingCloudSDK::Client.new 'client' => { 'id' => 123, 'secret' => 'sssh'} }
-    #  it 'accessType=offline' do
-    #  client.stub(:post)
-    #    .with({'clientId' => 123, 'secret' => 'ssh', 'accessType' => 'offline'})
-    #    .and_return()
-    #end
+    it 'should have public app attributes' do
+      test_stub = get_test_stub
+      test_stub['client']['application_type'] = 'public'
 
-    #context 'updates' do
-    #  let(:client) { MarketingCloudSDK::Client.new 'client' => { 'id' => 123, 'secret' => 'sssh'} }
+      client = MarketingCloudSDK::Client.new(test_stub)
 
-    #  it 'access_token' do
-    #    #client.stub(:post).
-    #  end
-    #end
+      payload = client.createPayload
+
+      expect(client.id).to eq payload['client_id']
+      expect(client.redirect_URI).to eq payload['redirect_uri']
+      expect(client.authorization_code).to eq payload['code']
+      expect('authorization_code').to eq payload['grant_type']
+    end
+
+    it 'should not have client secret for public app' do
+      test_stub = get_test_stub
+      test_stub['client']['application_type'] = 'public'
+
+      client = MarketingCloudSDK::Client.new(test_stub)
+
+      payload = client.createPayload
+
+      expect(payload.key?('client_secret')).to be false
+    end
+
+    it 'should have web app attributes' do
+      test_stub = get_test_stub
+      test_stub['client']['application_type'] = 'web'
+
+      client = MarketingCloudSDK::Client.new(test_stub)
+
+      payload = client.createPayload
+
+      expect('authorization_code').to eq payload['grant_type']
+      expect(client.id).to eq payload['client_id']
+      expect(client.secret).to eq payload['client_secret']
+      expect(client.redirect_URI).to eq payload['redirect_uri']
+      expect(client.authorization_code).to eq payload['code']
+    end
+
+    it 'should have server attributes' do
+      test_stub = get_test_stub
+      test_stub['client']['application_type'] = 'server'
+
+      client = MarketingCloudSDK::Client.new(test_stub)
+
+      payload = client.createPayload
+
+      expect('client_credentials').to eq payload['grant_type']
+      expect(client.id).to eq payload['client_id']
+      expect(client.secret).to eq payload['client_secret']
+    end
+
+    it 'should not have code and redirect_uri for server app' do
+      test_stub = get_test_stub
+      test_stub['client']['application_type'] = 'server'
+
+      client = MarketingCloudSDK::Client.new(test_stub)
+
+      payload = client.createPayload
+
+      expect(payload.key?('code')).to be false
+      expect(payload.key?('redirect_uri')).to be false
+    end
+
+    it 'should have refresh_token attribute when refresh_token is not null/blank/empty on client' do
+      test_stub = get_test_stub
+      test_stub['refresh_token'] = 'refresh_token'
+      test_stub['client']['application_type'] = 'public'
+
+      client = MarketingCloudSDK::Client.new(test_stub)
+
+      payload = client.createPayload
+
+      expect('refresh_token').to eq payload['grant_type']
+      expect(client.refresh_token).to eq payload['refresh_token']
+    end
+  end
+
+  context 'for public and web integrations, access_token and refresh_token' do
+  # Test expects a Public/Web App integration config in spec/public_or_web_integration_credentials.rb
+    it 'should differ if refresh token is enforced' do
+
+      client = MarketingCloudSDK::Client.new(auth)
+
+      auth_token1 = client.access_token
+      refresh_token1 = client.refresh_token
+
+      client.refreshWithOAuth2(true)
+
+      auth_token2 = client.access_token
+      refresh_token2 = client.refresh_token
+
+      expect(auth_token1).not_to eq(auth_token2)
+      expect(refresh_token1).not_to eq(refresh_token2)
+    end
   end
 
   describe 'includes HTTPRequest' do
 
-    subject { MarketingCloudSDK::Client.new }
+    before(:each) do
+      allow_any_instance_of(MarketingCloudSDK::Client).to receive(:refresh).and_return(true)
+    end
+
+    subject { MarketingCloudSDK::Client.new get_test_stub}
 
     it { should respond_to(:get) }
     it { should respond_to(:post) }
     it { should respond_to(:patch) }
     it { should respond_to(:delete) }
+
   end
 end
