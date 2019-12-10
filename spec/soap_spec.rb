@@ -1,8 +1,8 @@
 require 'spec_helper'
 
-describe FuelSDK::Soap do
+describe MarketingCloudSDK::Soap do
 
-  let(:client) { FuelSDK::Client.new }
+  let(:client) { MarketingCloudSDK::Client.new }
 
   subject { client }
 
@@ -29,7 +29,7 @@ describe FuelSDK::Soap do
   it { should respond_to(:package_folders) }
   it { should respond_to(:package_folders=) }
 
-  its(:debug) { should be_false }
+  its(:debug) { should be false }
   its(:wsdl) { should eq 'https://webservice.exacttarget.com/etframework.wsdl' }
 
   describe '#header' do
@@ -76,7 +76,7 @@ describe FuelSDK::Soap do
       it 'formats soap :create message for single object' do
         expect(subject.soap_post 'Subscriber', 'EmailAddress' => 'test@fuelsdk.com' ).to eq([:create,
           {
-            'Objects' => [{'EmailAddress' => 'test@fuelsdk.com'}],
+            'Objects' => {'EmailAddress' => 'test@fuelsdk.com'},
             :attributes! => {'Objects' => {'xsi:type' => ('tns:Subscriber')}}
           }])
       end
@@ -92,10 +92,10 @@ describe FuelSDK::Soap do
       it 'formats soap :create message for single object with an attribute' do
         expect(subject.soap_post 'Subscriber', {'EmailAddress' => 'test@fuelsdk.com', 'Attributes'=> [{'Name'=>'First Name', 'Value'=>'first'}]}).to eq([:create,
           {
-            'Objects' => [{
+            'Objects' => {
               'EmailAddress' => 'test@fuelsdk.com',
               'Attributes' => [{'Name' => 'First Name', 'Value' => 'first'}],
-            }],
+            },
             :attributes! => {'Objects' => {'xsi:type' => ('tns:Subscriber')}}
           }])
       end
@@ -104,13 +104,13 @@ describe FuelSDK::Soap do
         expect(subject.soap_post 'Subscriber', {'EmailAddress' => 'test@fuelsdk.com',
           'Attributes'=> [{'Name'=>'First Name', 'Value'=>'first'}, {'Name'=>'Last Name', 'Value'=>'subscriber'}]}).to eq([:create,
           {
-            'Objects' => [{
+            'Objects' => {
               'EmailAddress' => 'test@fuelsdk.com',
               'Attributes' => [
                 {'Name' => 'First Name', 'Value' => 'first'},
                 {'Name' => 'Last Name', 'Value' => 'subscriber'},
               ],
-            }],
+            },
             :attributes! => {'Objects' => {'xsi:type' => ('tns:Subscriber')}}
           }])
       end

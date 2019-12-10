@@ -1,6 +1,6 @@
 require 'spec_helper'
-describe FuelSDK::Rest do
-  let(:client) { FuelSDK::Client.new }
+describe MarketingCloudSDK::Rest do
+  let(:client) { MarketingCloudSDK::Client.new }
 
   subject { client }
   it { should respond_to(:rest_get) }

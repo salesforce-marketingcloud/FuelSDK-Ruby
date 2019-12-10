@@ -1,8 +1,8 @@
-require 'fuelsdk'
+require 'marketingcloudsdk'
 require_relative 'sample_helper'
 
 begin
-	myclient = FuelSDK::Client.new auth
+	myclient = MarketingCloudSDK::Client.new auth
 	
 	DataExtensionCustomerKey = "62476204-bfd3-de11-95ca-001e0bbae8cc"
 	CSVFileName = "SDKExample.csv"

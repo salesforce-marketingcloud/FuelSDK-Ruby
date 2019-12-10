@@ -1,4 +1,4 @@
-require 'fuelsdk'
+require 'marketingcloudsdk'
 require_relative 'sample_helper'
 
 begin

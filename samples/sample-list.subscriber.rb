@@ -1,8 +1,8 @@
-require 'fuelsdk'
+require 'marketingcloudsdk'
 require_relative 'sample_helper'
 
 begin
-	stubObj = FuelSDK::Client.new auth
+	stubObj = MarketingCloudSDK::Client.new auth
 
 	# NOTE: These examples only work in accounts where the SubscriberKey functionality is not enabled
 	#       SubscriberKey will need to be included in the props if that feature is enabled
@@ -12,7 +12,7 @@ begin
 
 	# Create List
 	p '>>> Create List'
-	postList = FuelSDK::List.new
+	postList = MarketingCloudSDK::List.new
 	postList.authStub = stubObj
 	postList.props = {"ListName" => NewListName, "Description" => "This list was created with the RubySDK", "Type" => "Private" }
 	postResponse = postList.post
@@ -32,7 +32,7 @@ begin
 
 		# Create Subscriber On List
 		p '>>> Create Subscriber On List'
-		postSub = FuelSDK::Subscriber.new
+		postSub = MarketingCloudSDK::Subscriber.new
 		postSub.authStub = stubObj
 		postSub.props = {"EmailAddress" => SubscriberTestEmail, "Lists" =>[{"ID" => newListID}]}
 		postResponse = postSub.post
@@ -48,7 +48,7 @@ begin
 			if postResponse.results[0][:error_code] == "12014" then
 				# Update Subscriber to add to List
 				p '>>> Update Subscriber to add to List'
-				patchSub = FuelSDK::Subscriber.new
+				patchSub = MarketingCloudSDK::Subscriber.new
 				patchSub.authStub = stubObj
 				patchSub.props = {"EmailAddress" => SubscriberTestEmail, "Lists" =>[{"ID" => newListID}]}
 				patchResponse = patchSub.patch
@@ -64,7 +64,7 @@ begin
 
 		# Retrieve all Subscribers on the List
 		p '>>> Retrieve all Subscribers on the List'
-		getListSubs = FuelSDK::List::Subscriber.new
+		getListSubs = MarketingCloudSDK::List::Subscriber.new
 		getListSubs.authStub = stubObj
 		getListSubs.props = ["ObjectID","SubscriberKey","CreatedDate","Client.ID","Client.PartnerClientKey","ListID","Status"]
 		getListSubs.filter = {'Property' => 'ListID','SimpleOperator' => 'equals','Value' => newListID}
@@ -79,7 +79,7 @@ begin
 
 		# Delete List
 		p '>>> Delete List'
-		deleteSub = FuelSDK::List.new()
+		deleteSub = MarketingCloudSDK::List.new()
 		deleteSub.authStub = stubObj
 		deleteSub.props = {"ID" => newListID}
 		deleteResponse = deleteSub.delete

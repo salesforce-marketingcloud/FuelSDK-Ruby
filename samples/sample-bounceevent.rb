@@ -1,15 +1,15 @@
-require 'fuelsdk'
+require 'marketingcloudsdk'
 require_relative 'sample_helper'
 
 begin
-	stubObj = FuelSDK::Client.new auth
+	stubObj = MarketingCloudSDK::Client.new auth
 
 	## Modify the date below to reduce the number of results returned from the request
 	## Setting this too far in the past could result in a very large response size
 	retrieveDate = '2011-01-15T13:00:00.000'
 
 	p '>>> Retrieve Filtered BounceEvents with GetMoreResults'
-	getBounceEvent = FuelSDK::BounceEvent.new()
+	getBounceEvent = MarketingCloudSDK::BounceEvent.new()
 	getBounceEvent.authStub = stubObj
 	getBounceEvent.props = ["SendID","SubscriberKey","EventDate","Client.ID","EventType","BatchID","TriggeredSendDefinitionObjectID","PartnerKey"]
 	getBounceEvent.filter = {'Property' => 'EventDate','SimpleOperator' => 'greaterThan','DateValue' => retrieveDate}
