@@ -4,15 +4,9 @@ $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
 require 'fuelsdk/version'
 
 
-gem_version = if ENV['GEM_PRE_RELEASE'].nil? || ENV['GEM_PRE_RELEASE'].empty?
-                FuelSDK::VERSION
-              else
-                "#{FuelSDK::VERSION}.#{ENV['GEM_PRE_RELEASE']}"
-              end
-
 Gem::Specification.new do |spec|
   spec.name          = "fuelsdk"
-  spec.version       = gem_version
+  spec.version       = FuelSDK::VERSION
   spec.authors       = ["MichaelAllenClark", "barberj"]
   spec.email         = []
   spec.description   = %q{Fuel SDK for Ruby}
