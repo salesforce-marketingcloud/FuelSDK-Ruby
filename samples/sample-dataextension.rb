@@ -4,13 +4,13 @@ require 'pry'
 
 begin
 	stubObj = ET_Client.new auth
-	
+
 	# Specify a name for the data extension that will be used for testing
 	# Note: Name and CustomerKey will be the same value
 	# WARNING: Data Extension will be deleted so don't use the name of a
 	# production data extension
 	NameOfDE = "ThisWillBeDeleted-Testz"
-	
+
 	# Get all of the DataExtensions in an Account
 	p '>>> Get all of the DataExtensions in an Account'
 	de = ET_DataExtension.new
@@ -157,7 +157,7 @@ begin
   raise 'Failure deleting data extension row' unless deleteResponse.success?
 
 	# Delete a Data Extension
-	p '>>> Delete a  Data Extension'
+	p '>>> Delete a Data Extension'
 	de5 = ET_DataExtension.new
 	de5.authStub = stubObj
 	de5.props = {"Name" => NameOfDE,"CustomerKey" => NameOfDE}
@@ -166,7 +166,16 @@ begin
 	p 'Code: ' + delResponse.code.to_s
 	p 'Message: ' + delResponse.message.to_s
 	p 'Results: ' + delResponse.results.inspect
-  raise 'Failure deleting data extension' unless deleteResponse.success?
+  raise 'Failure deleting data extension' unless delResponse.success?
+
+  # Clear a Data Extension
+  p '>>> Clear a Data Extension'
+  soapResponse = stubObj.soap_perform('DataExtension', 'ClearData', {'CustomerKey' => NameOfDE})
+  p 'Clear Status: ' + soapResponse.status.to_s
+  p 'Code: ' + soapResponse.code.to_s
+  p 'Message: ' + soapResponse.message.to_s
+  p 'Results: ' + soapResponse.results.inspect
+  raise 'Failure clearing data extension' unless soapResponse.success?
 
 =begin
 	# Retrieve lots of rows with more?
