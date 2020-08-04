@@ -75,7 +75,7 @@ begin
 		p 'MoreResults: ' + getResponse.more?.to_s
 		p 'Results Length: ' + getResponse.results.length.to_s
 		p 'Results: ' + getResponse.results.to_s
-    raise 'Failure retrieving subscirbers on list' unless getResponse.success?
+    raise 'Failure retrieving subscribers on list' unless getResponse.success?
 
 		# Delete List
 		p '>>> Delete List'

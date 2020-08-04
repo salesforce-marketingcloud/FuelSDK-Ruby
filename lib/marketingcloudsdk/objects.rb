@@ -563,7 +563,7 @@ module MarketingCloudSDK
 			end
 
 			def retrieve_required
-				# have to use instance variables so we don't recursivelly retrieve_required
+				# have to use instance variables so we don't recursively retrieve_required
 				if !@name && !@customer_key
 					raise 'Unable to process DataExtension::Row ' \
               'request due to missing CustomerKey and Name'
@@ -593,7 +593,7 @@ module MarketingCloudSDK
 				# we could map the field to all DataExtensions, but lets make user be explicit.
 				# if they are going to use fields attribute properties should
 				# be a single DataExtension Defined in a Hash
-				raise 'Unable to handle muliple DataExtension definitions and a field definition'
+				raise 'Unable to handle multiple DataExtension definitions and a field definition'
 			end
 
 			if d.kind_of? Array

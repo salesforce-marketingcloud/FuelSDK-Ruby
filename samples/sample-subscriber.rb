@@ -103,8 +103,8 @@ begin
 =begin
   # Do not run the "Retrieve All Subscribers" request for testing if you have more than 100,000 records in your account as it will take a long time to complete.
 
-  # Retrieve All Subcribers with GetMoreResults
-  p '>>> Retrieve All Subcribers with GetMoreResults'
+  # Retrieve All Subscribers with GetMoreResults
+  p '>>> Retrieve All Subscribers with GetMoreResults'
   getSub = MarketingCloudSDK::Subscriber.new()
   getSub.authStub = stubObj
   getSub.props = ["SubscriberKey", "EmailAddress", "Status"]
@@ -118,7 +118,7 @@ begin
   #p 'Results: ' + getResponse.results.to_s
 
   while getResponse.more? do
-    p '>>> Continue Retrieve All Subcribers with GetMoreResults'
+    p '>>> Continue Retrieve All Subscribers with GetMoreResults'
     getResponse.continue
     p 'Retrieve Status: ' + getResponse.status.to_s
     p 'Code: ' + getResponse.code.to_s
