@@ -303,7 +303,7 @@ module MarketingCloudSDK
 			# If the ID property is specified for the destination then it must be a list import
 			if properties.has_key?('DestinationObject') then
 				if properties['DestinationObject'].has_key?('ID') then
-					properties[:attributes!] = { 'DestinationObject' => { 'xsi:type' => 'tns:List'}}
+					properties['DesintationObject'][:'@xsi:type'] = 'tns:List'
 				end
 			end
 		end

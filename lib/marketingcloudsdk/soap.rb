@@ -129,8 +129,10 @@ module MarketingCloudSDK
 			else
 				raise 'Require legacy token for soap header' unless internal_token
 				{
-						'oAuth' => {'oAuthToken' => internal_token},
-						:attributes! => { 'oAuth' => { 'xmlns' => 'http://exacttarget.com' }}
+					'oAuth' => {
+						:'@xmlns' => 'http://exacttarget.com',
+						'oAuthToken' => internal_token
+					}
 				}
 			end
 		end
@@ -180,7 +182,7 @@ module MarketingCloudSDK
 			message = {}
 			message['Action'] = action
 			message['Definitions'] = {'Definition' => properties}
-			message['Definitions'][:attributes!] = { 'Definition' => { 'xsi:type' => ('tns:' + object_type) }}
+			message['Definitions'][:'@xsi:type'] = 'tns:' + object_type
 
 			soap_request :perform, message
 		end
@@ -198,7 +200,7 @@ module MarketingCloudSDK
 			else
 				message['Configurations'] = {'Configuration' => properties}
 			end
-			message['Configurations'][:attributes!] = { 'Configuration' => { 'xsi:type' => ('tns:' + object_type) }}
+			message['Configurations'][:'@xsi:type'] = 'tns:' + object_type
 
 			soap_request :configure, message
 		end
@@ -222,13 +224,12 @@ module MarketingCloudSDK
 
 			if filter and filter.kind_of? Hash
 				message['Filter'] = filter
-				message[:attributes!] = { 'Filter' => { 'xsi:type' => 'tns:SimpleFilterPart' } }
+				message['Filter'][:'@xsi:type'] = 'tns:SimpleFilterPart'
 
 				if filter.has_key?('LogicalOperator')
-					message[:attributes!] = { 'Filter' => { 'xsi:type' => 'tns:ComplexFilterPart' }}
-					message['Filter'][:attributes!] = {
-						'LeftOperand' => { 'xsi:type' => 'tns:SimpleFilterPart' },
-					'RightOperand' => { 'xsi:type' => 'tns:SimpleFilterPart' }}
+					message['Filter'][:'@xsi:type'] = 'tns:ComplexFilterPart'
+					message['Filter']['LeftOperand']['@xsi:type'] = 'tns:SimpleFilterPart'
+					message['Filter']['RightOperand']['@xsi:type'] = 'tns:SimpleFilterPart'
 				end
 			end
 			message = {'RetrieveRequest' => message}
@@ -274,10 +275,13 @@ module MarketingCloudSDK
 			#   end
 			#
 
-			message = {
-				'Objects' => properties,
-				:attributes! => { 'Objects' => { 'xsi:type' => ('tns:' + object_type) } }
-			}
+			message = {'Objects' => properties}
+
+			if properties.is_a? Array
+				properties.each { |p| p[:'@xsi:type'] = ('tns:' + object_type) }
+			else
+				message['Objects'][:'@xsi:type'] = 'tns:' + object_type
+			end
 
 			if upsert
 				message['Options'] = {"SaveOptions" => {"SaveOption" => {"PropertyName"=> "*", "SaveAction" => "UpdateAdd"}}}
