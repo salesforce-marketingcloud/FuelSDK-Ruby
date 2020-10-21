@@ -35,5 +35,8 @@ USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =end
 
 module MarketingCloudSDK
-  VERSION = "1.3.0"
+  base = "1.3.1"
+
+  # SB-specific versioning "algorithm" to accommodate BNW/Jenkins/gemstash
+  VERSION = (pre = ENV.fetch('GEM_PRE_RELEASE', '')).empty? ? base : "#{base}.#{pre}"
 end
