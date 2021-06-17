@@ -98,7 +98,7 @@ begin
 	p 'Message: ' + deleteResponse.message.to_s
 	p 'Result Count: ' + deleteResponse.results.length.to_s
 	p 'Results: ' + deleteResponse.results.inspect
-  raise 'Failure deleteing email' unless deleteResponse.success?
+  raise 'Failure deleting email' unless deleteResponse.success?
 
 	# Retrieve Email to confirm deletion
 	p '>>> Retrieve Email to confirm deletion'

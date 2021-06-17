@@ -255,7 +255,7 @@ module MarketingCloudSDK
 		private
 
 		def soap_cud action, object_type, properties, upsert=nil
-			# get a list of attributes so we can seperate
+			# get a list of attributes so we can separate
 			# them from standard object properties
 			#type_attrs = soap_describe(object_type).editable
 

@@ -158,7 +158,7 @@ describe MarketingCloudSDK::DataExtension do
       subject.fields = [{'Name' => 'Name'}]
       subject.properties = [{'Name' => 'Some DE'}, {'Name' => 'Some DE'}]
       expect{subject.post}.to raise_error(
-        'Unable to handle muliple DataExtension definitions and a field definition')
+        'Unable to handle multiple DataExtension definitions and a field definition')
     end
 
     it 'fields must be empty if not nil' do
@@ -288,7 +288,7 @@ describe MarketingCloudSDK::DataExtension do
         }}]
         expect{subject.post}.to raise_error 'Fields are defined in too many ways. Please only define once.'
       end
-      it 'when defined in with fields and colums key' do
+      it 'when defined in with fields and columns key' do
         subject.properties = [{'Name' => 'Some DE',
           'fields' => [{'Name' => 'A fields'}],
           'columns' => [{'Name' => 'A field'}]
@@ -382,7 +382,7 @@ describe MarketingCloudSDK::DataExtension::Row do
       subject.stub_chain(:client,:soap_get).and_return(rsp)
       subject.name = 'Not Nil'
 
-      # this really wouldn't work this way. name shouldn't be updated since its whats being used for filter,
+      # this really wouldn't work this way. name shouldn't be updated since it's what's being used for filter,
       # but its a good test to show retrieve_required being fired
       expect(subject.name).to eq 'Not Nil' # not fired
       expect(subject.customer_key).to eq 'ProductsKey' # fired... stubbed get returns customer_key and name for update

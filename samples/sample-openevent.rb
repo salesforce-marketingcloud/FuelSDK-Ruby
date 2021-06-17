@@ -53,7 +53,7 @@ begin
 
 	while getResponse.more? do
 		p '>>> Continue Retrieve All OpenEvents with GetMoreResults'
-		getResponse = getOpenEvent.contine
+		getResponse = getOpenEvent.continue
 		p 'Retrieve Status: ' + getResponse.status.to_s
 		p 'Code: ' + getResponse.code.to_s
 		p 'Message: ' + getResponse.message.to_s
