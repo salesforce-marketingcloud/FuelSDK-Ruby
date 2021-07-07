@@ -102,7 +102,7 @@ Install the newly built gem
 gem install marketingcloudsdk-1.3.0.gem
 ```
 
-If you have not registered your application or you need to lookup your Application Key or Application Signature values, please go to App Center at [Code@: ExactTarget's Developer Community](http://code.exacttarget.com/appcenter "Code@ App Center").
+If you have not registered your application or you need to lookup your Application Key or Application Signature values, please go to App Center at [Salesforce Marketing Cloud](https://developer.salesforce.com/docs/atlas.en-us.mc-getting-started.meta/mc-getting-started/app-center.htm "Salesforce Marketing Cloud App Center").
 
 
 ## Example Request ##
