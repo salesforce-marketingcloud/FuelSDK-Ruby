@@ -50,7 +50,7 @@ module MarketingCloudSDK
   require 'marketingcloudsdk/objects'
 end
 
-# backwards compatability
+# backwards compatibility
 ET_Client = MarketingCloudSDK::Client
 ET_BounceEvent = MarketingCloudSDK::BounceEvent
 ET_ClickEvent = MarketingCloudSDK::ClickEvent

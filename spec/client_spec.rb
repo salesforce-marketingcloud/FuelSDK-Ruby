@@ -129,7 +129,7 @@ describe(MarketingCloudSDK::Client) do
     end
 
     describe 'with web/server app and null/blank/empty id or secret should raise exception' do
-      expected_exception = 'id and secret must pe passed when instantiating Client'
+      expected_exception = 'id and secret must be passed when instantiating Client'
 
       exception_raisers = Hash.new.tap do |h|
         h[nil] = 'nil'

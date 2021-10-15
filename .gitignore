@@ -14,7 +14,7 @@ test/version_tmp
 tmp
 samples/soap_cache_file.json
 
-# YARD artifacts
+# YARD artefacts
 .yardoc
 _yardoc
 doc/

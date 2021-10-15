@@ -10,7 +10,7 @@ Gem::Specification.new do |spec|
 	spec.email         = ["mcsdkadmin@salesforce.com"]
 	spec.description   = %q{API wrapper for SOAP and REST API with Salesforce Marketing Cloud (ExactTarget)}
 	spec.summary       = %q{Fuel Client Library for Ruby}
-	spec.homepage      = "https://github.com/ExactTarget/FuelSDK-Ruby"
+	spec.homepage      = "https://github.com/salesforce-marketingcloud/FuelSDK-Ruby"
 	spec.license       = ""
 
 	spec.files         = `git ls-files`.split($/)
