@@ -39,8 +39,8 @@ module MarketingCloudSDK
 		module Soap
 			module Read
 				attr_accessor :filter
-				def get _id=nil
-					client.soap_get _id||id, properties, filter
+				def get (_id=nil, query_all_accounts = false)
+					client.soap_get _id||id, properties, filter, query_all_accounts
 				end
 
 				def info
