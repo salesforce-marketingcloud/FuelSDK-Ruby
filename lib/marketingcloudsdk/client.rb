@@ -124,7 +124,7 @@ module MarketingCloudSDK
 				if(use_oAuth2_authentication == true)
 					raise 'request_token_url (Auth TSE) is mandatory when using OAuth2 authentication'
 				else
-					self.request_token_url =  'https://auth.exacttargetapis.com/v1/requestToken'
+					self.request_token_url = ExactTargetEndpoints.request_token_url
 				end
 			end
 

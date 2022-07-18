@@ -12,7 +12,7 @@ describe MarketingCloudSDK::Client do
     end
 
     it 'Should use Auth endpoint default value if request_token_url attribute is not in config' do
-      expect(client1.request_token_url).to eq 'https://auth.exacttargetapis.com/v1/requestToken'
+      expect(client1.request_token_url).to eq 'https://placeholder.rest.marketingcloudapis.com/v1/requestToken'
     end
   end
 
