@@ -1,5 +1,6 @@
 require 'spec_helper.rb'
 require 'public_or_web_integration_credentials'
+require './lib/marketingcloudsdk/exact_target_endpoints'
 
 def get_test_stub
   {'client' => {

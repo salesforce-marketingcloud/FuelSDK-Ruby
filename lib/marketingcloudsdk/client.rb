@@ -36,6 +36,7 @@ USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =end 
 
 require 'securerandom'
+require_relative './exact_target_endpoints'
 module MarketingCloudSDK
 	class Response
 		# not doing accessor so user, can't update these values from response.
@@ -103,7 +104,7 @@ module MarketingCloudSDK
         self.id = client_config["id"]
         self.secret = client_config["secret"]
         self.signature = client_config["signature"]
-				self.base_api_url = !(client_config["base_api_url"].to_s.strip.empty?) ? client_config["base_api_url"] : 'https://www.exacttargetapis.com'
+				self.base_api_url = !(client_config["base_api_url"].to_s.strip.empty?) ? client_config["base_api_url"] : ExactTargetEndpoints.base_api_url
 				self.request_token_url = client_config["request_token_url"]
 				self.soap_endpoint = client_config["soap_endpoint"]
 				self.use_oAuth2_authentication = client_config["use_oAuth2_authentication"]
@@ -116,7 +117,7 @@ module MarketingCloudSDK
 
 			# Set a default value in case no 'client' params is sent
 			if (!self.base_api_url)
-				self.base_api_url =  'https://www.exacttargetapis.com'
+				self.base_api_url = ExactTargetEndpoints.base_api_url
 			end
 
 			if (self.request_token_url.to_s.strip.empty?)
