@@ -6,6 +6,14 @@ ExactTarget Fuel SDK / SalesforceMarektingCloudSDK for Ruby
 ## Overview ##
 The Fuel SDK for Ruby provides easy access to ExactTarget's Fuel API Family services, including a collection of REST APIs and a SOAP API. These APIs provide access to ExactTarget functionality via common collection types such as array/hash.
 
+## New Features in Version 2.0.0 ##
+
+- @JadeDickinson added support for tenant-specific endpoints.
+  - To use this feature, copy config/endpoints.yml from this Gem to ./config/endpoints.yml in your application using FuelSDK-Ruby.
+  - You must then replace the placeholder values with your tenant-specific endpoints - see the following links for more details:
+    - [SOAP API](https://help.salesforce.com/s/articleView?id=000356497&type=1)
+    - [REST API](https://help.salesforce.com/s/articleView?id=000356498&type=1)
+
 ## New Features in Version 1.3.1 ##
 - **Updated below packages to latest version**
   - savon: ">= 2.12.1"

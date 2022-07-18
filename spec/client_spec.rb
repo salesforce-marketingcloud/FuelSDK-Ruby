@@ -1,5 +1,6 @@
 require 'spec_helper.rb'
 require 'public_or_web_integration_credentials'
+require './lib/marketingcloudsdk/exact_target_endpoints'
 
 def get_test_stub
   {'client' => {
@@ -77,7 +78,7 @@ describe(MarketingCloudSDK::Client) do
     it 'with wsdl set to default value if  not set in params' do
       client = MarketingCloudSDK::Client.new(get_test_stub)
 
-      expect(client.wsdl).to eq 'https://webservice.exacttarget.com/etframework.wsdl'
+      expect(client.wsdl).to eq 'https://placeholder.soap.marketingcloudapis.com/etframework.wsdl'
     end
 
     it 'with application_type set to \'server\' if application_type is not set in params' do
@@ -168,7 +169,7 @@ describe(MarketingCloudSDK::Client) do
       end
 
       it'#wsdl returns default wsdl' do
-        expect(client.wsdl).to eq 'https://webservice.exacttarget.com/etframework.wsdl'
+        expect(client.wsdl).to eq 'https://placeholder.soap.marketingcloudapis.com/etframework.wsdl'
       end
     end
   end

@@ -1,0 +1,4 @@
+base_api_url: 'https://placeholder.rest.marketingcloudapis.com'
+request_token_url: 'https://placeholder.rest.marketingcloudapis.com/v1/requestToken'
+soap_wsdl_endpoint: 'https://placeholder.soap.marketingcloudapis.com/etframework.wsdl'
+soap_service_endpoint: 'https://placeholder.soap.marketingcloudapis.com/Service.asmx'

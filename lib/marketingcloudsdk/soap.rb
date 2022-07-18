@@ -115,6 +115,7 @@ module MarketingCloudSDK
 		end
 	end
 
+  require_relative './exact_target_endpoints'
 	module Soap
 		attr_accessor :wsdl, :debug#, :internal_token
 
@@ -140,7 +141,7 @@ module MarketingCloudSDK
 		end
 
 		def wsdl
-			@wsdl ||= 'https://webservice.exacttarget.com/etframework.wsdl'
+			@wsdl ||= ExactTargetEndpoints.soap_wsdl_endpoint
 		end
 
 		def soap_client

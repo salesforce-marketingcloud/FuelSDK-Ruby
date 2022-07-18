@@ -8,11 +8,11 @@ describe MarketingCloudSDK::Client do
                                                         'base_api_url' => ''}
 
     it 'Should use REST endpoint default value if base_api_url endpoint is an empty string in config' do
-      expect(client1.base_api_url).to eq 'https://www.exacttargetapis.com'
+      expect(client1.base_api_url).to eq 'https://placeholder.rest.marketingcloudapis.com'
     end
 
     it 'Should use Auth endpoint default value if request_token_url attribute is not in config' do
-      expect(client1.request_token_url).to eq 'https://auth.exacttargetapis.com/v1/requestToken'
+      expect(client1.request_token_url).to eq 'https://placeholder.rest.marketingcloudapis.com/v1/requestToken'
     end
   end
 
@@ -22,7 +22,7 @@ describe MarketingCloudSDK::Client do
                                                          'base_api_url' => '   '}
 
     it 'Should use REST endpoint default value if REST endpoint is a blank string in config' do
-      expect(client2.base_api_url).to eq 'https://www.exacttargetapis.com'
+      expect(client2.base_api_url).to eq 'https://placeholder.rest.marketingcloudapis.com'
     end
 
   end

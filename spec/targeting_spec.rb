@@ -1,4 +1,5 @@
 require 'spec_helper'
+require './lib/marketingcloudsdk/exact_target_endpoints'
 
 describe MarketingCloudSDK::Targeting do
 
@@ -15,12 +16,12 @@ describe MarketingCloudSDK::Targeting do
 
   describe '#get_soap_endpoint' do
     let(:client) { c = Class.new.new.extend(MarketingCloudSDK::Targeting)
-      c.stub(:base_api_url).and_return('https://www.exacttargetapis.com')
+      c.stub(:base_api_url).and_return(MarketingCloudSDK::ExactTargetEndpoints.base_api_url)
       c.stub(:access_token).and_return('open_sesame')
       c.stub(:get_soap_endpoint_from_file).and_return(nil)
       c.stub(:set_soap_endpoint_to_file).and_return(nil)
       c.stub(:get)
-        .with('https://www.exacttargetapis.com/platform/v1/endpoints/soap',{'access_token'=>'open_sesame'})
+        .with("#{MarketingCloudSDK::ExactTargetEndpoints.base_api_url}/platform/v1/endpoints/soap",{'access_token'=>'open_sesame'})
         .and_return({'url' => 'S#.authentication.target'})
       c
     }

@@ -43,7 +43,7 @@ require 'date'
 require 'json'
 require 'yaml'
 require 'jwt'
-
+require_relative './marketing_cloud_sdk/exact_target_endpoints'
 
 def indifferent_access key, hash
   hash[key.to_sym] || hash[key.to_s]
@@ -227,7 +227,7 @@ module MarketingCloudSDK
       #If we don't already have a token or the token expires within 5 min(300 seconds), get one
       if ((@authToken.nil? || Time.new + 300 > @authTokenExpiration) || force) then
         begin
-          uri = URI.parse("https://auth.exacttargetapis.com/v1/requestToken?legacy=1")
+          uri = URI.parse("#{MarketingCloudSDK::ExactTargetEndpoints.base_api_url}/v1/requestToken?legacy=1")
           http = Net::HTTP.new(uri.host, uri.port)
           http.use_ssl = true
           request = Net::HTTP::Post.new(uri.request_uri)
@@ -318,7 +318,7 @@ module MarketingCloudSDK
     protected
       def determineStack()
         begin
-          uri = URI.parse("https://www.exacttargetapis.com/platform/v1/endpoints/soap?access_token=" + @authToken)
+          uri = URI.parse("#{MarketingCloudSDK::ExactTargetEndpoints.base_api_url}/platform/v1/endpoints/soap?access_token=" + @authToken)
           http = Net::HTTP.new(uri.host, uri.port)
 
           http.use_ssl = true
@@ -908,7 +908,7 @@ module MarketingCloudSDK
   class ET_Campaign < ET_CUDSupportRest
     def initialize
       super
-      @endpoint = 'https://www.exacttargetapis.com/hub/v1/campaigns/{id}'
+      @endpoint = "#{MarketingCloudSDK::ExactTargetEndpoints.base_api_url}/hub/v1/campaigns/{id}"
       @urlProps = ["id"]
       @urlPropsRequired = []
     end
@@ -916,7 +916,7 @@ module MarketingCloudSDK
     class Asset < ET_CUDSupportRest
       def initialize
         super
-        @endpoint = 'https://www.exacttargetapis.com/hub/v1/campaigns/{id}/assets/{assetId}'
+        @endpoint = "#{MarketingCloudSDK::ExactTargetEndpoints.base_api_url}/hub/v1/campaigns/{id}/assets/{assetId}"
         @urlProps = ["id", "assetId"]
         @urlPropsRequired = ["id"]
       end

@@ -30,7 +30,7 @@ describe MarketingCloudSDK::Soap do
   it { should respond_to(:package_folders=) }
 
   its(:debug) { should be false }
-  its(:wsdl) { should eq 'https://webservice.exacttarget.com/etframework.wsdl' }
+  its(:wsdl) { should eq 'https://placeholder.soap.marketingcloudapis.com/etframework.wsdl' }
 
   describe '#header' do
     it 'raises an exception when internal_token is missing' do
